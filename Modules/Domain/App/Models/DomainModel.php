@@ -23,8 +23,6 @@ use Modules\Hospital\App\Models\ParticularModuleModel;
 use Modules\Hospital\App\Models\PatientPrescriptionMedicineModel;
 use Modules\Hospital\App\Models\ProductModel;
 use Modules\Inventory\App\Models\ConfigModel;
-use Modules\NbrVatTax\App\Models\NbrVatConfigModel;
-use Modules\Production\App\Models\ProductionConfig;
 use Modules\Utility\App\Models\SettingModel;
 
 class DomainModel extends Model
@@ -64,19 +62,9 @@ class DomainModel extends Model
         return $this->hasOne(HospitalConfigModel::class, 'domain_id', 'id');
     }
 
-    public function productionConfig()
-    {
-        return $this->hasOne(ProductionConfig::class, 'domain_id', 'id');
-    }
-
     public function accountConfig()
     {
         return $this->hasOne(AccountingModel::class, 'domain_id', 'id');
-    }
-
-    public function gstConfig()
-    {
-        return $this->hasOne(NbrVatConfigModel::class, 'domain_id', 'id');
     }
 
     public function sluggable(): array
@@ -217,16 +205,13 @@ class DomainModel extends Model
 
     public static function getDomainConfigData($id)
     {
-        $data = self::select(['dom_domain.id as global_id', 'inv_config.id as config_id', 'inv_config.id as inv_config', 'acc_config.id as acc_config', 'pro_config.id as pro_config', 'nbr_config.id as nbr_config'])
+        $data = self::select(['dom_domain.id as global_id', 'inv_config.id as config_id', 'inv_config.id as inv_config', 'acc_config.id as acc_config'])
             ->leftjoin('inv_config', 'inv_config.domain_id', '=', 'dom_domain.id')
             ->leftjoin('inv_config_product', 'inv_config_product.config_id', '=', 'inv_config.id')
             ->leftjoin('inv_config_purchase', 'inv_config_purchase.config_id', '=', 'inv_config.id')
             ->leftjoin('inv_config_sales', 'inv_config_sales.config_id', '=', 'inv_config.id')
             ->leftjoin('inv_config_discount', 'inv_config_discount.config_id', '=', 'inv_config.id')
-            ->leftjoin('inv_config_vat', 'inv_config_vat.config_id', '=', 'inv_config.id')
             ->leftjoin('acc_config', 'acc_config.domain_id', '=', 'dom_domain.id')
-            ->leftjoin('pro_config', 'pro_config.domain_id', '=', 'dom_domain.id')
-            ->leftjoin('nbr_config', 'nbr_config.domain_id', '=', 'dom_domain.id')
             ->where('dom_domain.id', $id)->first();
         return $data;
     }

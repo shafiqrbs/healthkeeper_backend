@@ -49,7 +49,7 @@ class DomainConfigController extends Controller
         $entity = DomainModel::with(['accountConfig',
             'accountConfig.capital_investment','accountConfig.account_cash','accountConfig.account_bank','accountConfig.account_mobile','accountConfig.account_user','accountConfig.account_vendor','accountConfig.account_customer','accountConfig.account_product_group','accountConfig.account_category',
             'accountConfig.voucher_stock_opening','accountConfig.voucher_purchase','accountConfig.voucher_sales','accountConfig.voucher_purchase_return','accountConfig.voucher_stock_reconciliation',
-            'productionConfig','gstConfig','inventoryConfig','hospitalConfig','inventoryConfig.configPurchase','inventoryConfig.configSales','inventoryConfig.configProduct','inventoryConfig.configDiscount','inventoryConfig.configVat','inventoryConfig.businessModel','inventoryConfig.currency'
+            'inventoryConfig','hospitalConfig','inventoryConfig.configPurchase','inventoryConfig.configSales','inventoryConfig.configProduct','inventoryConfig.configDiscount','inventoryConfig.configVat','inventoryConfig.businessModel','inventoryConfig.currency'
         ])->find($this
             ->domain['global_id']);
         $service = new JsonRequestResponse();
@@ -62,7 +62,7 @@ class DomainConfigController extends Controller
         $entity = DomainModel::with(['accountConfig',
             'accountConfig.capital_investment','accountConfig.account_cash','accountConfig.account_bank','accountConfig.account_mobile','accountConfig.account_user','accountConfig.account_vendor','accountConfig.account_customer','accountConfig.account_product_group','accountConfig.account_category',
             'accountConfig.voucher_stock_opening','accountConfig.voucher_purchase','accountConfig.voucher_sales','accountConfig.voucher_purchase_return','accountConfig.voucher_stock_reconciliation',
-            'productionConfig','gstConfig','inventoryConfig','hospitalConfig','inventoryConfig.configPurchase','inventoryConfig.configSales','inventoryConfig.configProduct','inventoryConfig.configDiscount','inventoryConfig.configVat','inventoryConfig.businessModel',
+            'inventoryConfig','hospitalConfig','inventoryConfig.configPurchase','inventoryConfig.configSales','inventoryConfig.configProduct','inventoryConfig.configDiscount','inventoryConfig.configVat','inventoryConfig.businessModel',
             'inventoryConfig.currency'
         ])->find($id);
         return $entity;
@@ -605,13 +605,6 @@ class DomainConfigController extends Controller
             AccountingModel::resetConfig($domain->acc_config);
         }
 
-        if($domain->pro_config){
-            ProductionConfig::resetConfig($domain->pro_config);
-        }
-
-        if($domain->nbr_config){
-             NbrVatConfigModel::resetConfig($domain->nbr_config);
-        }
 
         // Step 4: Create the accounting data
         ConfigProductModel::updateOrCreate([
@@ -633,10 +626,6 @@ class DomainConfigController extends Controller
             'config_id' => $domain->config_id,
         ]);
 
-        // Step 4: Create the accounting data
-        ConfigVatModel::updateOrCreate([
-            'config_id' => $domain->config_id,
-        ]);
 
 
         $getCoreSettingTypeId = SettingTypeModel::where('slug', 'customer-group')->first();

@@ -140,15 +140,11 @@ class UserModel extends Model
             'inv_config.id as config_id',
             'inv_config.id as inv_config',
             'acc_config.id as acc_config',
-            'pro_config.id as pro_config',
-            'nbr_config.id as nbr_config',
             'hms_config.id as hms_config'
         ])
             ->join('dom_domain','dom_domain.id','=','users.domain_id')
             ->leftjoin('inv_config','inv_config.domain_id','=','dom_domain.id')
             ->leftjoin('acc_config','acc_config.domain_id','=','dom_domain.id')
-            ->leftjoin('pro_config','pro_config.domain_id','=','dom_domain.id')
-            ->leftjoin('nbr_config','nbr_config.domain_id','=','dom_domain.id')
             ->leftjoin('hms_config','hms_config.domain_id','=','dom_domain.id')
             ->where('users.id',$id)->first();
         $warehouse = WarehouseModel::insertDefaultWarehouse($data['id']);
@@ -175,15 +171,11 @@ class UserModel extends Model
             'inv_config_purchase.id as inv_config_purchase',
             'inv_config_vat.id as inv_config_vat',
             'acc_config.id as acc_config',
-            'pro_config.id as pro_config',
-            'nbr_config.id as nbr_config',
             'hms_config.id as hms_config'
         ])
             ->join('dom_domain','dom_domain.id','=','users.domain_id')
             ->leftjoin('inv_config','inv_config.domain_id','=','dom_domain.id')
             ->leftjoin('acc_config','acc_config.domain_id','=','dom_domain.id')
-            ->leftjoin('pro_config','pro_config.domain_id','=','dom_domain.id')
-            ->leftjoin('nbr_config','nbr_config.domain_id','=','dom_domain.id')
             ->leftjoin('hms_config','hms_config.domain_id','=','dom_domain.id')
             ->leftjoin('inv_config_product','inv_config_product.config_id','=','inv_config.id')
             ->leftjoin('inv_config_discount','inv_config_discount.config_id','=','inv_config.id')

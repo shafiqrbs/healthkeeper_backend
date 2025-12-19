@@ -8,7 +8,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 
 /**
- * BusinessInvoiceParticular
+ * SalesItem
  *
  * @ORM\Table( name = "inv_sales_item")
  * @ORM\Entity(repositoryClass="Modules\Inventory\App\Repositories\SalesItemRepository")
@@ -42,11 +42,6 @@ class SalesItem
      **/
     private  $purchaseItem;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="RequisitionItem" , cascade={"detach","merge"} )
-     * @ORM\JoinColumn(name="requisition_item_id", onDelete="CASCADE")
-     **/
-    private  $requisitionItem;
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\Config" , cascade={"detach","merge"} )
