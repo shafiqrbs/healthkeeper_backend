@@ -202,17 +202,59 @@ class IpdController extends Controller
         $domain = $this->domain;
         $input = $request->all();
         $entity = InvoiceModel::findByIdOrUid($id);
-        $changeMode = in_array($input['change_mode'] ?? '', ['change','change_day','cancel'])
+        $allowedModes = ['change', 'change_day', 'cancel'];
+
+        $changeMode = in_array($input['change_mode'] ?? '', $allowedModes, true)
             ? $input['change_mode']
             : 'change';
-        AdmissionPatientModel::updateOrCreate(
+
+        $admission = AdmissionPatientModel::updateOrCreate(
             ['hms_invoice_id' => $entity->id],
             [
-                'approved_by_id' => $domain['user_id'],
-                'change_mode'   => $changeMode ?? 'change',
-                'comment'       => $input['comment'] ?? null,
+                'approved_by_id'  => $domain['user_id'],
+                'change_mode'     => $changeMode,
+                'approve_comment' => $input['comment'] ?? null,
             ]
         );
+
+        $changeModes = ['change', 'change_day'];
+        if (in_array($admission->change_mode, $changeModes, true)) {
+            $roomId = !empty($input['room_id']) ? (int) $input['room_id'] : 0;
+
+            // Free previous room safely
+            if ($entity->room) {
+                $entity->room->update(['is_booked' => false]);
+            }
+
+            // Assign new room
+            if ($roomId > 0) {
+                $entity->update(['room_id' => $roomId]);
+            }
+
+            IpdModel::changeUpdateInvoiceParticular(
+                $domain['hms_config'],
+                $entity,
+                $input
+            );
+
+            $entity->update(['process' => 'confirmed']);
+
+        } else { // cancel
+
+            if ($entity->room) {
+                $entity->room->update(['is_booked' => false]);
+            }
+
+            $entity->update([
+                'process' => 'canceled',
+                'room_id' => null,
+            ]);
+
+            InvoiceTransactionModel::where([
+                'hms_invoice_id' => $entity->id,
+                'mode'           => 'ipd',
+            ])->delete();
+        }
         $service = new JsonRequestResponse();
         $data = $service->returnJosnResponse($entity);
         return $data;

@@ -384,7 +384,7 @@ class IpdModel extends Model
                 $entities = $entities->whereIn('hms_invoice.process',['ipd','closed']);
                 $entities = $entities->where('hms_invoice.referred_mode', $request['referred_mode'])
                     ->whereNull('hms_invoice.parent_id')->whereDoesntHave('children');
-            } elseif ($request['ipd_mode'] === 'admission') {
+            } elseif ($request['ipd_mode'] === 'confirmed') {
                 $entities = $entities->whereIn('hms_invoice.process',['confirmed','billing']);
                 $entities = $entities->whereNotNull('hms_invoice.parent_id');
             } elseif ($request['ipd_mode'] === 'admitted') {
@@ -393,8 +393,10 @@ class IpdModel extends Model
             } elseif ($request['ipd_mode'] === 'revised') {
                 $entities = $entities->where('hms_invoice.process','revised');
                 $entities = $entities->whereNotNull('hms_invoice.parent_id');
+            } elseif ($request['ipd_mode'] === 'canceled') {
+                $entities = $entities->where('hms_invoice.process','canceled');
+                $entities = $entities->whereNotNull('hms_invoice.parent_id');
             }
-
             $entities
                 ->leftJoin('hms_particular as admit_consultant', 'admit_consultant.id', '=', 'hms_invoice.admit_consultant_id')
                 ->leftJoin('hms_particular as admit_doctor', 'admit_doctor.id', '=', 'hms_invoice.admit_doctor_id')
@@ -607,7 +609,7 @@ class IpdModel extends Model
         $date =  new \DateTime("now");
         $invoiceTransaction = InvoiceTransactionModel::create(
             [
-                'invoice_id' => $entity->id,
+                'hms_invoice_id ' => $entity->id,
                 'created_by_id'    => $entity->created_by_id,
                 'mode' => 'ipd',
                 'updated_at'    => $date,
@@ -649,6 +651,49 @@ class IpdModel extends Model
                 'quantity'  => 1,
                 'price'     => $admissionFee->price,
                 'sub_total' => $admissionFee->price,
+            ]
+        );
+        $amount = InvoiceParticularModel::where('hms_invoice_id', $entity->id)->sum('sub_total');
+        $invoiceTransaction->update(['hms_invoice_id' => $entity->id ,'is_master' => true ,'sub_total' => $amount , 'total' => $amount]);
+        $entity->update(['sub_total' => $amount , 'total' => $amount, 'admission_date' => $date]);
+        $roomRent->update(['is_booked' => true]);
+        return $amount;
+
+
+
+    }
+
+    public static function changeUpdateInvoiceParticular($config,$entity,$data)
+    {
+
+        $config = HospitalConfigModel::find($config);
+        $date =  new \DateTime("now");
+        $invoiceTransaction = InvoiceTransactionModel::where(
+            [
+                'hms_invoice_id' => $entity->id,
+                'mode' => 'ipd'
+            ]
+        )->first();
+        if(isset($data['change_day']) and $data['change_day']){
+            $minimumDaysRoomRent = (int)$data['change_day'];
+        }else{
+            $minimumDaysRoomRent = ($config->minimum_days_room_rent) ? $config->minimum_days_room_rent:3;
+        }
+        $roomRent = ParticularModel::find($entity->room_id);
+        $particularInvoice = InvoiceParticularModel::updateOrCreate(
+            [
+                'hms_invoice_id' => $entity->id,
+                'invoice_transaction_id'     => $invoiceTransaction->id,
+                'mode' => 'room',
+            ],
+            [
+                'particular_id'  => $roomRent->id ?? null,
+                'name'  => $roomRent->display_name,
+                'status'  => 0,
+                'is_admission'  => true,
+                'quantity'  => $minimumDaysRoomRent,
+                'price'     => $roomRent->price,
+                'sub_total' => ($roomRent->price * (int)$minimumDaysRoomRent),
             ]
         );
         $amount = InvoiceParticularModel::where('hms_invoice_id', $entity->id)->sum('sub_total');

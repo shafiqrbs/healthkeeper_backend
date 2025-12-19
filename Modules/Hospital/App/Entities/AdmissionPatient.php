@@ -63,6 +63,13 @@ class AdmissionPatient
      */
     private $comment;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="text",nullable = true)
+     */
+    private $approveComment;
+
 
      /**
      * @var string
