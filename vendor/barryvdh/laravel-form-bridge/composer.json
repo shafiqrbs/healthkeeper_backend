@@ -1,0 +1,56 @@
+{
+    "name": "barryvdh/laravel-form-bridge",
+    "description": "This packages integrates Symfony Form Component in Laravel.",
+    "keywords": [
+        "laravel",
+        "form",
+        "formbuilder",
+        "forms"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Barry vd. Heuvel",
+            "email": "barryvdh@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8",
+        "illuminate/support": "^9|^10|^11.0|^12.0",
+        "symfony/form": "^6|^7.0",
+        "symfony/validator": "^6|^7.0",
+        "symfony/twig-bridge": "^6|^7.0",
+        "twig/twig": "^3.3.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Barryvdh\\Form\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Barryvdh\\Form\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.7-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Barryvdh\\Form\\ServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^2.3|^3.9",
+        "orchestra/testbench": "^7|^8|^9.0|^10.0"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "check-style": "phpcs -p --standard=PSR2 src/",
+        "fix-style": "phpcbf -p --standard=PSR2 src/"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
