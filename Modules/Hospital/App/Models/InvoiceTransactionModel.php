@@ -484,8 +484,8 @@ class InvoiceTransactionModel extends Model
                                 'status'      => 1,
                                 'is_invoice' => 1,
                                 'mode' => $mode,
-                                'price'         => $particular->price ?? 0,
-                                'estimate_price'         => $particular->price ?? 0,
+                                'price' => $particular->price ?? 0,
+                                'estimate_price' => $particular->price ?? 0,
                                 'sub_total'         => ($particular->price * $investigation['days']) ?? 0,
                                 'updated_at'    => $date,
                                 'created_at'    => $date,
@@ -648,9 +648,14 @@ class InvoiceTransactionModel extends Model
                     'created_at'    => $date,
                 ]
             );
+
         }else{
 
             $lastTransaction = $entity->invoice_transaction()
+                ->where(function ($q) {
+                    $q->where('mode', 'room')
+                        ->orWhere('mode', 'ipd');
+                })
                 ->latest('id')
                 ->first();
             self::finalBillRefund($domain,$entity,$lastTransaction,$particular);

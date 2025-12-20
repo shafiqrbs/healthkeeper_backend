@@ -25,6 +25,7 @@ use Modules\Hospital\App\Models\InvoiceModel;
 use Modules\Hospital\App\Models\InvoiceParticularModel;
 use Modules\Hospital\App\Models\InvoicePathologicalReportModel;
 use Modules\Hospital\App\Models\InvoiceTransactionModel;
+use Modules\Hospital\App\Models\IpdModel;
 use Modules\Hospital\App\Models\LabInvestigationModel;
 use Modules\Hospital\App\Models\OPDModel;
 use Modules\Hospital\App\Models\ParticularModel;
@@ -99,9 +100,15 @@ class RefundHistoryController extends Controller
             'process' => 'Done',
             'approved_by_id' => $userId
         ]);
+        $invoice = IpdModel::find($entity->hms_invoice_id);
+        $refundParticular = InvoiceParticularModel::where(['mode'=>'room','invoice_transaction_refund_id' => $id,'is_refund'=>1])->select('refund_amount','refund_quantity')->first();
+        if($refundParticular && $invoice->release_mode == 'discharge' && $invoice->invoice_mode == 'ipd' && $invoice->process == 'admitted'){
+            $invoice->update(['process'=>'paid','refund_amount' => $entity->amount,'refund_day' => $refundParticular->refund_quantity]);
+        }
         $success = ['message' => 'success'];
         $data = $service->returnJosnResponse($success);
         return $data;
+
     }
 
     /**

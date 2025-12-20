@@ -31,7 +31,7 @@ use Modules\Hospital\App\Models\ParticularModel;
 use Modules\Hospital\App\Models\ParticularModeModel;
 use Modules\Hospital\App\Models\PatientModel;
 use Modules\Hospital\App\Models\PrescriptionModel;
-
+use Modules\Hospital\App\Models\RefundModel;
 
 
 class BillingController extends Controller
@@ -145,11 +145,11 @@ class BillingController extends Controller
         $data = $request->all();
         $entity = InvoiceModel::findByIdOrUid($id);
         if($entity->process == "billing"){
-            InvoiceTransactionModel::insertAdmissionInvoiceTransaction($domain,$entity,$data);
-            $invoice = IpdModel::getIpdAdmissionShow($id);
+           InvoiceTransactionModel::insertAdmissionInvoiceTransaction($domain,$entity,$data);
+           $invoice = IpdModel::getIpdAdmissionShow($id);
         }else{
            $transactionId =  InvoiceTransactionModel::insertInvoiceTransaction($domain,$entity,$data);
-            $invoice = InvoiceTransactionModel::showInvoiceData($transactionId);
+           $invoice = InvoiceTransactionModel::showInvoiceData($transactionId);
         }
         $amount = InvoiceTransactionModel::where('hms_invoice_id', $entity->id)->where('process','Done')->sum('amount');
         $total = InvoiceParticularModel::where('hms_invoice_id', $entity->id)->where('status',true)->sum('sub_total');
@@ -187,7 +187,7 @@ class BillingController extends Controller
     public function print($id)
     {
         $service = new JsonRequestResponse();
-        $entity = InvoiceTransactionModel::showInvoiceData($id);
+        $entity = RefundModel::showInvoiceData($id);
         return $service->returnJosnResponse($entity);
     }
 

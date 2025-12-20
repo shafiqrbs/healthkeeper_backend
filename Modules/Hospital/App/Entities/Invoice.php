@@ -419,6 +419,14 @@ class Invoice
     /**
      * @var integer
      *
+     * @ORM\Column(name="refund_day", type="integer",  nullable=true)
+     */
+    private $refundDay;
+
+
+    /**
+     * @var integer
+     *
      * @ORM\Column(name="code", type="integer",  nullable=true)
      */
     private $code;
@@ -567,6 +575,13 @@ class Invoice
      * @ORM\Column(type="decimal", nullable=true)
      */
     private $amount;
+
+    /**
+     * @var float
+     *
+     * @ORM\Column(type="decimal", nullable=true)
+     */
+    private $refundAmount;
 
 
     /**

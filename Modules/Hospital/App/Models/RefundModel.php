@@ -492,9 +492,9 @@ class RefundModel extends Model
                     'hms_invoice_particular.id',
                     'hms_invoice_particular.invoice_transaction_refund_id',
                     'hms_invoice_particular.name as item_name',
-                    'hms_invoice_particular.quantity',
+                    'hms_invoice_particular.refund_quantity  as quantity',
                     'hms_invoice_particular.price',
-                    'hms_invoice_particular.sub_total',
+                    'hms_invoice_particular.refund_amount as sub_total',
                     'hms_invoice_particular.process',
                     'diagnostic_room.name as diagnostic_room_name',
                 ])->leftjoin('hms_particular as hms_particular','hms_particular.id','=','hms_invoice_particular.particular_id')
