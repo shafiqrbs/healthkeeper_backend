@@ -58,6 +58,19 @@ class RefundModel extends Model
             ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
             ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
             ->join('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
+            ->whereExists(function ($q){
+                $q->select(DB::raw(1))
+                    ->from('hms_invoice_particular')
+                    ->join('hms_particular','hms_particular.id','=','hms_invoice_particular.particular_id')
+                    ->where('hms_invoice_particular.mode','investigation')
+                    ->where('hms_invoice_particular.process','New')
+                    ->where('hms_invoice_particular.status',1)
+                    ->where('hms_invoice_particular.is_invoice',1)
+                    ->whereColumn(
+                        'hms_invoice_particular.hms_invoice_id',
+                        'hms_invoice.id'
+                    );
+            })
             ->select([
                 'hms_invoice.id',
                 'hms_invoice.uid',

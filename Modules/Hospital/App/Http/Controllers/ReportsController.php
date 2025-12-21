@@ -57,6 +57,18 @@ class ReportsController extends Controller
         return $data;
     }
 
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function dailyCollectionServiceReport(Request $request){
+
+        $data = ReportModel::dailyCollectionServiceReport($this->domain,$request);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse($data);
+        return $data;
+    }
+
     /**
      * Display a listing of the resource.
      */

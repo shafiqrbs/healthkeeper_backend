@@ -134,7 +134,7 @@ class MedicineStockModel extends Model
             })->join('inv_product', 'hms_medicine_stock.product_id', '=', 'inv_product.id')
             ->select(['hms_medicine_stock.id as id','inv_product.name as product_name'])
             ->orderBy('inv_product.name', 'ASC')
-            ->take(100)
+            ->take(2000)
             ->get();
 
         return $entities;

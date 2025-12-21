@@ -166,7 +166,7 @@ class PatientWaiverController extends Controller
         }
         $entity->update($data);
         $transaction = InvoiceTransactionModel::where('patient_waiver_id', $entity->id)->first();
-        if($entity->approved_by_id){
+        if($entity->approved_by_id || $entity->checked_by_id){
             $transaction = InvoiceTransactionModel::where('patient_waiver_id', $entity->id)->first();
             $transaction->update([
                 'approved_by_id' => $this->domain['user_id'],

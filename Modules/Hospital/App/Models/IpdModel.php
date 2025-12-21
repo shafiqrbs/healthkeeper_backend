@@ -563,7 +563,7 @@ class IpdModel extends Model
                     'hms_invoice_particular.price',
                     'hms_invoice_particular.sub_total',
                     'hms_invoice_particular.process',
-                ])->where('is_admission',1);
+                ])->where('is_admission',1)->orderBy('name');
             }])->first();
 
         return $entity;

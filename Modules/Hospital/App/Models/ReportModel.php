@@ -205,6 +205,315 @@ class ReportModel extends Model
         return $records;
     }
 
+    public static function dailyCollectionServiceReport($domain,$request){
+
+        $patientMode =self::dayPatientModeBaseCollection($domain,$request);
+        $financialServices =self::dayFinancialServiceGroupInvestigation($domain,$request);
+        $ipdRoomCollection =self::dayPatientRoomBaseCollection($domain,$request);
+        $financialRefundRooms =self::dayRefundPatientRoomBaseCollection($domain,$request);
+        $financialRefundInvestigations =self::dayRefundPatientInvestigationBaseCollection($domain,$request);
+        $financialRefundServices =self::dayRefundFinancialServiceGroupInvestigation($domain,$request);
+        $serviceFees = collect()
+            ->merge($financialServices)
+            ->merge($patientMode)
+            ->merge($ipdRoomCollection)
+            ->merge($financialRefundRooms)
+            ->merge($financialRefundInvestigations)
+            ->merge($financialRefundServices)
+            ->values();
+        $serviceFees = $serviceFees->toArray();
+        $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
+        $records =[
+            'filter' => $filter,
+            'serviceFees' => $serviceFees,
+        ];
+        return $records;
+    }
+
+    public static function dayPatientModeBaseCollection($domain,$request)
+    {
+
+        $entities = InvoiceParticularModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereIn('hms_invoice_particular.mode', ['opd','emergency','ipd'])
+            ->where('hms_invoice_particular.status', 1)
+            ->join('hms_invoice as hms_invoice', 'hms_invoice.id', '=', 'hms_invoice_particular.hms_invoice_id')
+            ->join(
+                'hms_invoice_transaction as hms_invoice_transaction',
+                'hms_invoice_transaction.id',
+                '=',
+                'hms_invoice_particular.invoice_transaction_id'
+            )
+            ->select([
+                DB::raw("DATE_FORMAT(hms_invoice_transaction.created_at, '%d-%m-%Y') as report_date"),
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT(hms_invoice_particular.mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_particular.mode, 2))
+                    ) as name
+                "),
+                DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
+            ])
+            ->groupBy(
+                DB::raw('DATE(hms_invoice_transaction.created_at)'),
+                'hms_invoice_particular.mode'
+            );
+        if (!empty($request['created_by_id'])) {
+            $entities->where('hms_invoice.created_by_id', $request['created_by_id']);
+        }
+
+        if (isset($request['start_date']) && isset($request['end_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+        $entities = $entities
+            ->whereBetween('hms_invoice_transaction.created_at', [$start_date, $end_date])
+            ->orderBy('report_date')
+            ->get();
+        return $entities;
+    }
+
+    public static function dayPatientRoomBaseCollection($domain,$request)
+    {
+        $entities = InvoiceParticularModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereIn('hms_invoice_particular.mode', ['room'])
+            ->where('hms_invoice_particular.status', 1)
+            ->whereIn('hms_invoice_parent.invoice_mode', ['opd','emergency'])
+            ->join('hms_invoice as hms_invoice', 'hms_invoice.id', '=', 'hms_invoice_particular.hms_invoice_id')
+            ->join('hms_invoice as hms_invoice_parent', 'hms_invoice_parent.id', '=', 'hms_invoice.parent_id')
+            ->join(
+                'hms_invoice_transaction as hms_invoice_transaction',
+                'hms_invoice_transaction.id',
+                '=',
+                'hms_invoice_particular.invoice_transaction_id'
+            )
+
+            ->select([
+                DB::raw("DATE_FORMAT(hms_invoice_transaction.created_at, '%d-%m-%Y') as report_date"),
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT(hms_invoice_parent.invoice_mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_parent.invoice_mode, 2)),
+                        '-',
+                        UPPER(LEFT(hms_invoice_particular.mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_particular.mode, 2))
+                    ) as name
+                "),
+                DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
+            ])
+
+            ->groupBy(
+                DB::raw('DATE(hms_invoice_transaction.created_at)'),
+                'hms_invoice_particular.mode',
+                'hms_invoice_parent.invoice_mode'
+            );
+        if (!empty($request['created_by_id'])) {
+            $entities->where('hms_invoice.created_by_id', $request['created_by_id']);
+        }
+
+        if (isset($request['start_date']) && isset($request['end_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+        $entities = $entities
+            ->whereBetween('hms_invoice_transaction.created_at', [$start_date, $end_date])
+            ->orderBy('report_date')
+            ->get();
+        return $entities;
+    }
+
+    public static function dayRefundPatientRoomBaseCollection($domain,$request)
+    {
+        $entities = InvoiceParticularModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereIn('hms_invoice_particular.mode', ['room'])
+            ->where('hms_invoice_particular.status', 1)
+            ->where('hms_invoice_transaction.process','Done')
+            ->whereIn('hms_invoice_parent.invoice_mode', ['opd','emergency'])
+            ->join('hms_invoice as hms_invoice', 'hms_invoice.id', '=', 'hms_invoice_particular.hms_invoice_id')
+            ->join('hms_invoice as hms_invoice_parent', 'hms_invoice_parent.id', '=', 'hms_invoice.parent_id')
+            ->join(
+                'hms_invoice_transaction_refund as hms_invoice_transaction',
+                'hms_invoice_transaction.id',
+                '=',
+                'hms_invoice_particular.invoice_transaction_refund_id'
+            )
+            ->select([
+                DB::raw("DATE_FORMAT(hms_invoice_transaction.created_at, '%d-%m-%Y') as report_date"),
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT('rfd', 1)), LOWER(SUBSTRING('rfd', 2)),
+                        '-',
+                        UPPER(LEFT(hms_invoice_particular.mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_particular.mode, 2))
+                    ) as name
+                "),
+                DB::raw('SUM(hms_invoice_particular.refund_amount) * -1 as total'),
+            ])
+
+            ->groupBy(
+                DB::raw('DATE(hms_invoice_transaction.created_at)'),
+                'hms_invoice_particular.mode',
+                'hms_invoice_parent.invoice_mode'
+            );
+        if (!empty($request['created_by_id'])) {
+            $entities->where('hms_invoice.created_by_id', $request['created_by_id']);
+        }
+
+        if (isset($request['start_date']) && isset($request['end_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+        $entities = $entities
+            ->whereBetween('hms_invoice_transaction.updated_at', [$start_date, $end_date])
+            ->orderBy('report_date')
+            ->get();
+        return $entities;
+    }
+
+    public static function dayRefundPatientInvestigationBaseCollection($domain,$request)
+    {
+        $entities = InvoiceParticularModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereIn('hms_invoice_particular.mode', ['investigation'])
+            ->where('hms_invoice_particular.status', 1)
+            ->where('hms_invoice_transaction.process','Done')
+            ->join('hms_invoice as hms_invoice', 'hms_invoice.id', '=', 'hms_invoice_particular.hms_invoice_id')
+            ->join(
+                'hms_invoice_transaction_refund as hms_invoice_transaction',
+                'hms_invoice_transaction.id',
+                '=',
+                'hms_invoice_particular.invoice_transaction_refund_id'
+            )
+            ->select([
+                DB::raw("DATE_FORMAT(hms_invoice_transaction.created_at, '%d-%m-%Y') as report_date"),
+                DB::raw("CONCAT(
+                    'RFD-',
+                    UPPER(LEFT(hms_invoice_particular.mode, 1)),
+                    LOWER(SUBSTRING(hms_invoice_particular.mode, 2))
+                ) as name
+                "),
+                DB::raw('SUM(hms_invoice_particular.refund_amount) * -1 as total'),
+            ])
+            ->groupBy(
+                DB::raw('DATE(hms_invoice_transaction.created_at)'),
+                'hms_invoice_particular.mode'
+            );
+        if (!empty($request['created_by_id'])) {
+            $entities->where('hms_invoice.created_by_id', $request['created_by_id']);
+        }
+
+        if (isset($request['start_date']) && isset($request['end_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+        $entities = $entities
+            ->whereBetween('hms_invoice_transaction.updated_at', [$start_date, $end_date])
+            ->orderBy('report_date')
+            ->get();
+        return $entities;
+    }
+
+    public static function dayFinancialServiceGroupInvestigation($domain,$request)
+    {
+        $entities = InvoiceParticularModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereIn('hms_invoice_particular.mode', ['investigation'])
+            ->where('hms_invoice_particular.status', 1)
+            ->join('hms_invoice as hms_invoice', 'hms_invoice.id', '=', 'hms_invoice_particular.hms_invoice_id')
+            ->join(
+                'hms_invoice_transaction as hms_invoice_transaction',
+                'hms_invoice_transaction.id',
+                '=',
+                'hms_invoice_particular.invoice_transaction_id'
+            )
+            ->leftJoin('hms_particular as hms_particular', 'hms_particular.id', '=', 'hms_invoice_particular.particular_id')
+            ->join(
+                'hms_particular_mode as particular_mode',
+                'particular_mode.id',
+                '=',
+                'hms_particular.financial_service_id'
+            )
+            ->select([
+                DB::raw("DATE_FORMAT(hms_invoice_transaction.created_at, '%d-%m-%Y') as report_date"),
+                DB::raw('particular_mode.name as name'),
+                DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
+            ])
+            ->groupBy(
+                DB::raw('DATE(hms_invoice_transaction.created_at)'),
+                'particular_mode.id',
+                'particular_mode.name'
+            );
+        if (isset($request['start_date']) && isset($request['end_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+        $entities = $entities
+            ->whereBetween('hms_invoice_transaction.created_at', [$start_date, $end_date])
+            ->orderBy('report_date', 'ASC')
+            ->orderBy('name', 'ASC')
+            ->get();
+        return $entities;
+    }
+
+    public static function dayRefundFinancialServiceGroupInvestigation($domain,$request)
+    {
+
+        $entities = InvoiceParticularModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereIn('hms_invoice_particular.mode', ['opd','emergency','ipd'])
+            ->where('hms_invoice_particular.status', 1)
+            ->join('hms_invoice as hms_invoice', 'hms_invoice.id', '=', 'hms_invoice_particular.hms_invoice_id')
+            ->join(
+                'hms_invoice_transaction as hms_invoice_transaction',
+                'hms_invoice_transaction.id',
+                '=',
+                'hms_invoice_particular.invoice_transaction_id'
+            )
+            ->select([
+                DB::raw("DATE_FORMAT(hms_invoice_transaction.created_at, '%d-%m-%Y') as report_date"),
+                DB::raw('UPPER(hms_invoice_particular.mode) as name'),
+                DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
+            ])
+            ->groupBy(
+                DB::raw('DATE(hms_invoice_transaction.created_at)'),
+                'hms_invoice_particular.mode'
+            );
+        if (!empty($request['created_by_id'])) {
+            $entities->where('hms_invoice.created_by_id', $request['created_by_id']);
+        }
+
+        if (isset($request['start_date']) && isset($request['end_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+        $entities = $entities
+            ->whereBetween('hms_invoice_transaction.created_at', [$start_date, $end_date])
+            ->orderBy('report_date')
+            ->get();
+        return $entities;
+    }
+
+
     public static function getInvoiceSummary($domain,$request){
 
         $summary =self::summaryCollection($domain,$request);
@@ -215,6 +524,8 @@ class ReportModel extends Model
         $serviceGroups =self::serviceBaseGroupInvestigation($domain,$request);
         $services =self::serviceBaseInvestigation($domain,$request);
         $financialServices =self::financialServiceGroupInvestigation($domain,$request);
+        $serviceFees = array_merge($financialServices->toArray(),$patientMode->toArray());
+
         $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
         $records =[
             'filter' => $filter,
@@ -225,7 +536,8 @@ class ReportModel extends Model
             'patientServiceMode' => $patientServiceMode,
             'serviceGroups' => $serviceGroups,
             'services' => $services,
-            'financialServices' => $financialServices
+            'financialServices' => $financialServices,
+            'serviceFees' => $serviceFees,
         ];
         return $records;
     }
@@ -394,7 +706,6 @@ class ReportModel extends Model
         return $entities;
     }
 
-
     public static function patientModeBaseCollection($domain,$request)
     {
 
@@ -404,7 +715,7 @@ class ReportModel extends Model
             ->join('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
             ->join('hms_invoice_transaction as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_id')
             ->select([
-                DB::raw('COUNT(hms_invoice_particular.id) as patient'),
+                DB::raw('COUNT(hms_invoice_particular.id) as total_count'),
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
                 'hms_invoice_particular.mode as name',
             ])->groupBy('hms_invoice_particular.mode');
@@ -460,7 +771,6 @@ class ReportModel extends Model
         $entities = $entities->get();
         return $entities;
     }
-
 
     public static function userBaseCollection($domain,$request)
     {
@@ -554,7 +864,6 @@ class ReportModel extends Model
         $entities = $entities->orderBy('inv_category.name','ASC')->get();
         return $entities;
     }
-
 
     public static function serviceBaseInvestigation1($domain,$request)
     {
