@@ -187,7 +187,7 @@ class BillingController extends Controller
     public function print($id)
     {
         $service = new JsonRequestResponse();
-        $entity = RefundModel::showInvoiceData($id);
+        $entity = InvoiceTransactionModel::showInvoiceData($id);
         return $service->returnJosnResponse($entity);
     }
 
