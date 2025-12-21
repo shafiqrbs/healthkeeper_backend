@@ -212,7 +212,7 @@ class ReportModel extends Model
         $ipdRoomCollection =self::dayPatientRoomBaseCollection($domain,$request);
         $financialRefundRooms =self::dayRefundPatientRoomBaseCollection($domain,$request);
         $financialRefundInvestigations =self::dayRefundPatientInvestigationBaseCollection($domain,$request);
-        $financialRefundServices =self::dayRefundFinancialServiceGroupInvestigation($domain,$request);
+        $financialRefundServices =self::dayRefundPatientInvestigationBaseCollection($domain,$request);
         $serviceFees = collect()
             ->merge($financialServices)
             ->merge($patientMode)
@@ -480,10 +480,10 @@ class ReportModel extends Model
             ->where('hms_invoice_particular.status', 1)
             ->join('hms_invoice as hms_invoice', 'hms_invoice.id', '=', 'hms_invoice_particular.hms_invoice_id')
             ->join(
-                'hms_invoice_transaction as hms_invoice_transaction',
+                'hms_invoice_transaction_refund as hms_invoice_transaction',
                 'hms_invoice_transaction.id',
                 '=',
-                'hms_invoice_particular.invoice_transaction_id'
+                'hms_invoice_particular.invoice_transaction_refund_id'
             )
             ->select([
                 DB::raw("DATE_FORMAT(hms_invoice_transaction.created_at, '%d-%m-%Y') as report_date"),
