@@ -19,30 +19,15 @@ class MedicineRequest extends FormRequest
             case 'PATCH':
             {
                 return [
-                    'category_id' => 'nullable',
+                    'medicine_stock_id' => 'nullable',
                     'name' => 'required|string|max:255', // ✅ removed |unique:name
-                    'opd_quantity' => 'nullable',
-                    'medicine_dosage_id' => 'nullable',
-                    'medicine_bymeal_id' => 'nullable',
-                    'duration_mode_id' => 'nullable',
-                    'admin_status' => 'nullable',
-                    'ipd_status' => 'nullable',
-                    'opd_status' => 'nullable',
                 ];
             }
             case 'PUT':
             case 'POST':
                 return [
                     'medicine_stock_id' => 'nullable',
-                    'category_id' => 'nullable',
                     'name' => 'required|string|max:255', // ✅ removed |unique:name
-                    'opd_quantity' => 'nullable',
-                    'medicine_dosage_id' => 'nullable',
-                    'medicine_bymeal_id' => 'nullable',
-                    'duration_mode_id' => 'nullable',
-                    'admin_status' => 'nullable',
-                    'ipd_status' => 'nullable',
-                    'opd_status' => 'nullable',
                 ];
             default:
                 return [];
