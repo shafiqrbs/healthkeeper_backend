@@ -77,6 +77,7 @@ class MedicineController extends Controller
     {
         $service = new JsonRequestResponse();
         $input = $request->validated();
+        $input['config_id'] = $this->domain['hms_config'];
         $medicineStock = MedicineDetailsModel::create($input);
         $data = $service->returnJosnResponse($medicineStock);
         return $data;

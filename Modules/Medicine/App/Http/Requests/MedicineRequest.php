@@ -33,6 +33,7 @@ class MedicineRequest extends FormRequest
             case 'PUT':
             case 'POST':
                 return [
+                    'medicine_stock_id' => 'nullable',
                     'category_id' => 'nullable',
                     'name' => 'required|string|max:255', // ✅ removed |unique:name
                     'opd_quantity' => 'nullable',
