@@ -17,7 +17,6 @@ use Modules\Inventory\App\Http\Controllers\ProductController;
 use Modules\Inventory\App\Http\Controllers\PurchaseController;
 use Modules\Inventory\App\Http\Controllers\PurchaseItemController;
 use Modules\Inventory\App\Http\Controllers\PurchaseReturnController;
-use Modules\Inventory\App\Http\Controllers\RequisitionController;
 use Modules\Inventory\App\Http\Controllers\RequisitionMatrixBoardController;
 use Modules\Inventory\App\Http\Controllers\RequisitionMatrixBoardWarehouseController;
 use Modules\Inventory\App\Http\Controllers\SalesController;
@@ -160,36 +159,8 @@ Route::prefix('/inventory')->middleware([HeaderAuthenticationMiddleware::class,L
     Route::post('/opening-stock/inline-update', [OpeningStockController::class,'inlineUpdate'])->name('opening_stock_inline_update');
   //  Route::post('/inventory/branch-management', [BranchManagementController::class,'branchManagement'])->name('branch_management_update');
 
-    Route::apiResource('/requisition', RequisitionController::class);
     Route::apiResource('/warehouse-issue', WarehouseIssueController::class);
-    Route::prefix('/requisition')->group(function() {
-        Route::get('approve/{id}', [RequisitionController::class,'approve'])->name('requisition_approve');
-        Route::prefix('matrix/board')->group(function() {
-            Route::get('', [RequisitionMatrixBoardController::class,'index'])->name('dd.requisition.matrix.board');
-            Route::get('{id}', [RequisitionMatrixBoardController::class,'matrixBoardDetails']);
-            Route::post('create', [RequisitionMatrixBoardController::class,'store']);
-            Route::post('quantity-update', [RequisitionMatrixBoardController::class,'matrixBoardQuantityUpdate']);
-            Route::post('batch-generate/{id}', [RequisitionMatrixBoardController::class,'matrixBoardBatchGenerate']);
-            Route::prefix('production')->group(function() {
-                Route::get('{id}', [RequisitionMatrixBoardController::class,'boardWiseProduction']);
-                Route::post('quantity-update', [RequisitionMatrixBoardController::class,'matrixBoardProductionQuantityUpdate']);
-                Route::post('process', [RequisitionMatrixBoardController::class,'matrixBoardProductionProcess']);
-                Route::post('approve/{id}', [RequisitionMatrixBoardController::class,'matrixBoardProductionApproved']);
-            });
-        });
-        Route::prefix('matrix/board/warehouse')->group(function() {
-            Route::get('{id}', [RequisitionMatrixBoardWarehouseController::class,'matrixBoardDetails']);
-            Route::post('create', [RequisitionMatrixBoardWarehouseController::class,'store']);
-            Route::post('quantity-update', [RequisitionMatrixBoardWarehouseController::class,'matrixBoardQuantityUpdate']);
-            Route::post('batch-generate/{id}', [RequisitionMatrixBoardWarehouseController::class,'matrixBoardBatchGenerate']);
-            Route::prefix('production')->group(function() {
-                Route::get('{id}', [RequisitionMatrixBoardWarehouseController::class,'boardWiseProduction']);
-                Route::post('quantity-update', [RequisitionMatrixBoardWarehouseController::class,'matrixBoardProductionQuantityUpdate']);
-                Route::post('process', [RequisitionMatrixBoardWarehouseController::class,'matrixBoardProductionProcess']);
-                Route::post('approve/{id}', [RequisitionMatrixBoardWarehouseController::class,'matrixBoardProductionApproved']);
-            });
-        });
-    });
+
 
     Route::prefix('/pos')->group(function() {
         Route::get('check/invoice-mode', [PosController::class,'checkInvoiceMode'])->name('pos_check_invoice_mode');

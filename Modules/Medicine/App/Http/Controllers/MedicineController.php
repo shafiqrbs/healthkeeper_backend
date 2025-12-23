@@ -91,6 +91,7 @@ class MedicineController extends Controller
         $service = new JsonRequestResponse();
         $input = $request->validated();
         $medicineStock = MedicineDetailsModel::find($id);
+        $medicineStock->update($input);
         $data = $service->returnJosnResponse($medicineStock);
         return $data;
     }

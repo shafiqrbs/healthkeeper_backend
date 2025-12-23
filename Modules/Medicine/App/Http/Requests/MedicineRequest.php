@@ -38,7 +38,7 @@ class MedicineRequest extends FormRequest
     {
         $validator->after(function ($validator) {
 
-            $stockId = $this->route('id'); // apiResource param
+            $stockId = $this->route('medicine'); // apiResource param
             $exists = DB::table('hms_medicine_details')
                 ->where('hms_medicine_details.name', $this->name)
                 ->where('hms_medicine_details.id', '!=', $stockId) // exclude self

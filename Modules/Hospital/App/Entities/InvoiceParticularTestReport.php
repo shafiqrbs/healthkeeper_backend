@@ -36,6 +36,13 @@ class InvoiceParticularTestReport
      */
     private $name;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string",  nullable=true)
+     */
+    private $geneXpertValue;
+
 
     /**
      * @var string
