@@ -128,8 +128,15 @@ class InvoiceParticularModel extends Model
 
     }
 
-   public static function checkExistingWaiver($data)
+   public static function getParticularInvoiceModes()
     {
+        return $entities = DB::table('hms_invoice_particular')
+            ->select('hms_invoice_particular.mode as name')
+            ->groupBy('hms_invoice_particular.mode')->get();
+    }
+
+   public static function checkExistingWaiver($data)
+   {
         // Reset all to 0 first
         $entity = $data['hms_invoice_id'];
         $array = $data['particulars'];

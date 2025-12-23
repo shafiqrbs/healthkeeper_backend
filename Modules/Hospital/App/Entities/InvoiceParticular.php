@@ -200,6 +200,13 @@ class InvoiceParticular
      */
     private $mode;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="report_mode" , type="string", length=30, nullable=true)
+     */
+    private $reportMode;
+
 
     /**
      * @var string

@@ -217,6 +217,13 @@ class Invoice
      */
     private $invoiceMode;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="report_mode", type="string",length=30, nullable = true)
+     */
+    private $reportMode;
+
 
     /**
      * @var string
