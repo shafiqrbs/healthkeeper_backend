@@ -66,6 +66,11 @@ class InvoiceModel extends Model
         return $this->hasOne(CustomerModel::class, 'id', 'customer_id');
     }
 
+    public function parent()
+    {
+        return $this->hasOne(InvoiceModel::class, 'id', 'parent_id');
+    }
+
     public function invoice()
     {
         return $this->hasOne(OpdModel::class, 'id', 'sales_id');

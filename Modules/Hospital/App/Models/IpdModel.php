@@ -82,6 +82,11 @@ class IpdModel extends Model
         return $this->hasOne(CustomerModel::class, 'id', 'customer_id');
     }
 
+    public function parent()
+    {
+        return $this->hasOne(InvoiceModel::class, 'id', 'parent_id');
+    }
+
     public function invoice()
     {
         return $this->hasOne(OpdModel::class, 'id', 'sales_id');
@@ -479,7 +484,6 @@ class IpdModel extends Model
         return $data;
     }
 
-
     public static function getIpdAdmissionShow($id)
     {
         $entity = self::where(function ($query) use ($id) {
@@ -569,7 +573,6 @@ class IpdModel extends Model
         return $entity;
     }
 
-
     public static function insertHmsInvoice($domain,$parent,$entity,$data)
     {
 
@@ -607,6 +610,8 @@ class IpdModel extends Model
     {
 
         $date =  new \DateTime("now");
+        $reportMode  = $entity->parent->invoice_mode;
+
         $invoiceTransaction = InvoiceTransactionModel::create(
             [
                 'hms_invoice_id ' => $entity->id,
@@ -620,22 +625,6 @@ class IpdModel extends Model
         $admissionFee = ParticularModel::find($config['admission_fee_id']);
         $minimumDaysRoomRent = ($config->minimum_days_room_rent) ? $config->minimum_days_room_rent:3;
         $roomRent = ParticularModel::find($entity->room_id);
-        InvoiceParticularModel::updateOrCreate(
-            [
-                'hms_invoice_id' => $entity->id,
-                'invoice_transaction_id'     => $invoiceTransaction->id,
-                'particular_id'  => $roomRent->id ?? null,
-            ],
-            [
-                'name'  => $roomRent->display_name,
-                'status'  => 0,
-                'is_admission'  => true,
-                'mode' => 'room',
-                'quantity'  => $minimumDaysRoomRent,
-                'price'     => $roomRent->price,
-                'sub_total' => ($roomRent->price * (int)$minimumDaysRoomRent),
-            ]
-        );
 
         InvoiceParticularModel::updateOrCreate(
             [
@@ -648,9 +637,28 @@ class IpdModel extends Model
                 'status'  => 0,
                 'is_admission'  => true,
                 'mode' => 'ipd',
+                'report_mode' => $reportMode,
                 'quantity'  => 1,
                 'price'     => $admissionFee->price,
                 'sub_total' => $admissionFee->price,
+            ]
+        );
+
+        InvoiceParticularModel::updateOrCreate(
+            [
+                'hms_invoice_id' => $entity->id,
+                'invoice_transaction_id'     => $invoiceTransaction->id,
+                'particular_id'  => $roomRent->id ?? null,
+            ],
+            [
+                'name'  => $roomRent->display_name,
+                'status'  => 0,
+                'is_admission'  => true,
+                'mode' => 'room',
+                'report_mode' => $reportMode,
+                'quantity'  => $minimumDaysRoomRent,
+                'price'     => $roomRent->price,
+                'sub_total' => ($roomRent->price * (int)$minimumDaysRoomRent),
             ]
         );
         $amount = InvoiceParticularModel::where('hms_invoice_id', $entity->id)->sum('sub_total');
@@ -659,28 +667,30 @@ class IpdModel extends Model
         $roomRent->update(['is_booked' => true]);
         return $amount;
 
-
-
     }
 
     public static function changeUpdateInvoiceParticular($config,$entity,$data)
     {
 
         $config = HospitalConfigModel::find($config);
+        $reportMode  = $entity->parent->invoice_mode;
         $date =  new \DateTime("now");
+
         $invoiceTransaction = InvoiceTransactionModel::where(
             [
                 'hms_invoice_id' => $entity->id,
                 'mode' => 'ipd'
             ]
         )->first();
+
         if(isset($data['change_day']) and $data['change_day']){
             $minimumDaysRoomRent = (int)$data['change_day'];
         }else{
             $minimumDaysRoomRent = ($config->minimum_days_room_rent) ? $config->minimum_days_room_rent:3;
         }
         $roomRent = ParticularModel::find($entity->room_id);
-        $particularInvoice = InvoiceParticularModel::updateOrCreate(
+
+        InvoiceParticularModel::updateOrCreate(
             [
                 'hms_invoice_id' => $entity->id,
                 'invoice_transaction_id'     => $invoiceTransaction->id,
@@ -689,6 +699,7 @@ class IpdModel extends Model
             [
                 'particular_id'  => $roomRent->id ?? null,
                 'name'  => $roomRent->display_name,
+                'report_mode' => $reportMode,
                 'status'  => 0,
                 'is_admission'  => true,
                 'quantity'  => $minimumDaysRoomRent,
@@ -766,11 +777,6 @@ class IpdModel extends Model
             ]);
         }
     }
-
-
-
-
-
 
 
     public static function getShow($id)

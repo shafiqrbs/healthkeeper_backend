@@ -63,6 +63,14 @@ class InvoiceTransactionModel extends Model
     public static function insertInvestigations($domain,$id)
     {
         $prescription = PrescriptionModel::with(['invoice_transaction:id'])->find($id);
+
+        $entity = InvoiceModel::findByIdOrUid($prescription->hms_invoice_id);
+        if($entity->parent_id > 0){
+            $reportMode  = $entity->parent->invoice_mode;
+        }else{
+            $reportMode  = $entity->invoice_mode;
+        }
+
         $date =  new \DateTime("now");
         $uniqueId=  self::generateUniqueCode(12);
         $jsonData = json_decode($prescription['json_content']);
@@ -76,7 +84,7 @@ class InvoiceTransactionModel extends Model
             'mode' => 'investigation'
         ])->whereNotIn('particular_id', $news)->delete();
         if (!empty($investigations) && is_array($investigations)) {
-            collect($investigations)->map(function ($investigation) use ($prescription,$uniqueId,$date) {
+            collect($investigations)->map(function ($investigation) use ($prescription,$uniqueId,$date,$reportMode) {
                 $particular = ParticularModel::find($investigation->id);
                 InvoiceParticularModel::updateOrCreate(
                     [
@@ -88,6 +96,7 @@ class InvoiceTransactionModel extends Model
                         'unique_id'      => $uniqueId,
                         'name'      => $particular->name,
                         'mode'      => 'investigation',
+                        'report_mode'      => $reportMode,
                         'quantity'      => 1,
                         'is_available'      => $particular->is_available,
                         'price'         => $particular->price ?? 0,
@@ -106,10 +115,16 @@ class InvoiceTransactionModel extends Model
 
         $date =  new \DateTime("now");
         $invoice = InvoiceModel::findByIdOrUid($id);
+        if($invoice->parent_id > 0){
+            $reportMode  = $invoice->parent->invoice_mode;
+        }else{
+            $reportMode  = $invoice->invoice_mode;
+        }
+
         $investigations = $data;
         $uniqueId = time();
         if (!empty($investigations) && is_array($investigations)) {
-            collect($investigations)->map(function ($investigation) use ($invoice,$date,$uniqueId) {
+            collect($investigations)->map(function ($investigation) use ($invoice,$date,$uniqueId,$reportMode) {
                 $particular = ParticularModel::find($investigation['id']);
                 if($particular){
                     InvoiceParticularModel::updateOrCreate(
@@ -123,6 +138,7 @@ class InvoiceTransactionModel extends Model
                             'unique_id'      => $uniqueId,
                             'quantity'      => 1,
                             'mode' => 'investigation',
+                            'report_mode'      => $reportMode,
                             'price'         => $particular->price ?? 0,
                             'estimate_price'         => $particular->price ?? 0,
                             'sub_total'         => $particular->price ?? 0,
@@ -214,9 +230,12 @@ class InvoiceTransactionModel extends Model
     public static function insertIpdRoom($domain,$id,$data)
     {
         $date =  new \DateTime("now");
-        $invoice = InvoiceModel::find($id);
+        $invoice = InvoiceModel::findByIdOrUid($id);
+        $reportMode  = $invoice->parent->invoice_mode;
+
         $items = $data;
         if (!empty($items) && is_array($items)) {
+
             $invoiceTransaction = self::create(
                 [
                     'hms_invoice_id' => $invoice->id,
@@ -227,7 +246,7 @@ class InvoiceTransactionModel extends Model
                 ]
             );
 
-            collect($items)->map(function ($item) use ($invoice,$invoiceTransaction,$date) {
+            collect($items)->map(function ($item) use ($invoice,$invoiceTransaction,$date,$reportMode) {
 
                 $particular = ParticularModel::find($item['id']);
                 if($particular){
@@ -239,6 +258,7 @@ class InvoiceTransactionModel extends Model
                         ],
                         [
                             'name'          => $particular->display_name,
+                            'report_mode'      => $reportMode,
                             'quantity'      => $item['quantity'],
                             'start_date'    => new \DateTime($item['start_date']),
                             'price'         => $particular->price ?? 0,
@@ -406,6 +426,16 @@ class InvoiceTransactionModel extends Model
 
         $date =  new \DateTime("now");
         $hms_invoice_id =  $entity->id;
+        if($entity->parent_id > 0){
+            $invoiceMode  = $entity->parent->invoice_mode;
+            $reportMode = ( $invoiceMode == "opd" ) ? "OPD-test" : "EMER-test";
+            $reportRoomMode = ( $invoiceMode == "opd" ) ? "OPD-room" : "EMER-room";
+        }else{
+            $invoiceMode  = $entity->invoice_mode;
+            $reportMode = ( $invoiceMode == "opd" ) ? "OPD-test" : "EMER-test";
+            $reportRoomMode = ( $invoiceMode == "opd" ) ? "OPD-room" : "EMER-room";
+        }
+
         $investigations = $data['json_content'];
         $total = $data['total'];
         $mode = $data['mode'];
@@ -424,7 +454,7 @@ class InvoiceTransactionModel extends Model
                 'created_at'    => $date,
             ]);
             if (!empty($investigations) && is_array($investigations) and $mode == "investigation") {
-                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$date) {
+                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$date,$reportMode) {
                     $particular = $investigation['particular_id'] ?? '';
                     if (
                         ($investigation['is_selected'] ?? false) == true &&
@@ -457,8 +487,9 @@ class InvoiceTransactionModel extends Model
                                     'status'      => 1,
                                     'is_invoice' => 1,
                                     'mode' => $mode,
+                                    'report_mode' => $reportMode,
                                     'price'         => $particular->price ?? 0,
-                                    'estimate_price'         => $particular->price ?? 0,
+                                    'estimate_price'  => $particular->price ?? 0,
                                     'sub_total'         => $particular->price ?? 0,
                                     'updated_at'    => $date,
                                     'created_at'    => $date,
@@ -469,7 +500,7 @@ class InvoiceTransactionModel extends Model
 
                 })->toArray();
             }elseif (!empty($investigations) && is_array($investigations) and $mode == "room") {
-                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$roomId,$date) {
+                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$roomId,$date,$reportRoomMode) {
                     $particular = ParticularModel::find($roomId);
                     if($particular){
                         InvoiceParticularModel::updateOrCreate(
@@ -479,11 +510,12 @@ class InvoiceTransactionModel extends Model
                             ],
                             [
                                 'particular_id'      => $particular->id,
-                                'name'      => $particular->name,
+                                'name'      => $particular->display_name,
                                 'quantity'      => $investigation['days'],
                                 'status'      => 1,
                                 'is_invoice' => 1,
                                 'mode' => $mode,
+                                'report_mode' => $reportRoomMode,
                                 'price' => $particular->price ?? 0,
                                 'estimate_price' => $particular->price ?? 0,
                                 'sub_total'         => ($particular->price * $investigation['days']) ?? 0,
