@@ -36,6 +36,10 @@ class InvoiceParticular
      */
     private $uniqueId;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\Category")
+     **/
+    private $category;
 
     /**
      * @ORM\ManyToOne(targetEntity="Invoice")
@@ -55,6 +59,7 @@ class InvoiceParticular
      * @ORM\JoinColumn(onDelete="CASCADE")
      **/
     private $invoiceTransaction;
+
 
     /**
      * @ORM\ManyToOne(targetEntity="InvoiceTransactionRefund")

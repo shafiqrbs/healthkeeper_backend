@@ -21,11 +21,23 @@ class InvoicePathologicalGroup
      */
     private $id;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="InvoiceTransaction")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     **/
+    private $invoiceTransaction;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="name", type="string", length=50, nullable=true)
+     */
+    private $name;
 
     /**
      * @ORM\ManyToOne(targetEntity="Invoice")
      **/
-    private $invoice;
+    private $hmsInvoice;
 
      /**
      * @ORM\ManyToOne(targetEntity="Particular", inversedBy="invoiceParticularDoctor")

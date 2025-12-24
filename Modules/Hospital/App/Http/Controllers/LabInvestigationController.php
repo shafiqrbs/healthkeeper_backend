@@ -88,6 +88,17 @@ class LabInvestigationController extends Controller
     }
 
 
+    /**
+     * Display a listing of the resource.
+     */
+    public function categoryGroup($id){
+
+        $domain = $this->domain;
+        $entity = LabInvestigationModel::getCategoryGroupShow($domain,$id);
+        $service = new JsonRequestResponse();
+        $response = $service->returnJosnResponse($entity);
+        return $response;
+    }
 
     /**
      * Show the specified resource.

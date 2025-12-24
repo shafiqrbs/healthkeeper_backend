@@ -207,6 +207,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::prefix('lab-investigation')->name('lab-investigation.')->group(function () {
         Route::get('/sample-confirm/{id}', [LabInvestigationController::class,'barcodeConfirm'])->name('barcodeConfirm_update');
         Route::get('test-reports', [LabInvestigationController::class, 'labReports'])->name('lab_reports');
+        Route::get('/category-group/{id}', [LabInvestigationController::class, 'categoryGroup'])->name('lab_category_group_reports');
         Route::apiResource('', LabInvestigationController::class)->parameters(['' => 'id']);
         Route::post('/report/inline-update/{id}', [LabInvestigationController::class,'inlineUpdate'])->name('inline_update');
         Route::get('{id}/report/{reportId}', [LabInvestigationController::class, 'report'])->name('report');

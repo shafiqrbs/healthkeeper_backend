@@ -94,6 +94,7 @@ class InvoiceTransactionModel extends Model
                     ],
                     [
                         'unique_id'      => $uniqueId,
+                        'category_id'      => $particular->category_id,
                         'name'      => $particular->name,
                         'mode'      => 'investigation',
                         'report_mode'      => $reportMode,
@@ -134,6 +135,7 @@ class InvoiceTransactionModel extends Model
                         ],
                         [
                             'name'      => $particular->name,
+                            'category_id'      => $particular->category_id,
                             'is_available'      => $particular->is_available,
                             'unique_id'      => $uniqueId,
                             'quantity'      => 1,
