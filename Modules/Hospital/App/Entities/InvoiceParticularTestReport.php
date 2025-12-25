@@ -249,8 +249,7 @@ class InvoiceParticularTestReport
     private $DrTbRegistrationNumber;
 
 
-
-      /**
+    /**
      * @var string
      *
      * @ORM\Column(type="string", nullable=true)
@@ -258,11 +257,48 @@ class InvoiceParticularTestReport
     private $ETbRegistrationNumber;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true)
+     */
+    private $AfbDiagnosis;
+
+
+    /**
      * @var boolean
      *
      * @ORM\Column(type="boolean",options={"default"="false"})
      */
     private $diagnosis;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $colonies_1;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $colonies_2;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $colonies_3;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $colonies_4;
+
 
     /**
      * @var string
@@ -559,7 +595,148 @@ class InvoiceParticularTestReport
      */
     private $afbScantyThree;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dstMethod;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_mtb;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_inh;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_rif;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_flq;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_lfx;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_mfx;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_eth;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_bdq;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_dlm;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_pa;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_lzd;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_cfz;
+
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_amk;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_kan;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dst_cap;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=150)
+     */
+    private $dst_other;
 
 
     /**
