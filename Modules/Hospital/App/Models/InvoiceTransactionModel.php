@@ -666,7 +666,7 @@ class InvoiceTransactionModel extends Model
                 'updated_at'    => $date,
                 'created_at'    => $date,
             ]);
-            InvoiceParticularModel::updateOrCreate(
+            $entity = InvoiceParticularModel::updateOrCreate(
                 [
                     'hms_invoice_id'             => $entity->id,
                     'invoice_transaction_id' => $invoiceTransaction->id
@@ -686,6 +686,9 @@ class InvoiceTransactionModel extends Model
                 ]
             );
 
+            $data = ['mode'=>'bill','id' => $entity->id];
+            return $data;
+
         }else{
 
             $lastTransaction = $entity->invoice_transaction()
@@ -695,7 +698,9 @@ class InvoiceTransactionModel extends Model
                 })
                 ->latest('id')
                 ->first();
-            self::finalBillRefund($domain,$entity,$lastTransaction,$particular);
+            $refund = self::finalBillRefund($domain,$entity,$lastTransaction,$particular);
+            $data = ['mode'=>'refund','id'=> $refund->id];
+            return $data;
 
         }
 
@@ -739,6 +744,7 @@ class InvoiceTransactionModel extends Model
                         'updated_at' => $date,
                     ]
                 );
+                return $refundTransaction;
         }
         return false;
     }

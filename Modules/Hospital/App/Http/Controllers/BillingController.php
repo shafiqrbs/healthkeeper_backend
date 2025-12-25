@@ -194,7 +194,7 @@ class BillingController extends Controller
 
     /**
      * Show the specified resource.
-     *//**/
+     */
     public function finalBillDetails($id)
     {
         $domain = $this->domain;
@@ -203,6 +203,27 @@ class BillingController extends Controller
         InvoiceTransactionModel::finalBillClosing($domain,$entity);
         $entity = BillingModel::getFinalBillShow($id);
         $data = $service->returnJosnResponse($entity);
+        return $data;
+    }
+
+
+    /**
+     * Show the specified resource.
+     */
+    public function finalBillProcess($id)
+    {
+        $domain = $this->domain;
+        $entity = InvoiceModel::findByIdOrUid($id);
+        $service = new JsonRequestResponse();
+        $data = InvoiceTransactionModel::finalBillClosing($domain,$entity);
+        if($data['mode'] == 'refund'){
+            $entity->update(['process'=>'refund']);
+            $print = RefundModel::showInvoiceData($data['id']);
+        }else{
+            $entity->update(['process'=>'paid']);
+            $print = BillingModel::getFinalBillShow($data['id']);
+        }
+        $data = $service->returnJosnResponse($print);
         return $data;
     }
 

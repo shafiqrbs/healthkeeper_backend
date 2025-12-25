@@ -102,7 +102,7 @@ class RefundHistoryController extends Controller
         ]);
         $invoice = IpdModel::find($entity->hms_invoice_id);
         $refundParticular = InvoiceParticularModel::where(['mode'=>'room','invoice_transaction_refund_id' => $id,'is_refund'=>1])->select('refund_amount','refund_quantity')->first();
-        if($refundParticular && $invoice->release_mode == 'discharge' && $invoice->invoice_mode == 'ipd' && $invoice->process == 'admitted'){
+        if($refundParticular && $invoice->release_mode == 'discharge' && $invoice->invoice_mode == 'ipd' && $invoice->process == 'refund'){
             $invoice->update(['process'=>'paid','refund_amount' => $entity->amount,'refund_day' => $refundParticular->refund_quantity]);
         }
         $success = ['message' => 'success'];

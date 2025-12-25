@@ -206,7 +206,7 @@ class IpdModel extends Model
                 $entities = $entities->whereIn('hms_invoice.process',['confirmed','billing']);
                 $entities = $entities->whereNotNull('hms_invoice.parent_id');
             } elseif ($request['ipd_mode'] === 'admitted') {
-                $entities = $entities->where('hms_invoice.process','admitted');
+                $entities = $entities->whereIn('hms_invoice.process',['admitted','refund','paid']);
                 $entities = $entities->whereNotNull('hms_invoice.parent_id');
             } elseif ($request['ipd_mode'] === 'revised') {
                 $entities = $entities->where('hms_invoice.process','revised');
@@ -279,7 +279,7 @@ class IpdModel extends Model
                 : new \DateTime();
             $start_date = $date->format('Y-m-d 00:00:00');
             $end_date = $date->format('Y-m-d 23:59:59');
-            $entities = $entities->whereBetween('hms_invoice.created_at', [$start_date, $end_date]);
+            $entities = $entities->whereBetween('hms_invoice.updated_at', [$start_date, $end_date]);
         }
 
         $total  = $entities->count();

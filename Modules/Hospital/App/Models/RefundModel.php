@@ -184,7 +184,7 @@ class RefundModel extends Model
         if (isset($request['patient_mode']) && !empty($request['patient_mode'])){
             $entities = $entities->where('hms_invoice_transaction_refund.mode', $request['patient_mode']);
         }
-        $entities = $entities->whereIn('hms_invoice.process', ['New','done','paid','released','closed','admitted']);
+        $entities = $entities->whereIn('hms_invoice.process', ['New','done','paid','released','closed','refund','admitted']);
         if (isset($request['customer_id']) && !empty($request['customer_id'])){
             $entities = $entities->where('hms_invoice.customer_id',$request['customer_id']);
         }
@@ -197,8 +197,6 @@ class RefundModel extends Model
             $end_date = $date->format('Y-m-d 23:59:59');
             $entities = $entities->whereBetween('hms_invoice.updated_at', [$start_date, $end_date]);
         }*/
-
-
 
         $total  = $entities->count();
         $entities = $entities->skip($skip)
