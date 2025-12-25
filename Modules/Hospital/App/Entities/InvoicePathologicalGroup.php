@@ -22,6 +22,13 @@ class InvoicePathologicalGroup
     private $id;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $uid;
+
+    /**
      * @ORM\ManyToOne(targetEntity="InvoiceTransaction")
      * @ORM\JoinColumn(onDelete="CASCADE")
      **/
@@ -30,24 +37,44 @@ class InvoicePathologicalGroup
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=50, nullable=true)
+     * @ORM\Column(name="name", type="string", nullable=true)
      */
     private $name;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="report_name", type="string", nullable=true)
+     */
+    private $reportName;
 
     /**
      * @ORM\ManyToOne(targetEntity="Invoice")
      **/
     private $hmsInvoice;
 
-     /**
-     * @ORM\ManyToOne(targetEntity="Particular", inversedBy="invoiceParticularDoctor")
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
      **/
     private $assignDoctor;
 
+
     /**
-     * @ORM\ManyToOne(targetEntity="Particular")
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
      **/
     private $assignLabuser;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
+     * @ORM\JoinColumn(name="report_delivered_by_id", referencedColumnName="id", nullable=true)
+     **/
+    private  $reportDeliveredBy;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
+     * @ORM\JoinColumn(name="sample_collected_by_id", referencedColumnName="id", nullable=true)
+     **/
+    private  $sampleCollectedBy;
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\Category")
@@ -66,6 +93,34 @@ class InvoicePathologicalGroup
      **/
     private  $particularDeliveredBy;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="sample_collected_name", type="string", nullable=true)
+     */
+    private $sampleCollectedName;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="report_delivered_name", type="string", nullable=true)
+     */
+    private $reportDeliveredName;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="assign_labuser_name", type="string", nullable=true)
+     */
+    private $assignLabuserName;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="assign_doctor_name", type="string", nullable=true)
+     */
+    private $assignDoctorName;
+
 
     /**
      * @var string
@@ -73,6 +128,13 @@ class InvoicePathologicalGroup
      * @ORM\Column(name="process", type="string", length=30, nullable=true)
      */
     private $process ='In-progress';
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="barcode", type="string",  nullable=true)
+     */
+    private $barcode;
 
     /**
      * @var text

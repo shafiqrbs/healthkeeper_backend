@@ -32,9 +32,16 @@ class InvoiceParticularTestReport
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=50, nullable=true)
+     * @ORM\Column(name="name", type="string",  nullable=true)
      */
     private $name;
+
+     /**
+     * @var string
+     *
+     * @ORM\Column(name="sampl_type", type="string", nullable=true)
+     */
+    private $sampleType;
 
     /**
      * @var string

@@ -22,6 +22,7 @@ use Modules\Hospital\App\Models\InvoiceContentDetailsModel;
 use Modules\Hospital\App\Models\InvoiceModel;
 use Modules\Hospital\App\Models\InvoiceParticularModel;
 use Modules\Hospital\App\Models\InvoiceParticularTestReportModel;
+use Modules\Hospital\App\Models\InvoicePathologicalGroupModel;
 use Modules\Hospital\App\Models\InvoicePathologicalReportModel;
 use Modules\Hospital\App\Models\InvoiceTransactionModel;
 use Modules\Hospital\App\Models\LabInvestigationModel;
@@ -33,7 +34,7 @@ use Modules\Hospital\App\Models\PrescriptionModel;
 
 
 
-class LabInvestigationController extends Controller
+class LabGroupReportController extends Controller
 {
     protected $domain;
 
@@ -67,39 +68,6 @@ class LabInvestigationController extends Controller
     }
 
 
-
-     /**
-     * Display a listing of the resource.
-     */
-    public function labReports(Request $request){
-
-        $domain = $this->domain;
-        $data = LabInvestigationModel::getLabReports($request,$domain);
-        $response = new Response();
-        $response->headers->set('Content-Type','application/json');
-        $response->setContent(json_encode([
-            'message' => 'success',
-            'status' => Response::HTTP_OK,
-            'total' => $data['count'],
-            'data' => $data['entities']
-        ]));
-        $response->setStatusCode(Response::HTTP_OK);
-        return $response;
-    }
-
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function categoryGroup($id){
-
-        $domain = $this->domain;
-        $entity = LabInvestigationModel::getCategoryGroupShow($domain,$id);
-        $service = new JsonRequestResponse();
-        $response = $service->returnJosnResponse($entity);
-        return $response;
-    }
-
     /**
      * Show the specified resource.
      *//**/
@@ -107,25 +75,11 @@ class LabInvestigationController extends Controller
     {
         $domain = $this->domain;
         $service = new JsonRequestResponse();
-        $entity = LabInvestigationModel::getShow($domain,$id);
+        $entity = InvoicePathologicalGroupModel::getCategoryGroupShow($domain,$id);
         $data = $service->returnJosnResponse($entity);
         return $data;
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function barcodeConfirm($id)
-    {
-        $service = new JsonRequestResponse();
-        InvoiceParticularModel::where('uid', $id)->first()->update([
-            'sample_collected_name' => $this->domain['user_name'],
-            'sample_collected_by_id' => $this->domain['user_id'],
-            'process' => 'Tagged',
-            'collection_date' => now(),
-        ]);
-        return  $service->returnJosnResponse('valid');
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -133,8 +87,8 @@ class LabInvestigationController extends Controller
     public function report($id,$reportId)
     {
         $service = new JsonRequestResponse();
-        LabInvestigationModel::generateReport($reportId);
-        $invoiceParticular = InvoiceParticularModel::with(['reports','particular:id,slug,diagnostic_department_id as diagnostic_department_id,diagnostic_room_id as diagnostic_room_id,is_custom_report,instruction,specimen,slug','particular.category:id,name','custom_report'])->where(['uid'=> $reportId])->first();
+        InvoicePathologicalGroupModel::generateReport($reportId);
+        $invoiceParticular = InvoicePathologicalGroupModel::with(['reports'])->find($reportId);
         if($invoiceParticular){
             $data = $service->returnJosnResponse($invoiceParticular);
         }else{
@@ -149,12 +103,11 @@ class LabInvestigationController extends Controller
     public function print($id)
     {
         $service = new JsonRequestResponse();
-        $invoiceParticular = InvoiceParticularModel::with(['reports','particular:id,slug,is_custom_report,instruction,slug,category_id,specimen','particular.category:id,name','custom_report'])->where(['uid'=>$id])->first();
+        $invoiceParticular = InvoicePathologicalGroupModel::with(['reports'])->find($id);
         $entity = InvoiceModel::getInvoiceBasicInfo($invoiceParticular->hms_invoice_id);
         $data = ['entity'=>$entity,'invoiceParticular' => $invoiceParticular];
         return  $service->returnJosnResponse($data);
     }
-
 
 
     /**
@@ -164,28 +117,15 @@ class LabInvestigationController extends Controller
     {
         $domain = $this->domain;
         $data = $request->only(['json_content','comment']);
-        $entity = InvoiceParticularModel::where(['uid'=>$id])->first();
-        if($entity->process == "Tagged"){
-            $data['process'] = 'In-progress';
-            $data['assign_labuser_id'] = $domain['user_id'];
-            $data['assign_labuser_name'] = $domain['user_name'];
-            $data['collection_date'] = new \DateTime();
-        }if($entity->process == "In-progress"){
-            $data['assign_doctor_id'] = $domain['user_id'];
-            $data['assign_doctor_name'] = $domain['user_name'];
-            $data['process'] = 'Done';
-        }
-        if(isset($data['json_content'])){
-            $data['json_report'] = json_encode($data['json_content']);
-            $testReport = InvoiceParticularTestReportModel::where('invoice_particular_id',$entity->id)->first();
-            if($testReport){
-                $testReport->update($data['json_content']);
-            }
-        }
+        $entity = InvoicePathologicalGroupModel::find($id);
+        $data['assign_labuser_id'] = $domain['user_id'];
+        $data['assign_labuser_name'] = $domain['user_name'];
+        $data['collection_date'] = new \DateTime();
+        $data['process'] = 'Done';
         $data['comment'] = $data['comment'] ?? null;
         $entity->update($data);
         $service = new JsonRequestResponse();
-        return $service->returnJosnResponse($entity);
+        return $service->returnJosnResponse($domain);
 
     }
 
@@ -193,11 +133,12 @@ class LabInvestigationController extends Controller
     {
         $input = $request->all();
         $findParticular = InvoicePathologicalReportModel::find($id);
+        $findParticular->result = $input['result'];
         $result = (isset($input['result']) and $input['result']) ? $input['result']:'';
         if($result){
             $findParticular->result = $result;
         }
-        $ordering = (isset($input['ordering']) and $input['ordering']) ? $input['ordering']:'';
+        $ordering = (isset($input['result']) and $input['result']) ? $input['result']:'';
         if($ordering){
             $findParticular->ordering = $ordering;
         }

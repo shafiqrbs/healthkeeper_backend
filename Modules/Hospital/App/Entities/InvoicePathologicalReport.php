@@ -43,6 +43,13 @@ class InvoicePathologicalReport
      **/
     private $invoiceParticular;
 
+     /**
+     * @ORM\ManyToOne(targetEntity="InvoicePathologicalGroup")
+     * @ORM\JoinColumn(referencedColumnName="id",onDelete="SET NULL")
+     **/
+    private $invoicePathologicalGroup;
+
+
     /**
      * @ORM\ManyToOne(targetEntity="InvoicePathologicalReport", inversedBy="children", cascade={"detach","merge"})
      * @ORM\JoinColumn(name="parent", referencedColumnName="id", onDelete="SET NULL")
@@ -97,6 +104,13 @@ class InvoicePathologicalReport
      * @ORM\Column(name="sorting", type="smallint", length=2, nullable=true)
      */
     private $sorting;
+
+     /**
+     * @var int
+     *
+     * @ORM\Column(name="ordering", type="smallint", length=2, nullable=true)
+     */
+    private $ordering;
 
     /**
      * @var string

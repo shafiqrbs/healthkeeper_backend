@@ -11,6 +11,7 @@ use Modules\Hospital\App\Http\Controllers\HospitalController;
 
 use Modules\Hospital\App\Http\Controllers\InvestigationController;
 use Modules\Hospital\App\Http\Controllers\IpdController;
+use Modules\Hospital\App\Http\Controllers\LabGroupReportController;
 use Modules\Hospital\App\Http\Controllers\LabInvestigationController;
 use Modules\Hospital\App\Http\Controllers\MedicineDosageController;
 use Modules\Hospital\App\Http\Controllers\OpdController;
@@ -212,6 +213,14 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
         Route::post('/report/inline-update/{id}', [LabInvestigationController::class,'inlineUpdate'])->name('inline_update');
         Route::get('{id}/report/{reportId}', [LabInvestigationController::class, 'report'])->name('report');
         Route::get('/print/{id}', [LabInvestigationController::class, 'print'])->name('print');
+    });
+
+    Route::prefix('lab-group-report')->name('lab-group-report.')->group(function () {
+        Route::get('/sample-confirm/{id}', [LabGroupReportController::class,'barcodeConfirm'])->name('barcodeConfirm_update');
+        Route::apiResource('', LabGroupReportController::class)->parameters(['' => 'id']);
+        Route::post('/report/inline-update/{id}', [LabGroupReportController::class,'inlineUpdate'])->name('inline_update');
+        Route::get('{id}/report/{reportId}', [LabGroupReportController::class, 'report'])->name('report');
+        Route::get('/print/{id}', [LabGroupReportController::class, 'print'])->name('print');
     });
 
     Route::prefix('billing')->name('billing')->group(function () {

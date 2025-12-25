@@ -55,6 +55,11 @@ class InvoiceTransactionModel extends Model
         return $this->hasMany(InvoiceParticularModel::class, 'invoice_transaction_id');
     }
 
+    public function report_groups()
+    {
+        return $this->hasMany(InvoicePathologicalGroupModel::class, 'invoice_transaction_id');
+    }
+
     public function createdDoctorInfo()
     {
         return $this->hasOne(UserModel::class, 'id', 'created_by_id');
