@@ -284,8 +284,6 @@ class IpdModel extends Model
 
         $total  = $entities->count();
         $entities = $entities->skip($skip)->take($perPage);
-
-
         if ($sortBy == "visiting_room"){
             $entities = $entities->orderBy("vr.name",$orderBy);
         }elseif ($sortBy == "gender"){

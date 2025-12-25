@@ -145,8 +145,9 @@ class BillingController extends Controller
         $data = $request->all();
         $entity = InvoiceModel::findByIdOrUid($id);
         if($entity->process == "billing"){
-           InvoiceTransactionModel::insertAdmissionInvoiceTransaction($domain,$entity,$data);
-           $invoice = IpdModel::getIpdAdmissionShow($id);
+            $transactionId = InvoiceTransactionModel::insertAdmissionInvoiceTransaction($domain,$entity,$data);
+           //$invoice = IpdModel::getIpdAdmissionShow($id);
+           $invoice = InvoiceTransactionModel::showInvoiceData($transactionId);
         }else{
            $transactionId =  InvoiceTransactionModel::insertInvoiceTransaction($domain,$entity,$data);
            $invoice = InvoiceTransactionModel::showInvoiceData($transactionId);

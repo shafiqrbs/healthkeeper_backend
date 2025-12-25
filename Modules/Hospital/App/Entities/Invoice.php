@@ -114,10 +114,6 @@ class Invoice
      **/
     private  $assistantDoctor;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\StockItem")
-     **/
-    private  $cabin;
 
    /**
      * @ORM\ManyToOne(targetEntity="Particular")
@@ -195,6 +191,12 @@ class Invoice
      **/
     private  $admittedBy;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="bed_cabin_name", type="string", nullable = true)
+     */
+    private $bedCabinName;
 
     /**
      * @var string

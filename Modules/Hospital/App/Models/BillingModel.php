@@ -92,7 +92,7 @@ class BillingModel extends Model
                 'patient_mode.name as patient_mode_name',
                 'patient_mode.slug as patient_mode_slug',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
-                DB::raw('DATE_FORMAT(hms_invoice.created_at, "%Y-%m-%d") as created_at'),
+                DB::raw('DATE_FORMAT(hms_invoice.updated_at, "%Y-%m-%d") as created_at'),
                 'hms_invoice.process as process',
                 'vr.display_name as display_name',
                 'createdBy.name as created_by',
@@ -303,7 +303,7 @@ class BillingModel extends Model
                     'hms_invoice_transaction.amount',
                     'hms_invoice_transaction.process',
                     DB::raw('DATE_FORMAT(hms_invoice_transaction.created_at, "%d-%m-%y") as created'),
-                ])->where('hms_invoice_transaction.process','Done')->whereIn('hms_invoice_transaction.mode', ['investigation', 'admission', 'room'])->orderBy('hms_invoice_transaction.created_at','DESC');
+                ])->where('hms_invoice_transaction.process','Done')->whereIn('hms_invoice_transaction.mode', ['investigation', 'ipd', 'room'])->orderBy('hms_invoice_transaction.created_at','DESC');
             }])
             ->with(['invoice_particular' => function ($query) {
                 $query->select([

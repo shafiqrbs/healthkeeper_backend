@@ -435,12 +435,8 @@ class InvoiceTransactionModel extends Model
         $hms_invoice_id =  $entity->id;
         if($entity->parent_id > 0){
             $invoiceMode  = $entity->parent->invoice_mode;
-            $reportMode = ( $invoiceMode == "opd" ) ? "OPD-test" : "EMER-test";
-            $reportRoomMode = ( $invoiceMode == "opd" ) ? "OPD-room" : "EMER-room";
         }else{
             $invoiceMode  = $entity->invoice_mode;
-            $reportMode = ( $invoiceMode == "opd" ) ? "OPD-test" : "EMER-test";
-            $reportRoomMode = ( $invoiceMode == "opd" ) ? "OPD-room" : "EMER-room";
         }
 
         $investigations = $data['json_content'];
@@ -461,7 +457,7 @@ class InvoiceTransactionModel extends Model
                 'created_at'    => $date,
             ]);
             if (!empty($investigations) && is_array($investigations) and $mode == "investigation") {
-                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$date,$reportMode) {
+                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$date,$invoiceMode) {
                     $particular = $investigation['particular_id'] ?? '';
                     if (
                         ($investigation['is_selected'] ?? false) == true &&
@@ -494,7 +490,7 @@ class InvoiceTransactionModel extends Model
                                     'status'      => 1,
                                     'is_invoice' => 1,
                                     'mode' => $mode,
-                                    'report_mode' => $reportMode,
+                                    'report_mode' => $invoiceMode,
                                     'price'         => $particular->price ?? 0,
                                     'estimate_price'  => $particular->price ?? 0,
                                     'sub_total'         => $particular->price ?? 0,
@@ -507,7 +503,7 @@ class InvoiceTransactionModel extends Model
 
                 })->toArray();
             }elseif (!empty($investigations) && is_array($investigations) and $mode == "room") {
-                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$roomId,$date,$reportRoomMode) {
+                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$roomId,$date,$invoiceMode) {
                     $particular = ParticularModel::find($roomId);
                     if($particular){
                         InvoiceParticularModel::updateOrCreate(
@@ -522,7 +518,7 @@ class InvoiceTransactionModel extends Model
                                 'status'      => 1,
                                 'is_invoice' => 1,
                                 'mode' => $mode,
-                                'report_mode' => $reportRoomMode,
+                                'report_mode' => $invoiceMode,
                                 'price' => $particular->price ?? 0,
                                 'estimate_price' => $particular->price ?? 0,
                                 'sub_total'         => ($particular->price * $investigation['days']) ?? 0,
@@ -564,7 +560,9 @@ class InvoiceTransactionModel extends Model
             );
             InvoiceParticularModel::where('invoice_transaction_id', $transaction->id)->update(['status' => 1,'is_invoice' => 1]);
             $invoice->update(['sub_total' => $amount , 'total' => $amount, 'amount' => $amount, 'process' => 'admitted']);
+            return $transaction->id;
         }
+        return;
 
     }
 
