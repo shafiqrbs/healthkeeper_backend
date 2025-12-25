@@ -130,11 +130,11 @@ class InvoiceModel extends Model
 
     public static function invoicePrescriptionProcess($entity){
 
-        if(empty($entity->referred_mode)){
+        if(empty($entity->referred_mode) and ($entity->process =='opd' || $entity->process == 'emergency')){
             $entity->update(['process' => 'done']);
-        }elseif($entity->referred_mode and $entity->referred_mode =='admission'){
+        }elseif($entity->referred_mode and $entity->referred_mode =='admission' and ($entity->process =='opd' || $entity->process == 'emergency')){
             $entity->update(['process' => 'ipd']);
-        }elseif($entity->referred_mode and $entity->referred_mode =='hospital'){
+        }elseif($entity->referred_mode and $entity->referred_mode =='hospital' and ($entity->process =='opd' || $entity->process == 'emergency')){
             $entity->update(['process' => 'hospital']);
         }
     }
