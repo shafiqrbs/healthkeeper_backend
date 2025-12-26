@@ -165,16 +165,20 @@ class LabInvestigationController extends Controller
         $domain = $this->domain;
         $data = $request->only(['json_content','comment']);
         $entity = InvoiceParticularModel::where(['uid'=>$id])->first();
-        if($entity->process == "Tagged"){
-            $data['process'] = 'In-progress';
+        $data['assign_labuser_id'] = $domain['user_id'];
+        $data['assign_labuser_name'] = $domain['user_name'];
+        $data['collection_date'] = new \DateTime();
+        $data['process'] = 'Done';
+        /*if($entity->process == "Tagged"){
             $data['assign_labuser_id'] = $domain['user_id'];
             $data['assign_labuser_name'] = $domain['user_name'];
             $data['collection_date'] = new \DateTime();
+            $data['process'] = 'Done';
         }if($entity->process == "In-progress"){
             $data['assign_doctor_id'] = $domain['user_id'];
             $data['assign_doctor_name'] = $domain['user_name'];
             $data['process'] = 'Done';
-        }
+        }*/
         if(isset($data['json_content'])){
             $data['json_report'] = json_encode($data['json_content']);
             $testReport = InvoiceParticularTestReportModel::where('invoice_particular_id',$entity->id)->first();

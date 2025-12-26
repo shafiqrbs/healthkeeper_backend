@@ -103,7 +103,10 @@ class LabGroupReportController extends Controller
     public function print($id)
     {
         $service = new JsonRequestResponse();
-        $invoiceParticular = InvoicePathologicalGroupModel::with(['reports'])->find($id);
+        $invoiceParticular = InvoicePathologicalGroupModel::with([
+            'items',
+            'items.reports',
+        ])->find($id);
         $entity = InvoiceModel::getInvoiceBasicInfo($invoiceParticular->hms_invoice_id);
         $data = ['entity'=>$entity,'invoiceParticular' => $invoiceParticular];
         return  $service->returnJosnResponse($data);
@@ -124,6 +127,11 @@ class LabGroupReportController extends Controller
         $data['process'] = 'Done';
         $data['comment'] = $data['comment'] ?? null;
         $entity->update($data);
+        $entity->items()->update([
+            'process' => 'Done',
+            'assign_labuser_id' => $domain['user_id'],
+            'assign_labuser_name' => $domain['user_name'],
+        ]);
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($domain);
 

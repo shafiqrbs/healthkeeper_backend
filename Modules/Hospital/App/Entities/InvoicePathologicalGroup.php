@@ -125,9 +125,9 @@ class InvoicePathologicalGroup
     /**
      * @var string
      *
-     * @ORM\Column(name="process", type="string", length=30, nullable=true)
+     * @ORM\Column(type="process" , type="string", length=30,options={"default"="New"})
      */
-    private $process ='In-progress';
+    private $process;
 
     /**
      * @var string

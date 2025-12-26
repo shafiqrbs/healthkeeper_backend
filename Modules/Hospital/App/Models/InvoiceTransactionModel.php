@@ -486,6 +486,7 @@ class InvoiceTransactionModel extends Model
                                 [
                                     'invoice_transaction_id' => $invoiceTransaction->id,
                                     'name'      => $particular->name,
+                                    'category_id'      => $particular->category_id,
                                     'quantity'      => 1,
                                     'status'      => 1,
                                     'is_invoice' => 1,

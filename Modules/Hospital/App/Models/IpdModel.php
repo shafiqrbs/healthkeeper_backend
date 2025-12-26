@@ -213,6 +213,7 @@ class IpdModel extends Model
                 $entities = $entities->whereNotNull('hms_invoice.parent_id');
             }
             $entities
+                ->leftJoin('hms_invoice as parent_invoice', 'parent_invoice.id', '=', 'hms_invoice.parent_id')
                 ->leftJoin('hms_particular as admit_consultant', 'admit_consultant.id', '=', 'hms_invoice.admit_consultant_id')
                 ->leftJoin('hms_particular as admit_doctor', 'admit_doctor.id', '=', 'hms_invoice.admit_doctor_id')
                 ->leftJoin('hms_particular_mode as admit_unit', 'admit_unit.id', '=', 'hms_invoice.admit_unit_id')
@@ -222,6 +223,7 @@ class IpdModel extends Model
                     'admit_doctor.name as admit_doctor_name',
                     'admit_unit.name as admit_unit_name',
                     'admit_department.name as admit_department_name',
+                    'parent_invoice.invoice_mode as parent_invoice_mode',
                 ]);
         }
         if (isset($request['patient_mode']) && !empty($request['patient_mode'])){
@@ -662,7 +664,7 @@ class IpdModel extends Model
         $amount = InvoiceParticularModel::where('hms_invoice_id', $entity->id)->sum('sub_total');
         $invoiceTransaction->update(['hms_invoice_id' => $entity->id ,'is_master' => true ,'sub_total' => $amount , 'total' => $amount]);
         $entity->update(['sub_total' => $amount , 'total' => $amount, 'admission_date' => $date]);
-        $roomRent->update(['is_booked' => true]);
+        $roomRent->update(['is_booked' => true,'admission_id' => $entity->id]);
         return $amount;
 
     }

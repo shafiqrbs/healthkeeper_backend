@@ -51,10 +51,12 @@ class InvoicePathologicalGroupModel extends Model
         return $this->hasMany(InvoicePathologicalReportModel::class, 'invoice_pathological_group_id')->orderBy('ordering', 'ASC');
     }
 
+
     public static function getCategoryGroupShow($domain,$id)
     {
 
         self::insertUpdateGroupReport($id);
+
         $userId = $domain['user_id'];
         $rooms = ParticularModel::where('employee_id',$userId)->first();
         $roomIds = ($rooms->particularDetails->diagnostic_room_ids);
@@ -184,7 +186,6 @@ class InvoicePathologicalGroupModel extends Model
                     [
                         'name' => $entity->name,
                         'report_name' => $entity->particular_names,
-                        'process' => 'new',
                         'updated_at' => $date,
                         'created_at' => $date,
                     ]);

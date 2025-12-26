@@ -369,10 +369,11 @@ class LabInvestigationModel extends Model
                      ['particular_id', $investigation],
                      ['investigation_report_format_id', $row->id],
                  ])->first();
-                 if(empty($exist)){
+                 if(empty($exist) and !empty($row->name)){
                      $input =[
                          'invoice_particular_id' => $entity->id,
                          'particular_id' => $investigation,
+                         'parent_id' => $row->parent_id,
                          'investigation_report_format_id' => $row->id,
                          'name' => $row->name,
                          'reference_value' => $row->reference_value,

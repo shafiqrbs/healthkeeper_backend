@@ -147,6 +147,7 @@ class OPDModel extends Model
                 'invoice_transaction_id' => $invoiceTransaction->id,
                 'particular_id' => $particular->id ?? null,
                 'mode' => $data['patient_mode'],
+                'report_mode'    => $data['patient_mode'],
                 'quantity' => 1,
                 'status' => 1,
                 'process' => 'Done',

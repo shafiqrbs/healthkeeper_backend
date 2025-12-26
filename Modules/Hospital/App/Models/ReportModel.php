@@ -236,6 +236,9 @@ class ReportModel extends Model
                 DB::raw("DATE_FORMAT(hms_invoice_transaction.created_at, '%d-%m-%Y') as report_date"),
                 DB::raw("
                     CONCAT(
+                        UPPER(LEFT(hms_invoice_particular.report_mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_particular.report_mode, 2)),
+                        '-',
                         UPPER(LEFT(hms_invoice_particular.mode, 1)),
                         LOWER(SUBSTRING(hms_invoice_particular.mode, 2))
                     ) as name
@@ -244,8 +247,14 @@ class ReportModel extends Model
             ])
             ->groupBy(
                 DB::raw('DATE(hms_invoice_transaction.created_at)'),
-                'hms_invoice_particular.mode'
+                'hms_invoice_particular.mode',
+                'hms_invoice_particular.report_mode'
             );
+
+        if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
+
         if (!empty($request['created_by_id'])) {
             $entities->where('hms_invoice.created_by_id', $request['created_by_id']);
         }
@@ -506,10 +515,6 @@ class ReportModel extends Model
     public static function getInvoiceSummary($domain,$request){
 
         $summary =self::summaryCollection($domain,$request);
-
-
-
-
         $patientMode =self::patientModeBaseCollection($domain,$request);
         $patientServiceMode =self::patientServiceModeBaseCollection($domain,$request);
         $userBase =self::userBaseCollection($domain,$request);
@@ -527,6 +532,7 @@ class ReportModel extends Model
         $financialServicesModes = InvoiceParticularModel::getParticularInvoiceModes();
 
         $invoiceModes =self::invoiceModeCollection($domain,$request);
+
         $refundInvoiceModes =self::refundInvoiceModeCollection($domain,$request);
 
         $invoiceModeMap = [];
@@ -582,14 +588,11 @@ class ReportModel extends Model
                 'sub_total' => $sub_total,
             ];
         }
-
-        dd($financialServicesMerged);
-
         $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
         $records =[
             'filter' => $filter,
             'summary' => $summary,
-            'invoiceMode' => $invoiceMode,
+            'invoiceMode' => $invoiceModes,
             'userBase' => $userBase,
             'patientMode' => $patientMode,
             'patientServiceMode' => $patientServiceMode,
@@ -675,7 +678,7 @@ class ReportModel extends Model
                 'customer.name',
                 'customer.mobile',
                 'customer.address',
-                'vr.name as visiting_room',
+                'vr.display_name as visiting_room',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d %b %Y, %h:%i %p") as created_at'),
                 DB::raw('DATE_FORMAT(hms_invoice.appointment_date, "%d-%M-%Y") as appointment'),
@@ -686,7 +689,8 @@ class ReportModel extends Model
                 'patient_payment_mode.name as patient_payment_mode_name',
                 'patient_payment_mode.slug as patient_payment_mode_slug',
                 'createdBy.name as created_by',
-                'hms_invoice_particular.price as amount'
+                'hms_invoice_particular.price as amount',
+                'hms_invoice_particular.report_mode as invoice_report_mode'
             ]);
 
         if (isset($request['start_date']) && !empty($request['start_date'])){
@@ -701,11 +705,11 @@ class ReportModel extends Model
             $end_date = $date->format('Y-m-d 23:59:59');
             $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
         }
-        if (isset($request['patient_mode']) && !empty($request['patient_mode']) && $request['patient_mode'] !== 'all'){
-            $entities = $entities->where('hms_invoice.invoice_mode', $request['patient_mode']);
+
+        if (isset($request['patient_mode']) && !empty($request['patient_mode']) && $request['patient_mode'] != 'all'){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['patient_mode']);
         }
-        $entities = $entities->orderBy('hms_invoice.created_at','ASC')
-            ->get();
+        $entities = $entities->orderBy('hms_invoice.created_at','ASC')->orderBy('hms_invoice_particular.report_mode','ASC')->get();
         return $entities;
     }
 
@@ -719,7 +723,9 @@ class ReportModel extends Model
                 DB::raw('COUNT(hms_invoice_particular.id) as total_count'),
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
             ]);
-
+        if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
         if (isset($request['created_by_id']) && !empty($request['created_by_id'])){
             $entities = $entities->where('hms_invoice.created_by_id',$request['created_by_id']);
         }
@@ -747,8 +753,22 @@ class ReportModel extends Model
             ->join('hms_invoice_transaction as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_id')
             ->select([
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
-                'hms_invoice_particular.mode as name',
-            ])->groupBy('hms_invoice_particular.mode');
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT(hms_invoice_particular.report_mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_particular.report_mode, 2)),
+                        '-',
+                        UPPER(LEFT(hms_invoice_particular.mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_particular.mode, 2))
+                    ) as name
+                "),
+            ])->groupBy('hms_invoice_particular.mode')
+            ->groupBy('hms_invoice_particular.report_mode')
+            ->orderBy('name','ASC');
+
+        if (isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
 
         if (isset($request['created_by_id']) && !empty($request['created_by_id'])){
             $entities = $entities->where('hms_invoice.created_by_id',$request['created_by_id']);
@@ -813,10 +833,21 @@ class ReportModel extends Model
             ->select([
                 DB::raw('COUNT(hms_invoice_particular.id) as total_count'),
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
-                'hms_invoice_particular.mode as name',
-            ])->groupBy('hms_invoice_particular.mode');
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT(hms_invoice_particular.report_mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_particular.report_mode, 2)),
+                        '-',
+                        UPPER(LEFT(hms_invoice_particular.mode, 1)),
+                        LOWER(SUBSTRING(hms_invoice_particular.mode, 2))
+                    ) as name
+                "),
+            ])->groupBy('hms_invoice_particular.mode')->groupBy('hms_invoice_particular.report_mode')->orderBy('name','ASC');
 
-        if (isset($request['created_by_id']) && !empty($request['created_by_id'])){
+        if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
+        if(isset($request['created_by_id']) && !empty($request['created_by_id'])){
             $entities = $entities->where('hms_invoice.created_by_id',$request['created_by_id']);
         }
         if (isset($request['start_date']) && isset($request['end_date'])){
@@ -837,7 +868,6 @@ class ReportModel extends Model
 
     public static function patientServiceModeBaseCollection($domain,$request)
     {
-
         $entities = InvoiceParticularModel::where([['hms_invoice.config_id',$domain['hms_config']]])
             ->whereIn('hms_invoice_particular.mode',['opd','emergency','ipd'])
             ->where('hms_invoice_particular.status',1)
@@ -849,6 +879,10 @@ class ReportModel extends Model
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
                 'hms_particular_mode.name as name',
             ])->groupBy('hms_particular_mode.name');
+
+        if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
         if (isset($request['created_by_id']) && !empty($request['created_by_id'])){
             $entities = $entities->where('hms_invoice.created_by_id',$request['created_by_id']);
         }
@@ -880,7 +914,9 @@ class ReportModel extends Model
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
                 'createdBy.name as name',
             ]);
-
+        if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
         if (isset($request['created_by_id']) && !empty($request['created_by_id'])){
             $entities = $entities->where('hms_invoice_transaction.created_by_id',$request['created_by_id']);
         }
@@ -916,6 +952,9 @@ class ReportModel extends Model
                 'particular_mode.id as mode_id',
                 'particular_mode.name as name',
             ])->groupBy('particular_mode.id');
+        if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
         if (isset($request['start_date']) && isset($request['end_date'])){
             $start_date = new \DateTime($request['start_date']);
             $end_date = new \DateTime($request['end_date']);
@@ -946,6 +985,9 @@ class ReportModel extends Model
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
                 'inv_category.name as name',
             ])->groupBy('inv_category.id');
+        if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
         if (isset($request['start_date']) && isset($request['end_date'])){
             $start_date = new \DateTime($request['start_date']);
             $end_date = new \DateTime($request['end_date']);
@@ -975,6 +1017,9 @@ class ReportModel extends Model
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
                 'hms_particular.display_name as name',
             ])->groupBy('particular_id');
+        if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
+        }
         if (isset($request['start_date']) && isset($request['end_date'])){
             $start_date = new \DateTime($request['start_date']);
             $end_date = new \DateTime($request['end_date']);
