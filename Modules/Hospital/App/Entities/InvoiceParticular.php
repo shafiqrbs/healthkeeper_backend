@@ -28,6 +28,13 @@ class InvoiceParticular
      */
     private $uid;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $labNo;
+
 
      /**
      * @var string

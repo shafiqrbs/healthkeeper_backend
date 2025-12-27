@@ -163,7 +163,7 @@ class LabInvestigationController extends Controller
     public function update(Request $request, $id)
     {
         $domain = $this->domain;
-        $data = $request->only(['json_content','comment']);
+        $data = $request->only(['json_content','comment','lab_no']);
         $entity = InvoiceParticularModel::where(['uid'=>$id])->first();
         $data['assign_labuser_id'] = $domain['user_id'];
         $data['assign_labuser_name'] = $domain['user_name'];
@@ -187,6 +187,7 @@ class LabInvestigationController extends Controller
             }
         }
         $data['comment'] = $data['comment'] ?? null;
+        $data['lab_no'] = $data['lab_no'] ?? null;
         $entity->update($data);
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($entity);

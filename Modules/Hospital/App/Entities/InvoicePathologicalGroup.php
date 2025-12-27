@@ -137,6 +137,13 @@ class InvoicePathologicalGroup
     private $barcode;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $labNo;
+
+    /**
      * @var text
      *
      * @ORM\Column(name="comment", type="text", nullable=true)

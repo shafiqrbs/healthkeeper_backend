@@ -39,7 +39,7 @@ class InvoiceParticularTestReport
      /**
      * @var string
      *
-     * @ORM\Column(name="sampl_type", type="string", nullable=true)
+     * @ORM\Column(name="sample_type", type="string", nullable=true)
      */
     private $sampleType;
 
@@ -263,6 +263,34 @@ class InvoiceParticularTestReport
      */
     private $AfbDiagnosis;
 
+
+     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true)
+     */
+    private $AfbContaminated;
+
+     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", name="atypical_mycobacteria_species" , nullable=true)
+     */
+    private $AfbMycobacteriaSpecies;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $negative;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $positive;
 
     /**
      * @var boolean
@@ -564,7 +592,16 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="boolean",options={"default"="false"})
      */
-    private $afbNoFound;
+    private $afbNotFound;
+
+
+     /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $afbFound;
+
 
      /**
      * @var boolean
@@ -596,6 +633,51 @@ class InvoiceParticularTestReport
     private $afbScantyThree;
 
     /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $afbSampleFound;
+
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $afbSampleNotFound;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $afbSampleScanty;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $afbSampleScantyOne;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $afbSampleScantyTwo;
+
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $afbSampleScantyThree;
+
+
+    /**
      * @var string
      *
      * @ORM\Column(type="string", nullable=true, length=50)
@@ -607,24 +689,14 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_mtb;
+    private $dstMtb;
 
     /**
      * @var string
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_inh;
-
-
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", nullable=true, length=50)
-     */
-    private $dst_rif;
-
+    private $dstInh;
 
 
     /**
@@ -632,7 +704,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_flq;
+    private $dstRif;
 
 
 
@@ -641,7 +713,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_lfx;
+    private $dstFlq;
 
 
 
@@ -650,7 +722,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_mfx;
+    private $dstLfx;
 
 
 
@@ -659,7 +731,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_eth;
+    private $dstMfx;
 
 
 
@@ -668,7 +740,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_bdq;
+    private $dstEth;
 
 
 
@@ -677,7 +749,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_dlm;
+    private $dstBdq;
 
 
 
@@ -686,7 +758,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_pa;
+    private $dstDlm;
 
 
 
@@ -695,7 +767,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_lzd;
+    private $dstPa;
 
 
 
@@ -704,7 +776,7 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_cfz;
+    private $dstLzd;
 
 
 
@@ -713,15 +785,8 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_amk;
+    private $dstCfz;
 
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", nullable=true, length=50)
-     */
-    private $dst_kan;
 
 
     /**
@@ -729,14 +794,57 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="string", nullable=true, length=50)
      */
-    private $dst_cap;
+    private $dstAmk;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dstKan;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=50)
+     */
+    private $dstCap;
 
     /**
      * @var string
      *
      * @ORM\Column(type="string", nullable=true, length=150)
      */
-    private $dst_other;
+    private $dstOther;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=150)
+     */
+    private $mtBcc;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=250)
+     */
+    private $mtResult;
+
+    /**
+     * @var \DateTime
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $mtExaminationDate;
+
+
+    /**
+     * @var \DateTime
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $mtReadingDate;
 
 
     /**
