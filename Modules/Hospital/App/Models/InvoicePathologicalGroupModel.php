@@ -216,10 +216,10 @@ class InvoicePathologicalGroupModel extends Model
                         'invoice_particular_id' => $entity->id,
                         'particular_id' => $investigation,
                         'investigation_report_format_id' => $row->id,
-                        'invoice_pathological_group_id' => $reportId,
                     ],
                     [
                         'name' => $row->name,
+                        'invoice_pathological_group_id' => $reportId,
                         'reference_value' => $row->reference_value,
                         'unit' => $row->unit,
                         'sample_value' => $row->sample_value,
