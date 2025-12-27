@@ -45,7 +45,7 @@ class InvoicePathologicalReport
 
      /**
      * @ORM\ManyToOne(targetEntity="InvoicePathologicalGroup")
-     * @ORM\JoinColumn(referencedColumnName="id",onDelete="SET NULL")
+     * @ORM\JoinColumn(referencedColumnName="id",onDelete="CASCADE")
      **/
     private $invoicePathologicalGroup;
 

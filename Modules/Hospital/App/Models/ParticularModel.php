@@ -416,7 +416,7 @@ class ParticularModel extends Model
 
         $config =  $domain['hms_config'];
         $page =  isset($request['page']) && $request['page'] > 0?($request['page'] - 1 ) : 0;
-        $perPage = isset($request['offset']) && $request['offset']!=''? (int)($request['offset']):0;
+        $perPage = 1000;
         $skip = isset($page) && $page!=''? (int)$page*$perPage:0;
 
         $entity = self::where('hms_particular.config_id',$config)->where('hms_particular.is_booked',0)
@@ -453,6 +453,7 @@ class ParticularModel extends Model
             $entity = $entity->where(function ($q) use ($term) {
                 $q->where('hms_particular.name', 'LIKE', "%{$term}%")
                     ->orWhere('hms_particular.slug', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_particular.display_name', 'LIKE', "%{$term}%")
                     ->orWhere('hms_particular_type.slug', 'LIKE', "%{$term}%")
                     ->orWhere('hms_particular_type.name', 'LIKE', "%{$term}%");
             });
