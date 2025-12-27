@@ -221,6 +221,13 @@ class BillingController extends Controller
             $print = RefundModel::showInvoiceData($data['id']);
         }else{
             $entity->update(['process'=>'paid']);
+            ParticularModel::where([
+                'is_booked'    => 1,
+                'admission_id' => $entity->id
+            ])->update([
+                'is_booked'    => null,
+                'admission_id' => null,
+            ]);
             $print = BillingModel::getFinalBillShow($data['id']);
         }
         $data = $service->returnJosnResponse($print);
