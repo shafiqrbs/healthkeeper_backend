@@ -215,22 +215,37 @@ class BillingController extends Controller
         $domain = $this->domain;
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
-        $data = InvoiceTransactionModel::finalBillClosing($domain,$entity);
-        if($data['mode'] == 'refund'){
-            $entity->update(['process'=>'refund']);
-            $print = RefundModel::showInvoiceData($data['id']);
-        }else{
-            $entity->update(['process'=>'paid']);
+        $particular = ParticularModel::find($entity->room_id);
+        $date =  new \DateTime("now");
+        if($particular->price == 0 ){
+            $entity->update(['process' => 'paid','release_date'=>$date]);
             ParticularModel::where([
-                'is_booked'    => 1,
+                'is_booked' => 1,
                 'admission_id' => $entity->id
             ])->update([
-                'is_booked'    => null,
+                'is_booked' => 0,
                 'admission_id' => null,
             ]);
-            $print = BillingModel::getFinalBillShow($data['id']);
+            $print = BillingModel::getFinalBillShow($entity->id);
+            $data = $service->returnJosnResponse($print);
+        }else {
+            $data = InvoiceTransactionModel::finalBillClosing($domain, $entity);
+            if ($data['mode'] == 'refund') {
+                $entity->update(['process' => 'refund']);
+                $print = RefundModel::showInvoiceData($data['id']);
+            } else {
+                $entity->update(['process' => 'paid','release_date'=>$date]);
+                ParticularModel::where([
+                    'is_booked' => 1,
+                    'admission_id' => $entity->id
+                ])->update([
+                    'is_booked' => 0,
+                    'admission_id' => null,
+                ]);
+                $print = BillingModel::getFinalBillShow($data['id']);
+            }
+            $data = $service->returnJosnResponse($print);
         }
-        $data = $service->returnJosnResponse($print);
         return $data;
     }
 

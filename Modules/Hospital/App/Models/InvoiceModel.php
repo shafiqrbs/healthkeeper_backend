@@ -202,6 +202,8 @@ class InvoiceModel extends Model
             ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
             ->join('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
             ->join('hms_particular_mode as patient_payment_mode','patient_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
+            ->leftjoin('hms_invoice_patient_referred as hms_invoice_patient_referred','hms_invoice_patient_referred.hms_invoice_id','=','hms_invoice.id')
+            ->leftjoin('hms_particular as referred_vr','referred_vr.id','=','hms_invoice_patient_referred.referred_opd_room_id')
             ->select([
                 'hms_invoice.id',
                 'hms_invoice.uid',
@@ -225,6 +227,7 @@ class InvoiceModel extends Model
                 DB::raw("CONCAT(UCASE(LEFT(hms_invoice.process, 1)), LCASE(SUBSTRING(hms_invoice.process, 2))) as process"),
                 'vr.name as visiting_room',
                 'vr.display_name as room_name',
+                'referred_vr.display_name as referred_room_name',
                 'patient_mode.name as patient_mode_name',
                 'patient_payment_mode.name as patient_payment_mode_name',
                 'patient_payment_mode.slug as patient_payment_mode_slug',

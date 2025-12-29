@@ -59,6 +59,11 @@ class InvoicePatientReferred
      **/
     private  $opdRoom;
 
+     /**
+     * @ORM\ManyToOne(targetEntity="Particular")
+     **/
+    private  $referredOpdRoom;
+
     /**
      * @ORM\ManyToOne(targetEntity="Particular")
      **/

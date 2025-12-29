@@ -102,6 +102,7 @@ class OpdController extends Controller
                 $prescription->update(['referred_by_id' => $this->domain['user_id']]);
                 $input['json_content'] =  $prescription['json_content'];
                 $input['prescription_id'] =  $prescription['id'];
+                $input['referred_opd_room_id'] =  $entity->room_id;
             }
             InvoicePatientReferredModel::updateOrCreate(
                 [

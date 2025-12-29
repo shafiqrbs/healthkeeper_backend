@@ -653,6 +653,7 @@ class InvoiceTransactionModel extends Model
         InvoiceParticularModel::getCountBedRoom($entity->id);
         $particular = ParticularModel::find($entity->room_id);
         $date =  new \DateTime("now");
+
         if($entity->remaining_day > 0 ){
             $receivable = ($entity->remaining_day * $particular->price ?? 0);
             $invoiceTransaction = InvoiceTransactionModel::create([
@@ -686,12 +687,9 @@ class InvoiceTransactionModel extends Model
                     'created_at'    => $date,
                 ]
             );
-
             $data = ['mode'=>'bill','id' => $entity->id];
             return $data;
-
         }else{
-
             $lastTransaction = $entity->invoice_transaction()
                 ->where(function ($q) {
                     $q->where('mode', 'room')
