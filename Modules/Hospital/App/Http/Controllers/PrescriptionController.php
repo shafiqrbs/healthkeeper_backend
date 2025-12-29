@@ -78,8 +78,6 @@ class PrescriptionController extends Controller
         return $response;
     }
 
-
-
     /**
      * Show the specified resource.
      *//**/
@@ -147,6 +145,8 @@ class PrescriptionController extends Controller
         HospitalSalesModel::insertMedicineIssue($domain,$entity->id);
         InvoiceContentDetailsModel::insertContentDetails($domain,$entity->id);
         $return = PrescriptionModel::getShow($entity->id);
+        $localMedicines = PatientPrescriptionMedicineModel::getMedicineLocalDropdown($domain);
+        $return['localMedicines'] = $localMedicines;
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($return);
 
