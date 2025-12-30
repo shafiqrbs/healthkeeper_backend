@@ -442,6 +442,7 @@ class InvoiceTransactionModel extends Model
         $investigations = $data['json_content'];
         $total = $data['total'];
         $mode = $data['mode'];
+
         $roomId = $entity->room_id;
         if (!empty($investigations) && is_array($investigations)) {
             $invoiceTransaction = InvoiceTransactionModel::create([
@@ -449,9 +450,6 @@ class InvoiceTransactionModel extends Model
                 'created_by_id'=> $domain['user_id'],
                 'approved_by_id'=> $domain['user_id'],
                 'mode'    => $mode,
-                'sub_total'    => $total,
-                'total'    => $total,
-                'amount'    => $total,
                 'process'    => 'Done',
                 'updated_at'    => $date,
                 'created_at'    => $date,
@@ -531,7 +529,10 @@ class InvoiceTransactionModel extends Model
                 })->toArray();
             }
         }
+        $amount = InvoiceParticularModel::where('invoice_transaction_id', $invoiceTransaction->id)->sum('sub_total');
+        $invoiceTransaction->update(['sub_total' => $amount , 'total' => $amount , 'amount' => $amount]);
         return $invoiceTransaction->id;
+
     }
 
     public static function insertAdmissionInvoiceTransaction($domain,$invoice,$data)
@@ -653,8 +654,8 @@ class InvoiceTransactionModel extends Model
         InvoiceParticularModel::getCountBedRoom($entity->id);
         $particular = ParticularModel::find($entity->room_id);
         $date =  new \DateTime("now");
-
-        if($entity->remaining_day > 0 ){
+        $report_mode = $entity->parent->invoice_mode;
+        if($entity->remaining_day >= 0 ){
             $receivable = ($entity->remaining_day * $particular->price ?? 0);
             $invoiceTransaction = InvoiceTransactionModel::create([
                 'hms_invoice_id'=> $entity->id,
@@ -668,18 +669,20 @@ class InvoiceTransactionModel extends Model
                 'updated_at'    => $date,
                 'created_at'    => $date,
             ]);
-            $entity = InvoiceParticularModel::updateOrCreate(
+            InvoiceParticularModel::updateOrCreate(
                 [
                     'hms_invoice_id'             => $entity->id,
                     'invoice_transaction_id' => $invoiceTransaction->id
                 ],
                 [
                     'particular_id'      => $particular->id,
-                    'name'      => $particular->name,
+                    'name'      => $particular->display_name,
                     'quantity'      => $entity->remaining_day,
                     'status'      => 1,
+                    'process'      => 'Done',
                     'is_invoice' => 1,
                     'mode' => 'room',
+                    'report_mode' =>$report_mode,
                     'price'         => $particular->price ?? 0,
                     'estimate_price'         => $particular->price ?? 0,
                     'sub_total'         => ($particular->price * $entity->remaining_day) ?? 0,
@@ -687,7 +690,7 @@ class InvoiceTransactionModel extends Model
                     'created_at'    => $date,
                 ]
             );
-            $data = ['mode'=>'bill','id' => $entity->id];
+            $data = ['mode'=>'bill','id' => $invoiceTransaction->id];
             return $data;
         }else{
             $lastTransaction = $entity->invoice_transaction()

@@ -194,7 +194,7 @@ class BillingModel extends Model
             });
         }
 
-        $entities = $entities->whereIn('hms_invoice.process', ['done','admitted']);
+        $entities = $entities->whereIn('hms_invoice.process', ['admitted']);
         $entities = $entities->whereIn('hms_invoice.release_mode', ['discharge','death','referred']);
 
         if (isset($request['room_id']) && !empty($request['room_id'])){
@@ -214,10 +214,13 @@ class BillingModel extends Model
             $entities = $entities->whereBetween('hms_invoice.created_at', [$start_date, $end_date]);
         }
 
-        $total  = $entities->count();
+
+        $total = DB::table(DB::raw("({$entities->toSql()}) as sub"))
+            ->mergeBindings($entities->getQuery())
+            ->count();
+
         $entities = $entities->skip($skip)
             ->take($perPage)
-            ->groupBy('hms_invoice.id')
             ->orderBy('hms_invoice.updated_at','DESC')
             ->get();
         $data = array('count' => $total,'entities' => $entities);
@@ -303,7 +306,7 @@ class BillingModel extends Model
                     'hms_invoice_transaction.amount',
                     'hms_invoice_transaction.process',
                     DB::raw('DATE_FORMAT(hms_invoice_transaction.created_at, "%d-%m-%y") as created'),
-                ])->where('hms_invoice_transaction.process','Done')->whereIn('hms_invoice_transaction.mode', ['investigation', 'ipd', 'room'])->orderBy('hms_invoice_transaction.created_at','DESC');
+                ])->where('hms_invoice_transaction.process','Done')->whereIn('hms_invoice_transaction.mode', ['investigation', 'ipd', 'room', 'bill'])->orderBy('hms_invoice_transaction.created_at','DESC');
             }])
             ->with(['invoice_particular' => function ($query) {
                 $query->select([
@@ -455,9 +458,10 @@ class BillingModel extends Model
 
     public static function getFinalBillShow($id)
     {
-        $entity = self::where([
-            ['hms_invoice.uid', '=', $id]
-        ])
+        $entity = self::where(function ($query) use ($id) {
+            $query->where('hms_invoice.id', '=', $id)
+                ->orWhere('hms_invoice.uid', '=', $id);
+        })
             ->leftjoin('cor_customers','cor_customers.id','=','hms_invoice.customer_id')
             ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
             ->leftjoin('hms_prescription as prescription','prescription.hms_invoice_id','=','hms_invoice.id')

@@ -228,6 +228,7 @@ class BillingController extends Controller
             ]);
             $print = BillingModel::getFinalBillShow($entity->id);
             $data = $service->returnJosnResponse($print);
+            return $data;
         }else {
             $data = InvoiceTransactionModel::finalBillClosing($domain, $entity);
             if ($data['mode'] == 'refund') {
@@ -242,11 +243,12 @@ class BillingController extends Controller
                     'is_booked' => 0,
                     'admission_id' => null,
                 ]);
-                $print = BillingModel::getFinalBillShow($data['id']);
+                $print = InvoiceTransactionModel::showInvoiceData($data['id']);
             }
             $data = $service->returnJosnResponse($print);
+            return $data;
         }
-        return $data;
+
     }
 
 }

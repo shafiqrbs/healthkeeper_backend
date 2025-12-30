@@ -712,6 +712,13 @@ class Invoice
      */
     private $isPrescription;
 
+     /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean", nullable=true, options={"default"="false"})
+     */
+    private $isFree;
+
     /**
      * @var \DateTime
      *
