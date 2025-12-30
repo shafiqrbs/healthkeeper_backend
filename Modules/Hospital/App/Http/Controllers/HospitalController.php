@@ -211,7 +211,18 @@ class HospitalController extends Controller
     {
         $input = $request->all();
         $findParticular = ParticularMatrixModel::find($id);
-        $findParticular->is_additional_field = $findParticular->is_additional_field ? 0:1;
+        if(isset($input['is_additional_field'])){
+            $findParticular->is_additional_field = $findParticular->is_additional_field ? 0:1;
+        }
+        if(isset($input['status'])){
+            $findParticular->status = $findParticular->status ? 0:1;
+        }
+        if(isset($input['ordering']) and $input['ordering']){
+            $findParticular->ordering = $input['ordering'];
+        }
+        if(isset($input['data_type']) and $input['data_type']){
+            $findParticular->data_type = $input['data_type'];
+        }
         $findParticular->save();
         return response()->json(['success' => true]);
     }

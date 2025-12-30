@@ -49,6 +49,7 @@ Route::prefix('/core')->middleware([HeaderAuthenticationMiddleware::class,LogReq
     Route::get('/vendor/local-storage', [VendorController::class,'localStorage'])->name('vendor_local_storage');
 
     Route::get('/user/local-storage', [UserController::class,'localStorage'])->name('user_local_storage');
+    Route::get('/user/reset-password/{id}', [UserController::class,'resetPassword'])->name('user_local_storage');
 
     Route::post('/user/image-inline/{id}', [UserController::class,'updateImage'])->name('core_user_update_image');
 

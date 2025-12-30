@@ -148,11 +148,7 @@ class UserController extends Controller
     {
         $data = $request->validated();
         $entity = UserModel::find($id);
-        if (!empty($data['confirm_password'])) {
-            $data['password'] = Hash::make($data['confirm_password']);
-        }
         $entity->update($data);
-
         //user profile update
         $userProfile = UserProfileModel::where('user_id', $id)->first();
         $data['user_id'] = $id;
@@ -316,6 +312,18 @@ class UserController extends Controller
         ]));
         $response->setStatusCode(Response::HTTP_OK);
         return $response;
+    }
+
+    public function resetPassword($id)
+    {
+        $user = UserModel::find($id); // or any User object you have
+        $password = $user->username."@123";
+        $user->password = Hash::make($password);
+        $user->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'Password updated successfully.'
+        ]);
     }
 
     private function processFileUpload($file, $uploadDir)

@@ -39,6 +39,14 @@ class ParticularTypeController extends Controller
         return $service->returnJosnResponse($types);
     }
 
+    public function particularMatrix(Request $request)
+    {
+        $domain = $this->domain;
+        $types = ParticularMatrixModel::getLists($domain);
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($types);
+    }
+
 
      /**
      * Store a newly created resource in storage.

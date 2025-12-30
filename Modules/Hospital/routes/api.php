@@ -11,6 +11,7 @@ use Modules\Hospital\App\Http\Controllers\HospitalController;
 
 use Modules\Hospital\App\Http\Controllers\InvestigationController;
 use Modules\Hospital\App\Http\Controllers\IpdController;
+use Modules\Hospital\App\Http\Controllers\IpdPrescriptionController;
 use Modules\Hospital\App\Http\Controllers\LabGroupReportController;
 use Modules\Hospital\App\Http\Controllers\LabInvestigationController;
 use Modules\Hospital\App\Http\Controllers\MedicineDosageController;
@@ -97,6 +98,8 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
                 'destroy' => 'particular.destroy',
             ]);
         Route::post('/particular/inline-update/{id}', [ParticularController::class,'particularInlineUpdate'])->name('particular_inline_update');
+        Route::get('/particular-matrix', [ParticularTypeController::class,'particularMatrix'])->name('particular_matrix');
+        Route::post('/particular-matrix/inline-update/{id}', [ParticularController::class,'particularMatrixInlineUpdate'])->name('particular_matrix_inline_update');
         Route::post('/particular/ordering', [ParticularController::class,'updateOrdering'])->name('particular_ordering_update');
         Route::apiResource('particular-type', ParticularTypeController::class)
             ->middleware([HeaderAuthenticationMiddleware::class])
@@ -163,6 +166,16 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
             'destroy' => 'prescription.destroy',
         ]);
     Route::get('/prescription/vital/{id}', [PrescriptionController::class, 'vitalCheck'])->name('vitalCheck');
+    Route::post('/ipdprescription/inline-update/{id}', [IpdPrescriptionController::class,'medicineInlineUpdate'])->name('particular_matrix_inline_update');
+    Route::apiResource('ipdprescription', IpdPrescriptionController::class)
+        ->middleware([HeaderAuthenticationMiddleware::class])
+        ->names([
+            'index' => 'ipdprescription.index',
+            'store' => 'ipdprescription.store',
+            'show' => 'ipdprescription.show',
+            'update' => 'ipdprescription.update',
+            'destroy' => 'ipdprescription.destroy',
+        ]);
 
     Route::apiResource('ipd', IpdController::class)
         ->middleware([HeaderAuthenticationMiddleware::class])

@@ -47,6 +47,13 @@ class ParticularModeMatrix
      */
     private $operationMode;
 
+     /**
+     * @var string
+     *
+     * @ORM\Column(name="data_type", type="string", length=40,  nullable=true)
+     */
+    private $dataType;
+
     /**
      * @var int
      *

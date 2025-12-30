@@ -66,24 +66,32 @@ class PatientPrescriptionMedicine
      */
     private $duration;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="instruction", type="string", nullable=true)
+     */
+    private $instruction;
+
+
      /**
      * @var string
      *
-     * @ORM\Column(name="opd_quantity", type="string", length=100, nullable=true)
+     * @ORM\Column(name="opd_quantity", type="integer", nullable=true)
      */
     private $opdQuantity;
 
      /**
      * @var string
      *
-     * @ORM\Column(name="quantity", type="string", length=100, nullable=true)
+     * @ORM\Column(name="quantity", type="integer",  nullable=true)
      */
     private $quantity;
 
      /**
      * @var string
      *
-     * @ORM\Column(name="daily_quantity", type="string", length=100, nullable=true)
+     * @ORM\Column(name="daily_quantity", type="integer", nullable=true)
      */
     private $dailyQuantity;
 

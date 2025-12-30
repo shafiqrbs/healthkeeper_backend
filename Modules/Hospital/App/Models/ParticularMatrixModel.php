@@ -104,7 +104,7 @@ class ParticularMatrixModel extends Model
             )
             ->where([
                 ['hms_particular_mode_matrix.config_id',$config],
-            ]) ->orderBy('hms_particular_mode_matrix.ordering', 'ASC');
+            ]) ->orderBy('hms_particular_mode.name', 'ASC')->orderBy('hms_particular_mode_matrix.ordering', 'ASC');
         $entities = $entities->get();
         return $entities;
 

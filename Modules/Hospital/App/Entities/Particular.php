@@ -111,6 +111,7 @@ class Particular
      */
     private $slug;
 
+
     /**
      * @var string
      *

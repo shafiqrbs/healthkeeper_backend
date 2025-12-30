@@ -110,6 +110,13 @@ class ParticularDetails
      */
     private $displayName;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="doctor_mode", type="string", length=30, options={"default"="opd"})
+     */
+    private $doctorMode;
+
 
     /**
      * @var string
