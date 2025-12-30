@@ -717,7 +717,7 @@ class IpdModel extends Model
 
     }
 
-    public static function updateIpdInvoice($id,$data)
+    public static function updateIpdInvoice($domain,$id,$data)
     {
         $entity = self::findByIdOrUid($id);
         if ($entity) {
@@ -744,6 +744,8 @@ class IpdModel extends Model
                 'blood_sugar' => $data['blood_sugar'] ?? null,
                 'blood_group' => $data['blood_group'] ?? null,
                 'comment' => $data['comment'] ?? null,
+                'admitted_by_id' => $domain['user_id'] ?? null,
+                'created_by_id' => $domain['user_id'] ?? null,
                 'process' =>  'billing',
             ]);
             self::updateIpdPatient($entity->id,$data);

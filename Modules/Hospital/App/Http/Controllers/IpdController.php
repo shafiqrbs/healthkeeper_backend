@@ -309,9 +309,10 @@ class IpdController extends Controller
     {
        // $data = $request->validated();
         $user = $this->domain['user_id'];
+        $domain = $this->domain;
         $data = $request->all();
         $data['admitted_by_id'] = $user;
-        IpdModel::updateIpdInvoice($id,$data);
+        IpdModel::updateIpdInvoice($domain,$id,$data);
         $entity = InvoiceModel::getIpdShow($id);
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($entity);

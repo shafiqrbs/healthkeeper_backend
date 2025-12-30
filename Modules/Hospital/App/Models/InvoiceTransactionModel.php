@@ -560,7 +560,7 @@ class InvoiceTransactionModel extends Model
                 ]
             );
             InvoiceParticularModel::where('invoice_transaction_id', $transaction->id)->update(['status' => 1,'is_invoice' => 1]);
-            $invoice->update(['sub_total' => $transaction->sub_total , 'total' =>  $transaction->sub_total, 'amount' =>  $transaction->sub_total, 'process' => 'admitted']);
+            $invoice->update(['sub_total' => $transaction->total , 'total' =>  $transaction->total, 'amount' =>  $transaction->total, 'process' => 'admitted']);
             return $transaction->id;
         }
         return;
@@ -574,7 +574,7 @@ class InvoiceTransactionModel extends Model
         $entity = self::join('hms_invoice as hms_invoice', 'hms_invoice_transaction.hms_invoice_id', '=', 'hms_invoice.id')
             ->leftjoin('cor_customers','cor_customers.id','=','hms_invoice.customer_id')
             ->leftjoin('cor_setting as religion','religion.id','=','cor_customers.religion_id')
-            ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
+            ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice_transaction.created_by_id')
             ->leftjoin('hms_prescription as prescription','prescription.hms_invoice_id','=','hms_invoice.id')
             ->leftjoin('hms_admission_patient_details as admission_patient','admission_patient.hms_invoice_id','=','hms_invoice.id')
             ->leftjoin('users as prescription_doctor','prescription_doctor.id','=','prescription.created_by_id')
