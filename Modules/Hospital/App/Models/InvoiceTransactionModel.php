@@ -440,7 +440,6 @@ class InvoiceTransactionModel extends Model
         }
 
         $investigations = $data['json_content'];
-        $total = $data['total'];
         $mode = $data['mode'];
 
         $roomId = $entity->room_id;
@@ -546,7 +545,7 @@ class InvoiceTransactionModel extends Model
             'mode'           => 'ipd'
         ])->first();
         if($transaction){
-            InvoiceTransactionModel::updateOrCreate(
+            $transaction = InvoiceTransactionModel::updateOrCreate(
                 [
                     'hms_invoice_id' => $invoice->id,
                     'id'     => $transaction->id,
@@ -561,7 +560,7 @@ class InvoiceTransactionModel extends Model
                 ]
             );
             InvoiceParticularModel::where('invoice_transaction_id', $transaction->id)->update(['status' => 1,'is_invoice' => 1]);
-            $invoice->update(['sub_total' => $amount , 'total' => $amount, 'amount' => $amount, 'process' => 'admitted']);
+            $invoice->update(['sub_total' => $transaction->sub_total , 'total' =>  $transaction->sub_total, 'amount' =>  $transaction->sub_total, 'process' => 'admitted']);
             return $transaction->id;
         }
         return;
