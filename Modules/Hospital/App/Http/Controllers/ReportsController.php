@@ -80,6 +80,18 @@ class ReportsController extends Controller
         return $data;
     }
 
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function dailyOpdEmergencyIpd(Request $request){
+
+        $data = ReportModel::dailyOpdEmergencyIpd($this->domain,$request);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse($data);
+        return $data;
+    }
+
     /**
      * Display a listing of the resource.
      */

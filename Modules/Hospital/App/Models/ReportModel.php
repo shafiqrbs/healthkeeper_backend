@@ -1171,5 +1171,85 @@ class ReportModel extends Model
     }
 
 
+    public static function dailyOpdEmergencyIpd($domain, $request)
+    {
+        $data = [
+            'age_0_To_4' => self::formatAgeWise(
+                self::dailyCount($domain, $request, 0, 4)
+            ),
+            'age_5_To_14' => self::formatAgeWise(
+                self::dailyCount($domain, $request, 5, 14)
+            ),
+            'age_15_To_24' => self::formatAgeWise(
+                self::dailyCount($domain, $request, 15, 24)
+            ),
+            'age_25_To_49' => self::formatAgeWise(
+                self::dailyCount($domain, $request, 25, 49)
+            ),
+            'age_50_To_120' => self::formatAgeWise(
+                self::dailyCount($domain, $request, 50, 120)
+            ),
+        ];
+        $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
+        $records =[
+            'filter' => $filter,
+            'entities' => $data,
+        ];
+        return $records;
+    }
+
+    private static function formatAgeWise($rows)
+    {
+        $modes = ['opd', 'emergency', 'ipd'];
+
+        $result = [];
+
+        foreach ($modes as $mode) {
+            $result[$mode] = [
+                'male'   => 0,
+                'female' => 0,
+            ];
+        }
+
+        foreach ($rows as $row) {
+            $result[$row->invoice_mode][$row->gender] = (int) $row->total;
+
+        }
+        return $result;
+    }
+
+
+    public static function dailyCount($domain, $request, $startAge, $endAge)
+    {
+        $query = InvoiceModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereIn('hms_invoice.invoice_mode', ['opd', 'emergency', 'ipd'])
+            ->join('cor_customers as customer', 'customer.id', '=', 'hms_invoice.customer_id')
+            ->select([
+                DB::raw("COUNT(hms_invoice.id) as total"),
+                'hms_invoice.invoice_mode',
+                'customer.gender'
+            ])
+            ->groupBy(
+                'customer.gender',
+                'hms_invoice.invoice_mode'
+            );
+
+        // Date range
+        if (!empty($request['start_date']) && !empty($request['end_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+
+        return $query
+            ->whereBetween('customer.age', [$startAge, $endAge])
+            ->whereBetween('hms_invoice.created_at', [$start_date, $end_date])
+            ->get();
+    }
+
+
 
 }

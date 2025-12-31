@@ -161,6 +161,15 @@ class IpdPrescriptionController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function updateOrdering(Request $request)
+    {
+        foreach ($request->order as $row) {
+            PatientPrescriptionMedicineModel::where('id', $row['id'])
+                ->update(['ordering' => $row['ordering']]);
+        }
+        return response()->json(['success' => true]);
+    }
+
     /**
      * Update the specified resource in storage.
      */

@@ -167,6 +167,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
         ]);
     Route::get('/prescription/vital/{id}', [PrescriptionController::class, 'vitalCheck'])->name('vitalCheck');
     Route::post('/ipdprescription/inline-update/{id}', [IpdPrescriptionController::class,'medicineInlineUpdate'])->name('particular_matrix_inline_update');
+    Route::post('/ipdprescription/ordering', [IpdPrescriptionController::class,'updateOrdering'])->name('matrixUpdateOrdering');
     Route::apiResource('ipdprescription', IpdPrescriptionController::class)
         ->middleware([HeaderAuthenticationMiddleware::class])
         ->names([
@@ -270,6 +271,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::prefix('reports')->middleware([HeaderAuthenticationMiddleware::class])->group(function() {
         Route::get('/dashboard-daily-summary', [ReportsController::class,'dailySummary'])->name('dashboard_daily_summary');
         Route::get('/daily-collection-service-report', [ReportsController::class,'dailyCollectionServiceReport'])->name('daily_collection_service_report');
+        Route::get('/daily-opd-emergency-ipd-report', [ReportsController::class,'dailyOpdEmergencyIpd'])->name('daily_collection_service_report');
         Route::get('/summary-group-investigation', [ReportsController::class,'summaryGroupInvestigation'])->name('report_patient_ticket');
         Route::get('/summary-investigation', [ReportsController::class,'summaryInvestigation'])->name('report_patient_ticket');
         Route::get('/patient-collection', [ReportsController::class,'patientCollection'])->name('report_patient_ticket');
