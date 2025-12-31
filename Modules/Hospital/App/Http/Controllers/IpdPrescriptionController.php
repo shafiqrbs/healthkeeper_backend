@@ -165,7 +165,7 @@ class IpdPrescriptionController extends Controller
     {
         foreach ($request->order as $row) {
             PatientPrescriptionMedicineModel::where('id', $row['id'])
-                ->update(['ordering' => $row['ordering']]);
+                ->update(['order' => $row['ordering']]);
         }
         return response()->json(['success' => true]);
     }
