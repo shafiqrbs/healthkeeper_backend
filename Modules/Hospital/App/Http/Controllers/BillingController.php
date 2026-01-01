@@ -200,7 +200,7 @@ class BillingController extends Controller
         $domain = $this->domain;
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
-        InvoiceTransactionModel::finalBillClosing($domain,$entity);
+     //   InvoiceTransactionModel::finalBillClosing($domain,$entity);
         $entity = BillingModel::getFinalBillShow($id);
         $data = $service->returnJosnResponse($entity);
         return $data;

@@ -29,7 +29,7 @@ use Modules\Hospital\App\Models\ParticularModeModel;
 use Modules\Hospital\App\Models\PatientModel;
 use Modules\Hospital\App\Models\PatientPrescriptionMedicineModel;
 use Modules\Hospital\App\Models\PrescriptionModel;
-
+use Modules\Hospital\App\Models\TreatmentMedicineModel;
 
 
 class IpdPrescriptionController extends Controller
@@ -170,6 +170,20 @@ class IpdPrescriptionController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function updateTemplate(Request $request,$id)
+    {
+        $domain = $this->domain;
+        $entity = PrescriptionModel::findByIdOrUid($id);
+        $templateId = $request->get('template_id');
+        $template = TreatmentMedicineModel::where(['treatment_template_id'=>$templateId])->get();
+        PatientPrescriptionMedicineModel::insertTemplateMedicine($entity,$template);
+        $return = PrescriptionModel::getShow($id);
+        $localMedicines = PatientPrescriptionMedicineModel::getMedicineLocalDropdown($domain);
+        $return['localMedicines'] = $localMedicines;
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($return);
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -189,10 +203,6 @@ class IpdPrescriptionController extends Controller
         $entity->invoice->invoice_mode;
         if($entity->invoice->invoice_mode == "ipd"){
             $entity->invoice->update(['is_prescription' => 1,'weight' => $weight]);
-            PatientPrescriptionMedicineModel::insertIpdPatientMedicine($domain,$entity->id);
-        }else{
-            $entity->invoice->update(['process' => 'closed','is_prescription' => 1,'weight' => $weight]);
-            PatientPrescriptionMedicineModel::insertPatientMedicine($domain,$entity->id);
         }
         InvoiceTransactionModel::insertInvestigations($domain,$entity->id);
         HospitalSalesModel::insertMedicineIssue($domain,$entity->id);

@@ -120,7 +120,7 @@ class MedicineDosageController extends Controller
     public function destroy($id)
     {
         $service = new JsonRequestResponse();
-        InvestigationReportFormatModel::find($id)->delete();
+        MedicineDosageModel::find($id)->delete();
         $entity = ['message' => 'delete'];
         return $service->returnJosnResponse($entity);
     }
