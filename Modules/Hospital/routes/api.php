@@ -66,6 +66,7 @@ Route::prefix('/hospital/select')->middleware([HeaderAuthenticationMiddleware::c
 Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'auth:api',LogRequestResponse::class])->group(function() {
     Route::get('/config', [HospitalController::class,'domainHospitalConfig'])->name('domain_hospital_config');
     Route::get('/patient-search', [HospitalController::class,'patientSearch'])->name('patient_search');
+    Route::get('/bed-cabin', [HospitalController::class,'allRoomCabin'])->name('patient_search');
     Route::get('/room-cabin', [HospitalController::class,'roomCabin'])->name('patient_search');
     Route::get('/medicine-import', [HospitalController::class,'insertUpazilaDistrict'])->name('insert_medicine_stock');
     Route::get('/medicine-process', [HospitalController::class,'insertMedicineStockProcess'])->name('insert_medicine_stock_process');
@@ -191,6 +192,8 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::get('/ipd/view/{id}', [IpdController::class, 'ipdAdmissionShow'])->name('find_bill');
     Route::patch('/ipd/revised/{id}', [IpdController::class, 'admissionRevised'])->name('find_bill');
     Route::patch('/ipd/change/{id}', [IpdController::class, 'admissionChange'])->name('find_bill');
+    Route::get('/ipd/internal-transfer/{id}', [IpdController::class, 'internalTransfer'])->name('find_bill');
+    Route::patch('/ipd/internal-transfer-process/{id}', [IpdController::class, 'internalTransferProcess'])->name('find_bill');
     Route::get('/ipd/efresh-order/{id}', [IpdController::class,'efreshOrder'])->name('ipd_efreshOrder');
     Route::post('/ipd/patient-chart/{id}', [IpdController::class,'patientChart'])->name('ipd_data_process');
     Route::post('/ipd/data-process/{id}', [IpdController::class,'ipdDataProcess'])->name('ipd_data_process');

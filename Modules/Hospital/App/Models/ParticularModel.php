@@ -411,15 +411,16 @@ class ParticularModel extends Model
         return $particular;
     }
 
-
-    public static function getRoomCabin($request,$domain){
+    public static function getAllRoomCabin($request,$domain){
 
         $config =  $domain['hms_config'];
         $page =  isset($request['page']) && $request['page'] > 0?($request['page'] - 1 ) : 0;
-        $perPage = 1000;
+        $perPage = 300;
         $skip = isset($page) && $page!=''? (int)$page*$perPage:0;
 
-        $entity = self::where('hms_particular.config_id',$config)->where('hms_particular.is_booked',0)->where('hms_particular.status',1)
+        $entity = self::where('hms_particular.config_id',$config)
+            ->where('hms_particular.status',1)
+            ->whereIn('hms_particular_master_type.slug',['cabin','bed'])
             ->leftJoin('hms_particular_details','hms_particular_details.particular_id','=','hms_particular.id')
             ->join('hms_particular_type','hms_particular_type.id','=','hms_particular.particular_type_id')
             ->join('hms_particular_master_type','hms_particular_master_type.id','=','hms_particular_type.particular_master_type_id')
@@ -429,8 +430,91 @@ class ParticularModel extends Model
             ->leftJoin('hms_particular_mode as patientMode','patientMode.id','=','hms_particular_details.patient_mode_id')
             ->leftJoin('hms_particular_mode as genderMode','genderMode.id','=','hms_particular_details.gender_mode_id')
             ->leftJoin('hms_particular_mode as paymentMode','paymentMode.id','=','hms_particular_details.payment_mode_id')
-            ->leftJoin('hms_particular_mode as treatmentMode','treatmentMode.id','=','hms_particular_details.treatment_mode_id')
-            ->leftJoin('hms_particular_mode as investigationGroup','investigationGroup.id','=','hms_particular_details.investigation_group_id')
+            ->leftJoin('hms_invoice as hms_invoice','hms_invoice.id','=','hms_particular.admission_id')
+            ->leftJoin('cor_customers as cor_customers','cor_customers.id','=','hms_invoice.customer_id')
+            ->select([
+                'hms_particular.id',
+                'hms_particular.name',
+                'hms_particular.display_name',
+                'hms_particular.slug',
+                'hms_particular.price',
+                'hms_particular.status',
+                'room.name as room_name',
+                'patientType.name as patient_type_name',
+                'patientMode.name as patient_mode_name',
+                'paymentMode.name as payment_mode_name',
+                'genderMode.name as gender_mode_name',
+                'hms_particular_type.name as particular_type_name',
+                'hms_particular_type.slug as particular_type_slug',
+                'hms_particular.is_booked',
+                'hms_particular.admission_id',
+                'hms_invoice.admission_date',
+                'hms_invoice.invoice',
+                'hms_invoice.process',
+                'hms_invoice.admission_day',
+                'hms_invoice.consume_day',
+                'hms_invoice.remaining_day',
+                'hms_invoice.payment_day',
+                'cor_customers.name as customer_name',
+                'cor_customers.gender',
+                'cor_customers.age',
+                'cor_customers.customer_id as patient_id',
+            ]);
+
+        if (!empty($request['term'])) {
+            $term = trim($request['term']);
+            $entity = $entity->where(function ($q) use ($term) {
+                $q->where('hms_particular.name', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_particular.slug', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_particular.display_name', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_particular_type.slug', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_particular_type.name', 'LIKE', "%{$term}%")
+                    ->orWhere('cor_customers.customer_id', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_invoice.invoice', 'LIKE', "%{$term}%");
+            });
+        }
+
+        $entity->when($request['mode'] ?? null, function ($q, $mode) {
+            if ($mode === 'empty') {
+                $q->where('hms_particular.is_booked', 0);
+            } elseif ($mode === 'occupied') {
+                $q->where('hms_particular.is_booked', 1)
+                    ->whereNotNull('hms_particular.admission_id');
+            }
+        });
+
+        $total  = $entity->count();
+        $entities = $entity->skip($skip)
+            ->take($perPage)
+            ->orderBy('paymentMode.name','ASC')
+            ->orderBy('genderMode.name','ASC')
+            ->get();
+
+        $data = array('count'=>$total,'entities' => $entities);
+        return $data;
+
+
+    }
+
+    public static function getRoomCabin($request,$domain){
+
+        $config =  $domain['hms_config'];
+        $page =  isset($request['page']) && $request['page'] > 0?($request['page'] - 1 ) : 0;
+        $perPage = 300;
+        $skip = isset($page) && $page!=''? (int)$page*$perPage:0;
+
+        $entity = self::where('hms_particular.config_id',$config)->where('hms_particular.is_booked',0)
+            ->where('hms_particular.status',1)
+            ->whereIn('hms_particular_master_type.slug',['cabin','bed'])
+            ->leftJoin('hms_particular_details','hms_particular_details.particular_id','=','hms_particular.id')
+            ->join('hms_particular_type','hms_particular_type.id','=','hms_particular.particular_type_id')
+            ->join('hms_particular_master_type','hms_particular_master_type.id','=','hms_particular_type.particular_master_type_id')
+            ->leftJoin('inv_category','inv_category.id','=','hms_particular.category_id')
+            ->leftJoin('hms_particular as room','room.id','=','hms_particular_details.room_id')
+            ->leftJoin('hms_particular_mode as patientType','patientType.id','=','hms_particular_details.patient_type_id')
+            ->leftJoin('hms_particular_mode as patientMode','patientMode.id','=','hms_particular_details.patient_mode_id')
+            ->leftJoin('hms_particular_mode as genderMode','genderMode.id','=','hms_particular_details.gender_mode_id')
+            ->leftJoin('hms_particular_mode as paymentMode','paymentMode.id','=','hms_particular_details.payment_mode_id')
             ->select([
                 'hms_particular.id',
                 'hms_particular.name',
@@ -479,6 +563,29 @@ class ParticularModel extends Model
 
         $data = array('count'=>$total,'entities' => $entities);
         return $data;
+
+
+    }
+
+    public static function getRoomCabinTransfer($entity){
+
+        $config  = $entity->config_id;
+        $typeId  = $entity->room->particular_type_id;
+        $price   = $entity->room->price;
+
+        $rooms = self::where('hms_particular.config_id', $config)
+            ->where('hms_particular.is_booked', false)
+            ->where('hms_particular.status', true)
+            ->where('hms_particular.particular_type_id', $typeId)
+            ->where('hms_particular.price', $price)
+            ->select([
+                'hms_particular.id',
+                'hms_particular.display_name as name',
+                'hms_particular.price',
+            ])
+            ->orderBy('hms_particular.ordering', 'ASC')
+            ->get();
+        return $rooms;
 
 
     }

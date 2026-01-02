@@ -290,6 +290,18 @@ class IpdController extends Controller
 
     }
 
+     /**
+     * Show the form for editing the specified resource.
+     */
+    public function internalTransfer($id)
+    {
+        $entity = InvoiceModel::findByIdOrUid($id);
+        $entities = ParticularModel::getRoomCabinTransfer($entity);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse($entities);
+        return $data;
+    }
+
     /**
      * Show the form for editing the specified resource.
      */

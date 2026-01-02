@@ -175,8 +175,10 @@ class IpdPrescriptionController extends Controller
         $domain = $this->domain;
         $entity = PrescriptionModel::findByIdOrUid($id);
         $templateId = $request->get('template_id');
-        $template = TreatmentMedicineModel::where(['treatment_template_id'=>$templateId])->get();
-        PatientPrescriptionMedicineModel::insertTemplateMedicine($entity,$template);
+        if($templateId){
+            $template = TreatmentMedicineModel::where(['treatment_template_id'=> $templateId])->get();
+            PatientPrescriptionMedicineModel::insertTemplateMedicine($entity,$template);
+        }
         $return = PrescriptionModel::getShow($id);
         $localMedicines = PatientPrescriptionMedicineModel::getMedicineLocalDropdown($domain);
         $return['localMedicines'] = $localMedicines;
