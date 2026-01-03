@@ -14,6 +14,8 @@ return [
         'https://health.poskeeper.com',
         'https://hms.tbhsd.gov.bd',
         'https://sandra.poskeeper.com',
+        'https://poskeeper-4wds2i7a.on-forge.com',
+        'https://hms.epharmabd.com',
         'https://pos.poskeeper.com'
 
     ],
