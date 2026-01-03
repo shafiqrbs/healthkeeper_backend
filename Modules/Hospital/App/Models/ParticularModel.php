@@ -572,12 +572,16 @@ class ParticularModel extends Model
         $config  = $entity->config_id;
         $typeId  = $entity->room->particular_type_id;
         $price   = $entity->room->price;
+        $gender = $entity->customer->gender;
 
         $rooms = self::where('hms_particular.config_id', $config)
+            ->leftJoin('hms_particular_details','hms_particular_details.particular_id','=','hms_particular.id')
+            ->leftJoin('hms_particular_mode as genderMode','genderMode.id','=','hms_particular_details.gender_mode_id')
             ->where('hms_particular.is_booked', false)
             ->where('hms_particular.status', true)
             ->where('hms_particular.particular_type_id', $typeId)
             ->where('hms_particular.price', $price)
+            ->where('genderMode.slug', $gender)
             ->select([
                 'hms_particular.id',
                 'hms_particular.display_name as name',

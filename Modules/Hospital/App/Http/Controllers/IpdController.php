@@ -20,6 +20,7 @@ use Modules\Hospital\App\Entities\Prescription;
 use Modules\Hospital\App\Http\Requests\IpdRequest;
 use Modules\Hospital\App\Http\Requests\OPDRequest;
 use Modules\Hospital\App\Http\Requests\ReferredRequest;
+use Modules\Hospital\App\Models\AdmissionPatientHistoryModel;
 use Modules\Hospital\App\Models\AdmissionPatientModel;
 use Modules\Hospital\App\Models\AdmissionPatientPrescriptionHistory;
 use Modules\Hospital\App\Models\AdmissionPatientPrescriptionHistoryModel;
@@ -299,6 +300,44 @@ class IpdController extends Controller
         $entities = ParticularModel::getRoomCabinTransfer($entity);
         $service = new JsonRequestResponse();
         $data = $service->returnJosnResponse($entities);
+        return $data;
+    }
+
+     /**
+     * Show the form for editing the specified resource.
+     */
+    public function internalTransferProcess(Request $request , $id)
+    {
+        $entity = InvoiceModel::findByIdOrUid($id);
+        $data = $request->all();
+        $newRoomId = (isset($data['room_id']) && $data['room_id']) ? $data['room_id']:'';
+        DB::transaction(function () use ($entity,$newRoomId, $data) {
+            AdmissionPatientHistoryModel::insertAdmissionHistory($this->domain,$entity,$data);
+            // Release old room
+            if ($entity->room) {
+                $entity->room->update([
+                    'is_booked'   => false,
+                    'admission_id'=> null,
+                ]);
+            }
+
+            // Assign new room
+            $entity->update([
+                'room_id' => $newRoomId,
+            ]);
+
+            // Reload room relation (IMPORTANT)
+            $entity->load('room');
+
+            // Book new room
+            $entity->room->update([
+                'is_booked'    => true,
+                'admission_id' => $entity->id,
+            ]);
+
+        });
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse(['status' => 'success']);
         return $data;
     }
 

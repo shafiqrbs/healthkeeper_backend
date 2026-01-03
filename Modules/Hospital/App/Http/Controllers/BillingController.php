@@ -201,6 +201,7 @@ class BillingController extends Controller
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
      //   InvoiceTransactionModel::finalBillClosing($domain,$entity);
+        InvoiceParticularModel::getCountBedRoom($entity->id);
         $entity = BillingModel::getFinalBillShow($id);
         $data = $service->returnJosnResponse($entity);
         return $data;

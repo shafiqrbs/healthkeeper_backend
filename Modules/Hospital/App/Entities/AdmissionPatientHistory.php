@@ -7,10 +7,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
 /**
  * InvoiceParticular
  *
- * @ORM\Table( name = "hms_admission_patient_details")
+ * @ORM\Table( name = "hms_admission_patient_history")
  * @ORM\Entity()
  */
-class AdmissionPatient
+class AdmissionPatientHistory
 {
     /**
      * @var integer
@@ -30,7 +30,15 @@ class AdmissionPatient
 
 
     /**
-     * @ORM\OneToOne(targetEntity="Invoice")
+     * @var string
+     *
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $mode;
+
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Invoice")
      * @ORM\JoinColumn(onDelete="CASCADE")
      **/
     private $hmsInvoice;
@@ -41,52 +49,13 @@ class AdmissionPatient
      **/
     private  $createdBy;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
-     * @ORM\JoinColumn(name="approved_by_id", referencedColumnName="id", nullable=true)
-     **/
-    private  $approvedBy;
-
 
     /**
      * @var string
      *
-     * @ORM\Column( type="string",nullable = true)
+     * @ORM\Column( type="json", nullable = true)
      */
-    private $changeMode;
-
-
-    /**
-     * @var string
-     *
-     * @ORM\Column( type="text",nullable = true)
-     */
-    private $comment;
-
-
-
-    /**
-     * @var string
-     *
-     * @ORM\Column( type="text",nullable = true)
-     */
-    private $approveComment;
-
-
-     /**
-     * @var string
-     *
-     * @ORM\Column( type="json",nullable = true)
-     */
-    private $vitalChartJson;
-
-
-    /**
-     * @var string
-     *
-     * @ORM\Column( type="json",nullable = true)
-     */
-    private $insulinChartJson;
+    private $content;
 
 
      /**

@@ -194,7 +194,7 @@ class BillingModel extends Model
             });
         }
 
-        $entities = $entities->whereIn('hms_invoice.process', ['admitted']);
+        $entities = $entities->whereIn('hms_invoice.process', ['admitted','paid']);
         $entities = $entities->whereIn('hms_invoice.release_mode', ['discharge','death','referred']);
 
         if (isset($request['room_id']) && !empty($request['room_id'])){
@@ -458,91 +458,74 @@ class BillingModel extends Model
 
     public static function getFinalBillShow($id)
     {
-        $entity = self::where(function ($query) use ($id) {
-            $query->where('hms_invoice.id', '=', $id)
-                ->orWhere('hms_invoice.uid', '=', $id);
+        return self::where(function ($query) use ($id) {
+            $query->where('hms_invoice.id', $id)
+                ->orWhere('hms_invoice.uid', $id);
         })
-            ->leftjoin('cor_customers','cor_customers.id','=','hms_invoice.customer_id')
-            ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
-            ->leftjoin('hms_prescription as prescription','prescription.hms_invoice_id','=','hms_invoice.id')
-            ->leftjoin('users as prescription_doctor','prescription_doctor.id','=','prescription.created_by_id')
-            ->leftjoin('hms_particular as room','room.id','=','hms_invoice.room_id')
-            ->leftjoin('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
-            ->leftjoin('hms_particular as admit_consultant','admit_consultant.id','=','hms_invoice.admit_consultant_id')
-            ->leftjoin('hms_particular as admit_doctor','admit_doctor.id','=','hms_invoice.admit_doctor_id')
-            ->leftjoin('hms_particular_mode as admit_unit','admit_unit.id','=','hms_invoice.admit_unit_id')
-            ->leftjoin('hms_particular_mode as admit_department','admit_department.id','=','hms_invoice.admit_department_id')
-            ->leftjoin('hms_particular_mode as particular_payment_mode','particular_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
+            ->leftJoin('cor_customers','cor_customers.id','=','hms_invoice.customer_id')
+            ->leftJoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
+            ->leftJoin('hms_particular as room','room.id','=','hms_invoice.room_id')
+            ->leftJoin('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
+            ->leftJoin('hms_particular as admit_consultant','admit_consultant.id','=','hms_invoice.admit_consultant_id')
+            ->leftJoin('hms_particular as admit_doctor','admit_doctor.id','=','hms_invoice.admit_doctor_id')
+            ->leftJoin('hms_particular_mode as admit_unit','admit_unit.id','=','hms_invoice.admit_unit_id')
+            ->leftJoin('hms_particular_mode as admit_department','admit_department.id','=','hms_invoice.admit_department_id')
+            ->leftJoin('hms_particular_mode as payment_mode','payment_mode.id','=','hms_invoice.patient_payment_mode_id')
             ->select([
                 'hms_invoice.*',
                 DB::raw('DATE_FORMAT(hms_invoice.updated_at, "%d-%m-%y") as created'),
                 DB::raw('DATE_FORMAT(hms_invoice.appointment_date, "%d-%m-%y") as appointment'),
-                'hms_invoice.invoice as invoice',
-                'hms_invoice.total as total',
-                'hms_invoice.comment',
-                'hms_invoice.guardian_name as guardian_name',
-                'hms_invoice.guardian_mobile as guardian_mobile',
-                'cor_customers.name as name',
-                'cor_customers.mobile as mobile',
-                'cor_customers.id as customer_id',
+
+                'cor_customers.name',
+                'cor_customers.mobile',
                 'cor_customers.customer_id as patient_id',
-                'cor_customers.health_id as health_id',
-                'cor_customers.gender as gender',
-                'cor_customers.father_name',
-                'cor_customers.mother_name',
-                'cor_customers.upazilla_id',
-                'cor_customers.country_id',
-                'cor_customers.profession',
-                'cor_customers.religion_id',
-                'cor_customers.nid',
-                'cor_customers.identity_mode',
-                'cor_customers.address',
-                'cor_customers.permanent_address',
+                'cor_customers.health_id',
+                'cor_customers.gender',
                 DB::raw('DATE_FORMAT(cor_customers.dob, "%d-%m-%y") as dob'),
-                'cor_customers.identity_mode as identity_mode',
-                'hms_invoice.year as year',
-                'hms_invoice.month as month',
-                'hms_invoice.day as day',
-                'createdBy.username as created_by_user_name',
+
                 'createdBy.name as created_by_name',
-                'createdBy.id as created_by_id',
                 'room.display_name as room_name',
                 'room.price as room_price',
-                'patient_mode.name as mode_name',
-                'patient_mode.slug as mode_slug',
-                'particular_payment_mode.name as payment_mode_name',
+
+                'patient_mode.name as patient_mode_name',
                 'patient_mode.slug as patient_mode_slug',
-                'hms_invoice.process as process',
+
+                'payment_mode.name as payment_mode_name',
+
                 'admit_consultant.name as admit_consultant_name',
+                'admit_doctor.name as admit_doctor_name',
                 'admit_unit.name as admit_unit_name',
                 'admit_department.name as admit_department_name',
-                'admit_doctor.name as admit_doctor_name',
-                'prescription.id as prescription_id',
-                DB::raw('DATE_FORMAT(prescription.created_at, "%d-%m-%y") as prescription_created'),
-                'prescription_doctor.employee_id as prescription_doctor_id',
-                'prescription_doctor.name as prescription_doctor_name',
-                'hms_invoice.admission_day as room_admission_day',
-                'hms_invoice.consume_day as room_consume_day',
-                'hms_invoice.remaining_day as room_remaining_day',
             ])
-            ->with(['invoice_transaction' => function ($query) {
-                $query->select([
-                    'hms_invoice_transaction.id as hms_invoice_transaction_id',
-                    'hms_invoice_transaction.hms_invoice_id',
-                    'hms_invoice_transaction.created_by_id',
-                    'hms_invoice_transaction.mode',
-                    'hms_invoice_transaction.sub_total',
-                    'hms_invoice_transaction.total',
-                    'hms_invoice_transaction.amount',
-                    'hms_invoice_transaction.process',
-                    DB::raw('DATE_FORMAT(hms_invoice_transaction.created_at, "%d-%m-%y") as created'),
-                ])->where('hms_invoice_transaction.process','Done')->whereIn('hms_invoice_transaction.mode', ['investigation', 'ipd', 'room'])->orderBy('hms_invoice_transaction.created_at','ASC');
-            }])
-            ->with(['invoice_particular'])
+            ->with([
+                'invoice_transaction' => function ($q) {
+                    $q->select([
+                        'id',
+                        'hms_invoice_id',
+                        'mode',
+                        'sub_total',
+                        'total',
+                        'amount',
+                        'process',
+                        DB::raw('DATE_FORMAT(created_at, "%d-%m-%y") as created'),
+                    ])
+                        ->where('process','Done')
+                        ->whereIn('mode',['investigation','ipd','room'])
+                        ->orderBy('created_at');
+                },
+                'invoice_particular' => function ($q) {
+                    $q->select([
+                        'hms_invoice_id',
+                        'name',
+                        'price',
+                        DB::raw('SUM(quantity) as quantity'),
+                        DB::raw('SUM(sub_total) as sub_total'),
+                    ])->whereNotNull('invoice_transaction_id')->groupBy('name','price');
+                }
+            ])
             ->first();
-
-        return $entity;
     }
+
 
 
 }

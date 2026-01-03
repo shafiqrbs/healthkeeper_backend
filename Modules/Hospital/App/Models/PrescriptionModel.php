@@ -295,6 +295,8 @@ class PrescriptionModel extends Model
             ->leftjoin('inv_sales','inv_sales.id','=','hms_invoice.sales_id')
             ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
             ->leftjoin('hms_particular as room','room.id','=','hms_invoice.room_id')
+            ->leftjoin('hms_particular_mode as admit_unit','admit_unit.id','=','hms_invoice.admit_unit_id')
+            ->leftjoin('hms_particular_mode as admit_department','admit_department.id','=','hms_invoice.admit_department_id')
             ->leftjoin('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
             ->leftjoin('hms_particular_mode as particular_payment_mode','particular_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
             ->select([
@@ -303,6 +305,8 @@ class PrescriptionModel extends Model
                 'hms_prescription.referred_by_id as referred_by_id',
                 'hms_prescription.prescribe_doctor_id as prescribe_doctor_id',
                 'hms_invoice.id as invoice_id',
+                'hms_invoice.admission_date as admission_date',
+                'hms_invoice.release_date as release_date',
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d-%m-%y %H:%i %p") as created'),
                 DB::raw('DATE_FORMAT(hms_invoice.appointment_date, "%d-%m-%y") as appointment'),
                 'hms_invoice.invoice as invoice',
@@ -331,6 +335,8 @@ class PrescriptionModel extends Model
                 'hms_invoice.year as year',
                 'hms_invoice.month as month',
                 'hms_invoice.day as day',
+                'admit_unit.name as admit_unit_name',
+                'admit_department.name as admit_department_name',
                 'doctor.name as doctor_name','doctor.employee_id as employee_id',
                 DB::raw("CONCAT('".url('')."/uploads/core/user/signature/', profiles.signature_path) AS signature_path"),
                 'profiles.id as profiles_id',
@@ -346,7 +352,7 @@ class PrescriptionModel extends Model
                 'createdBy.username as created_by_user_name',
                 'createdBy.name as created_by_name',
                 'createdBy.id as created_by_id',
-                'room.name as room_name',
+                'room.display_name as room_name',
                 'patient_mode.name as mode_name',
                 'particular_payment_mode.name as payment_mode_name',
                 'hms_invoice.process as process',
