@@ -359,6 +359,7 @@ class Invoice
      */
     private $freeIdentification;
 
+
     /**
      * @var string
      *
@@ -431,6 +432,8 @@ class Invoice
      * @ORM\Column(name="refund_day", type="integer",  nullable=true)
      */
     private $refundDay;
+
+
 
 
     /**
@@ -560,35 +563,42 @@ class Invoice
     /**
      * @var string
      *
-     * @ORM\Column(name="due", type="decimal", nullable=true)
+     * @ORM\Column(name="due", type="decimal", nullable=true, options={"default"=0})
      */
     private $due;
 
     /**
      * @var float
      *
-     * @ORM\Column(type="decimal", nullable=true)
+     * @ORM\Column(type="decimal", nullable=true, options={"default"=0})
      */
     private $subTotal;
 
     /**
      * @var float
      *
-     * @ORM\Column(type="decimal", nullable=true)
+     * @ORM\Column(type="decimal", nullable=true, options={"default"=0})
      */
     private $total;
 
     /**
      * @var float
      *
-     * @ORM\Column(type="decimal", nullable=true)
+     * @ORM\Column(type="decimal", nullable=true, options={"default"=0})
+     */
+    private $roomRent;
+
+    /**
+     * @var float
+     *
+     * @ORM\Column(type="decimal", nullable=true, options={"default"=0})
      */
     private $amount;
 
     /**
      * @var float
      *
-     * @ORM\Column(type="decimal", nullable=true)
+     * @ORM\Column(type="decimal", nullable=true, options={"default"=0})
      */
     private $refundAmount;
 
@@ -712,12 +722,6 @@ class Invoice
      */
     private $isPrescription;
 
-     /**
-     * @var boolean
-     *
-     * @ORM\Column(type="boolean", nullable=true, options={"default"="false"})
-     */
-    private $isFree;
 
     /**
      * @var \DateTime

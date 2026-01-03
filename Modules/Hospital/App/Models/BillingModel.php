@@ -510,17 +510,19 @@ class BillingModel extends Model
                         DB::raw('DATE_FORMAT(created_at, "%d-%m-%y") as created'),
                     ])
                         ->where('process','Done')
-                        ->whereIn('mode',['investigation','ipd','room'])
+                        ->whereIn('mode',['investigation','ipd','room','bill'])
                         ->orderBy('created_at');
                 },
                 'invoice_particular' => function ($q) {
                     $q->select([
                         'hms_invoice_id',
                         'name',
+                        'particular_id',
                         'price',
                         DB::raw('SUM(quantity) as quantity'),
                         DB::raw('SUM(sub_total) as sub_total'),
-                    ])->whereNotNull('invoice_transaction_id')->groupBy('name','price');
+                        DB::raw('SUM(refund_amount) as refund_amount'),
+                    ])->whereNotNull('invoice_transaction_id')->groupBy('particular_id');
                 }
             ])
             ->first();

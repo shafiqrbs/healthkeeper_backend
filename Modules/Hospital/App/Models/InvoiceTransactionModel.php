@@ -514,6 +514,7 @@ class InvoiceTransactionModel extends Model
                                 'name'      => $particular->display_name,
                                 'quantity'      => $investigation['days'],
                                 'status'      => 1,
+                                'process'      => 'Done',
                                 'is_invoice' => 1,
                                 'mode' => $mode,
                                 'report_mode' => $invoiceMode,
@@ -648,63 +649,93 @@ class InvoiceTransactionModel extends Model
         return $entity;
     }
 
-    public static function finalBillClosing($domain,$entity){
+    public static function finalBillClosing($domain, $entity)
+    {
+        return DB::transaction(function () use ($domain, $entity) {
 
-        InvoiceParticularModel::getCountBedRoom($entity->id);
-        $particular = ParticularModel::find($entity->room_id);
-        $date =  new \DateTime("now");
-        $report_mode = $entity->parent->invoice_mode;
-        if($entity->remaining_day >= 0 ){
-            $receivable = ($entity->remaining_day * $particular->price ?? 0);
-            $invoiceTransaction = InvoiceTransactionModel::create([
-                'hms_invoice_id'=> $entity->id,
-                'created_by_id'=> $domain['user_id'],
-                'approved_by_id'=> $domain['user_id'],
-                'mode'    => 'bill',
-                'sub_total'    => $receivable,
-                'total'    => $receivable,
-                'amount'    => $receivable,
-                'process'    => 'Done',
-                'updated_at'    => $date,
-                'created_at'    => $date,
-            ]);
-            InvoiceParticularModel::updateOrCreate(
-                [
-                    'hms_invoice_id'             => $entity->id,
-                    'invoice_transaction_id' => $invoiceTransaction->id
-                ],
-                [
-                    'particular_id'      => $particular->id,
-                    'name'      => $particular->display_name,
-                    'quantity'      => $entity->remaining_day,
-                    'status'      => 1,
-                    'process'      => 'Done',
-                    'is_invoice' => 1,
-                    'mode' => 'room',
-                    'report_mode' =>$report_mode,
-                    'price'         => $particular->price ?? 0,
-                    'estimate_price'         => $particular->price ?? 0,
-                    'sub_total'         => ($particular->price * $entity->remaining_day) ?? 0,
-                    'updated_at'    => $date,
-                    'created_at'    => $date,
-                ]
-            );
-            $data = ['mode'=>'bill','id' => $invoiceTransaction->id];
-            return $data;
-        }else{
+            // Ensure room count is updated first
+            InvoiceParticularModel::getCountBedRoom($entity->id);
+
+            $particular   = $entity->room;
+            $date         = now();
+            $report_mode  = $entity->parent->invoice_mode;
+
+            // ---------------- BILL ----------------
+            if ($entity->remaining_day > 0) {
+
+                $price      = $particular->price ?? 0;
+                $quantity   = $entity->remaining_day;
+                $receivable = $quantity * $price;
+
+                $invoiceTransaction = InvoiceTransactionModel::create([
+                    'hms_invoice_id' => $entity->id,
+                    'created_by_id'  => $domain['user_id'],
+                    'approved_by_id' => $domain['user_id'],
+                    'mode'           => 'bill',
+                    'sub_total'      => $receivable,
+                    'total'          => $receivable,
+                    'amount'         => $receivable,
+                    'process'        => 'Done',
+                    'created_at'     => $date,
+                    'updated_at'     => $date,
+                ]);
+
+                InvoiceParticularModel::updateOrCreate(
+                    [
+                        'hms_invoice_id'         => $entity->id,
+                        'invoice_transaction_id'=> $invoiceTransaction->id,
+                    ],
+                    [
+                        'particular_id'  => $particular->id,
+                        'name'           => $particular->display_name,
+                        'quantity'       => $quantity,
+                        'status'         => 1,
+                        'process'        => 'Done',
+                        'is_invoice'     => 1,
+                        'mode'           => 'room',
+                        'report_mode'    => $report_mode,
+                        'price'          => $price,
+                        'estimate_price' => $price,
+                        'sub_total'      => $receivable,
+                        'created_at'     => $date,
+                        'updated_at'     => $date,
+                    ]
+                );
+
+                // Recalculate after insert
+                InvoiceParticularModel::getCountBedRoom($entity->id);
+
+                return [
+                    'mode' => 'bill',
+                    'id'   => $invoiceTransaction->id,
+                ];
+            }
+
+            // ---------------- REFUND ----------------
             $lastTransaction = $entity->invoice_transaction()
-                ->where(function ($q) {
-                    $q->where('mode', 'room')
-                        ->orWhere('mode', 'ipd');
-                })
+                ->whereIn('mode', ['room', 'ipd'])
                 ->latest('id')
+                ->lockForUpdate() // 🔒 important inside transaction
                 ->first();
-            $refund = self::finalBillRefund($domain,$entity,$lastTransaction,$particular);
-            $data = ['mode'=>'refund','id'=> $refund->id];
-            return $data;
 
-        }
+            if (!$lastTransaction) {
+                throw new \Exception('No previous transaction found for refund');
+            }
 
+            $refund = self::finalBillRefund(
+                $domain,
+                $entity,
+                $lastTransaction,
+                $particular
+            );
+
+
+
+            return [
+                'mode' => 'refund',
+                'id'   => $refund->id,
+            ];
+        });
     }
 
     public static function finalBillRefund($domain,$entity,$lastTransaction,$particular)
@@ -745,7 +776,8 @@ class InvoiceTransactionModel extends Model
                         'updated_at' => $date,
                     ]
                 );
-                return $refundTransaction;
+            $entity->update(['refund_amount' => $total ,'refund_day' => $quantity]);
+            return $refundTransaction;
         }
         return false;
     }

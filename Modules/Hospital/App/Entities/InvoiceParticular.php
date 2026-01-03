@@ -127,14 +127,14 @@ class InvoiceParticular
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=50, nullable=true)
+     * @ORM\Column(name="name", type="string",nullable=true)
      */
     private $name;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="quantity", type="smallint", nullable=true)
+     * @ORM\Column(name="quantity", type="smallint", nullable=true, options={"default"=0})
      */
     private $quantity = 1;
 
@@ -156,28 +156,28 @@ class InvoiceParticular
     /**
      * @var float
      *
-     * @ORM\Column(name="price", type="float", nullable=true)
+     * @ORM\Column(name="price", type="float", nullable=true, options={"default"=0})
      */
     private $price;
 
      /**
      * @var float
      *
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\Column(type="float", nullable=true, options={"default"=0})
      */
     private $discountPrice;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="commission", type="float", nullable=true)
+     * @ORM\Column(name="commission", type="float", nullable=true, options={"default"=0})
      */
     private $commission;
 
     /**
      * @var string
      *
-     * @ORM\Column( type="decimal", nullable=true)
+     * @ORM\Column( type="decimal", nullable=true, options={"default"=0})
      */
     private $estimatePrice;
 
@@ -185,7 +185,7 @@ class InvoiceParticular
     /**
      * @var boolean
      *
-     * @ORM\Column(type="boolean",nullable=true)
+     * @ORM\Column(type="boolean",nullable=true, options={"default"=0})
      */
     private $customPrice = false;
 
@@ -193,7 +193,7 @@ class InvoiceParticular
     /**
      * @var float
      *
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\Column(type="float", nullable=true, options={"default"=0})
      */
     private $subTotal;
 

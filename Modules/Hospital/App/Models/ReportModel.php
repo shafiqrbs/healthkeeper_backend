@@ -603,6 +603,10 @@ class ReportModel extends Model
             'refundServiceGroups' => $refundServiceGroups,
             'refundPatientRoom' => $refundPatientRoomBaseCollection,
             'refundTotalAmount' => $refundTotalAmount,
+            'financialServicesModes' => $financialServicesModes,
+            'financialServicesMerged' => $financialServicesMerged,
+            'refundInvoiceModeMap' => $refundInvoiceModeMap,
+            'invoiceMerged' => $invoiceMerged,
            // 'serviceFees' => $serviceFees,
         ];
         return $records;

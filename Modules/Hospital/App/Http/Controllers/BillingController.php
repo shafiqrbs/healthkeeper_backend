@@ -197,10 +197,8 @@ class BillingController extends Controller
      */
     public function finalBillDetails($id)
     {
-        $domain = $this->domain;
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
-     //   InvoiceTransactionModel::finalBillClosing($domain,$entity);
         InvoiceParticularModel::getCountBedRoom($entity->id);
         $entity = BillingModel::getFinalBillShow($id);
         $data = $service->returnJosnResponse($entity);
@@ -216,9 +214,9 @@ class BillingController extends Controller
         $domain = $this->domain;
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
-        $particular = ParticularModel::find($entity->room_id);
+        InvoiceParticularModel::getCountBedRoom($entity->id);
         $date =  new \DateTime("now");
-        if($particular->price == 0 ){
+        if($entity->amount === $entity->total and $entity->remaining_day == 0){
             $entity->update(['process' => 'paid','release_date'=>$date]);
             ParticularModel::where([
                 'is_booked' => 1,
@@ -244,7 +242,7 @@ class BillingController extends Controller
                     'is_booked' => 0,
                     'admission_id' => null,
                 ]);
-                $print = InvoiceTransactionModel::showInvoiceData($data['id']);
+                $print = BillingModel::getFinalBillShow($entity->id);
             }
             $data = $service->returnJosnResponse($print);
             return $data;

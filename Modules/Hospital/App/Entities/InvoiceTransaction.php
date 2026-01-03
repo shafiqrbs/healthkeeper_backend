@@ -76,35 +76,35 @@ class InvoiceTransaction
     /**
      * @var float
      *
-     * @ORM\Column(name="discount", type="decimal", nullable=true)
+     * @ORM\Column(name="discount", type="decimal", nullable=true, options={"default"=0})
      */
     private $discount;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="amount", type="decimal", nullable=true)
+     * @ORM\Column(name="amount", type="decimal", nullable=true, options={"default"=0})
      */
     private $amount;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="sub_total", type="decimal", nullable=true)
+     * @ORM\Column(name="sub_total", type="decimal", nullable=true, options={"default"=0})
      */
     private $subTotal= 0;
 
      /**
      * @var float
      *
-     * @ORM\Column(name="total", type="decimal", nullable=true)
+     * @ORM\Column(name="total", type="decimal", nullable=true, options={"default"=0})
      */
     private $total= 0;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="vat", type="decimal", nullable=true)
+     * @ORM\Column(name="vat", type="decimal", nullable=true, options={"default"=0})
      */
     private $vat;
 
