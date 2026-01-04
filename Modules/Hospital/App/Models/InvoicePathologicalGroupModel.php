@@ -219,6 +219,7 @@ class InvoicePathologicalGroupModel extends Model
                     ],
                     [
                         'name' => $row->name,
+                        'investigation_report_parent_id' => $row->parent_id,
                         'invoice_pathological_group_id' => $reportId,
                         'reference_value' => $row->reference_value,
                         'unit' => $row->unit,
@@ -227,7 +228,26 @@ class InvoicePathologicalGroupModel extends Model
                     ]
                 );
             }
+            self::updateParents($entity->id);
         }
+    }
+
+    public static function updateParents($id)
+    {
+        $entities = InvoicePathologicalReportModel::where(['invoice_particular_id' => $id])->whereNotNull('investigation_report_parent_id')
+            ->select([
+                'investigation_report_parent_id',
+            ])->groupBy('investigation_report_parent_id')->get();
+        if($entities){
+            foreach ($entities as $entity){
+                $report = InvoicePathologicalReportModel::where('investigation_report_format_id',$entity['investigation_report_parent_id'])->where('invoice_particular_id',$id)->first();
+                $report->update(['is_parent' => true]);
+                InvoicePathologicalReportModel::where(
+                    'investigation_report_parent_id',$entity->investigation_report_parent_id
+                )->update(['parent' => $report->id]);
+            }
+        }
+
     }
 
 }

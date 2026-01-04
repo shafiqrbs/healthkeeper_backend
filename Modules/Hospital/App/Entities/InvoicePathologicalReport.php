@@ -52,9 +52,17 @@ class InvoicePathologicalReport
 
     /**
      * @ORM\ManyToOne(targetEntity="InvoicePathologicalReport", inversedBy="children", cascade={"detach","merge"})
-     * @ORM\JoinColumn(name="parent_id", referencedColumnName="id", onDelete="SET NULL")
+     * @ORM\JoinColumn(name="parent", referencedColumnName="id", onDelete="SET NULL")
      */
     protected $parent;
+
+
+     /**
+     * @ORM\ManyToOne(targetEntity="InvestigationReportFormat", inversedBy="children", cascade={"detach","merge"})
+     * @ORM\JoinColumn(name="investigation_report_parent_id", referencedColumnName="id", onDelete="SET NULL")
+     */
+    protected $investigationReportParent;
+
 
     /**
      * @ORM\OneToMany(targetEntity="InvoicePathologicalReport" , mappedBy="parent")
@@ -132,6 +140,13 @@ class InvoicePathologicalReport
      * @ORM\Column(name="unit", type="string", length=50, nullable=true)
      */
     private $unit;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $isParent;
 
     /**
      * @var boolean
