@@ -128,9 +128,8 @@ class IpdPrescriptionController extends Controller
     {
         $input = $request->all();
         $findParticular = PatientPrescriptionMedicineModel::find($id);
-
         if(isset($input['is_active'])){
-            $findParticular->is_active = $findParticular->is_active ? 0:1;
+            $findParticular->is_active = ($input['is_active'] == 'true') ? 1:0;
         }
         if(isset($input['ordering']) and $input['ordering']){
             $findParticular->ordering = $input['ordering'];
@@ -220,10 +219,22 @@ class IpdPrescriptionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    public function deleteMedicine($id)
+    {
+        $service = new JsonRequestResponse();
+        PatientPrescriptionMedicineModel::find($id)->delete();
+        $entity = ['message' => 'delete'];
+        return $service->returnJosnResponse($entity);
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy($id)
     {
         $service = new JsonRequestResponse();
-        PrescriptionModel::find($id)->delete();
+        PatientPrescriptionMedicineModel::find($id)->delete();
         $entity = ['message' => 'delete'];
         return $service->returnJosnResponse($entity);
     }
