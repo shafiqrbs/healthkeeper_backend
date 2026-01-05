@@ -36,6 +36,7 @@ use Modules\Inventory\App\Models\ProductBrandModel;
 use Modules\Inventory\App\Models\PurchaseItemModel;
 use Modules\Inventory\App\Models\SettingModel;
 use Modules\Inventory\App\Models\StockItemModel;
+use Modules\Medicine\App\Models\MedicineBrandModel;
 use Modules\Medicine\App\Models\MedicineGenericModel;
 use Modules\Medicine\App\Models\MedicineStockModel;
 use Modules\Production\App\Models\ProductionItems;
@@ -359,7 +360,7 @@ class HospitalController extends Controller
     public function medicineGenericDropdown(Request $request)
     {
         $term = $request->get('term');
-        $dropdown = MedicineGenericModel::getMedicineGenericDropdown($term);
+        $dropdown = MedicineBrandModel::getMedicineGenericDropdown($term);
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($dropdown);
     }

@@ -10,6 +10,8 @@ use Modules\AppsApi\App\Services\GeneratePatternCodeService;
 use Modules\Core\App\Models\CustomerModel;
 use Modules\Inventory\App\Models\SalesItemModel;
 use Modules\Inventory\App\Models\StockItemModel;
+use Modules\Medicine\App\Models\MedicineBrandModel;
+use Modules\Medicine\App\Models\MedicineGenericModel;
 use Ramsey\Collection\Collection;
 use function Illuminate\Database\Eloquent\Factories\forEachSequence;
 use function Symfony\Component\String\length;
@@ -389,107 +391,147 @@ class PatientPrescriptionMedicineModel extends Model
         if (!$prescription) {
             return null;
         }
-        $date = now();
 
         /* ================= STOCK MEDICINE ================= */
-        if (!empty($medicine['medicine_id']) && empty($medicine['id'])) {
-
-            $medicineDetails = MedicineDetailsModel::find($medicine['medicine_id']);
-            if (!$medicineDetails) {
-                return null;
-            }
-
-            $medicineStock = $medicineDetails->medicineStock;
-
-            $dose_details = '';
-            $dose_details_bn = '';
-            $daily_quantity = 1;
-            $continue_mode = 'sos';
-
-            if (!empty($medicine['medicine_dosage_id'])) {
-                $dosage = MedicineDosageModel::find($medicine['medicine_dosage_id']);
-                if ($dosage) {
-                    $dose_details = $dosage->name;
-                    $dose_details_bn = $dosage->name_bn;
-                    $continue_mode = $dosage->continue_mode;
-                    $daily_quantity = $dosage->quantity;
-                }
-            }
-
-            $by_meal = '';
-            $by_meal_bn = '';
-            if (!empty($medicine['medicine_bymeal_id'])) {
-                $bymeal = MedicineDosageModel::find($medicine['medicine_bymeal_id']);
-                if ($bymeal) {
-                    $by_meal = $bymeal->name;
-                    $by_meal_bn = $bymeal->name_bn;
-                }
-            }
-
-            $data =  [
-                'hms_invoice_id'      => $prescription->hms_invoice_id,
-                'prescription_id'     => $prescription->id,
-                'company'             => $medicineDetails->company ?? null,
-                'medicine_name'       => $medicineDetails->name ?? null,
-                'generic'             => optional($medicineStock->product)->name,
-                'generic_id'          => optional($medicineStock->product)->id,
-                'medicine_id'         => $medicineDetails->id,
-                'stock_item_id'       => $medicineStock->stock_item_id ?? null,
-                'medicine_dosage_id'  => $medicine['medicine_dosage_id'] ?? null,
-                'medicine_bymeal_id'  => $medicine['medicine_bymeal_id'] ?? null,
-                'dose_details'        => $dose_details,
-                'dose_details_bn'     => $dose_details_bn,
-                'daily_quantity'      => $daily_quantity,
-                'by_meal'             => $by_meal,
-                'by_meal_bn'          => $by_meal_bn,
-                'continue_mode'       => $continue_mode,
-                'quantity'            => 0,
-                'ipd_status'          => $medicineStock->ipd_status ?? false,
-                'is_stock'            => true,
-                'is_active'           => $medicine['is_active'] ?? 1,
-                'order'               => $medicine['order'] ?? 100,
-                'start_date'          => $date,
-                'created_at'          => $date,
-                'updated_at'          => $date,
-            ];
-            $entity = self::create($data);
-            return $entity;
+        if ($medicine['mode'] =='medicine' && !empty($medicine['medicine_id']) && empty($medicine['id'])) {
+            return self::ipdStockMedicine($prescription,$medicine);
         }
 
         /* ================= NON-STOCK / GENERIC ================= */
-        if (!empty($medicine['generic']) && empty($medicine['id'])) {
+        if ($medicine['mode'] =='generic' && !empty($medicine['generic']) && empty($medicine['id'])) {
+            return self::ipdGenericMedicine($prescription,$medicine);
+        }
 
-            $dose_details = '';
-            $dose_details_bn = '';
-            $daily_quantity = 1;
-            $continue_mode = 'sos';
+        /* ================= NEW MEDICINE ================= */
+        if ($medicine['mode'] =='new' && !empty($medicine['generic']) && empty($medicine['id'])) {
+            return self::ipdNewGenericMedicine($prescription,$medicine);
+        }
+        return null;
+    }
 
-            if (!empty($medicine['medicine_dosage_id'])) {
-                $dosage = MedicineDosageModel::find($medicine['medicine_dosage_id']);
-                if ($dosage) {
-                    $dose_details = $dosage->name;
-                    $dose_details_bn = $dosage->name_bn;
-                    $continue_mode = $dosage->continue_mode;
-                    $daily_quantity = $dosage->quantity;
-                }
+    public static function ipdStockMedicine($prescription,$medicine)
+    {
+        $date = now();
+        $medicineDetails = MedicineDetailsModel::find($medicine['medicine_id']);
+        if (!$medicineDetails) {
+            return null;
+        }
+
+        $medicineStock = $medicineDetails->medicineStock;
+
+        $dose_details = '';
+        $dose_details_bn = '';
+        $daily_quantity = 1;
+        $continue_mode = 'sos';
+
+        if (!empty($medicine['medicine_dosage_id'])) {
+            $dosage = MedicineDosageModel::find($medicine['medicine_dosage_id']);
+            if ($dosage) {
+                $dose_details = $dosage->name;
+                $dose_details_bn = $dosage->name_bn;
+                $continue_mode = $dosage->continue_mode;
+                $daily_quantity = $dosage->quantity;
             }
+        }
 
-            $by_meal = '';
-            $by_meal_bn = '';
-            if (!empty($medicine['medicine_bymeal_id'])) {
-                $bymeal = MedicineDosageModel::find($medicine['medicine_bymeal_id']);
-                if ($bymeal) {
-                    $by_meal = $bymeal->name;
-                    $by_meal_bn = $bymeal->name_bn;
-                }
+        $by_meal = '';
+        $by_meal_bn = '';
+        if (!empty($medicine['medicine_bymeal_id'])) {
+            $bymeal = MedicineDosageModel::find($medicine['medicine_bymeal_id']);
+            if ($bymeal) {
+                $by_meal = $bymeal->name;
+                $by_meal_bn = $bymeal->name_bn;
             }
+        }
 
+        $data =  [
+            'hms_invoice_id'      => $prescription->hms_invoice_id,
+            'prescription_id'     => $prescription->id,
+            'medicine_name'       => $medicineDetails->name ?? null,
+            'generic'             => optional($medicineStock->product)->name,
+            'generic_id'          => optional($medicineStock->product)->id,
+            'medicine_id'         => $medicineDetails->id,
+            'stock_item_id'       => $medicineStock->stock_item_id ?? null,
+            'medicine_dosage_id'  => $medicine['medicine_dosage_id'] ?? null,
+            'medicine_bymeal_id'  => $medicine['medicine_bymeal_id'] ?? null,
+            'dose_details'        => $dose_details,
+            'dose_details_bn'     => $dose_details_bn,
+            'daily_quantity'      => $daily_quantity,
+            'by_meal'             => $by_meal,
+            'by_meal_bn'          => $by_meal_bn,
+            'continue_mode'       => $continue_mode,
+            'quantity'            => 0,
+            'ipd_status'          => $medicineStock->ipd_status ?? false,
+            'is_stock'            => true,
+            'is_active'           => $medicine['is_active'] ?? 1,
+            'order'               => $medicine['order'] ?? 100,
+            'start_date'          => $date,
+            'created_at'          => $date,
+            'updated_at'          => $date,
+        ];
+        $entity = self::create($data);
+        return $entity;
+    }
+
+    public static function ipdGenericMedicine($prescription,$medicine)
+    {
+        $date = now();
+        $dose_details = '';
+        $dose_details_bn = '';
+        $daily_quantity = 1;
+        $continue_mode = 'sos';
+        if (!empty($medicine['medicine_dosage_id'])) {
+            $dosage = MedicineDosageModel::find($medicine['medicine_dosage_id']);
+            if ($dosage) {
+                $dose_details = $dosage->name;
+                $dose_details_bn = $dosage->name_bn;
+                $continue_mode = $dosage->continue_mode;
+                $daily_quantity = $dosage->quantity;
+            }
+        }
+
+        $by_meal = '';
+        $by_meal_bn = '';
+        if (!empty($medicine['medicine_bymeal_id'])) {
+            $bymeal = MedicineDosageModel::find($medicine['medicine_bymeal_id']);
+            if ($bymeal) {
+                $by_meal = $bymeal->name;
+                $by_meal_bn = $bymeal->name_bn;
+            }
+        }
+
+        $generic_name = null;
+        if (!empty($medicine['generic_id'])) {
+            $entity = DB::table('medicine_brand')
+                ->join(
+                    'medicine_generic',
+                    'medicine_generic.id',
+                    '=',
+                    'medicine_brand.medicineGeneric_id'
+                )
+                ->where('medicine_brand.id', $medicine['generic_id'])
+                ->select(
+                    DB::raw("
+            CONCAT(
+                IF(medicine_brand.medicineForm <> '',
+                    CONCAT(medicine_brand.medicineForm,' '),
+                    ''
+                ),
+                 medicine_brand.name,
+                IF(medicine_brand.strength <> '',
+                    CONCAT(' ', medicine_brand.strength),
+                    ''
+                )
+            ) AS medicine_name
+        "),
+                    'medicine_generic.name AS generic_name'
+                )
+                ->first();
             $data =  [
                 'hms_invoice_id'      => $prescription->hms_invoice_id,
                 'prescription_id'     => $prescription->id,
-                'company'             => $medicine['company'] ?? null,
-                'medicine_name'       => $medicine['generic'],
-                'generic'             => $medicine['generic'],
+                'medicine_name'       => $entity->medicine_name,
+                'generic'             => $entity->generic_name,
                 'generic_id'          => null,
                 'stock_item_id'       => null,
                 'medicine_dosage_id'  => $medicine['medicine_dosage_id'] ?? null,
@@ -513,8 +555,68 @@ class PatientPrescriptionMedicineModel extends Model
             $entity = self::create($data);
             return $entity;
         }
-
         return null;
+
+
+    }
+
+    public static function ipdNewGenericMedicine($prescription,$medicine)
+    {
+        $date = now();
+        $dose_details = '';
+        $dose_details_bn = '';
+        $daily_quantity = 1;
+        $continue_mode = 'sos';
+
+        if (!empty($medicine['medicine_dosage_id'])) {
+            $dosage = MedicineDosageModel::find($medicine['medicine_dosage_id']);
+            if ($dosage) {
+                $dose_details = $dosage->name;
+                $dose_details_bn = $dosage->name_bn;
+                $continue_mode = $dosage->continue_mode;
+                $daily_quantity = $dosage->quantity;
+            }
+        }
+
+        $by_meal = '';
+        $by_meal_bn = '';
+        if (!empty($medicine['medicine_bymeal_id'])) {
+            $bymeal = MedicineDosageModel::find($medicine['medicine_bymeal_id']);
+            if ($bymeal) {
+                $by_meal = $bymeal->name;
+                $by_meal_bn = $bymeal->name_bn;
+            }
+        }
+        $genericDosage = $medicine['medicine_dosage_id'] ?? null;
+        MedicineGenericModel::insertNewGeneric($medicine['medicine_name'],$medicine['generic'],$genericDosage);
+
+        $data =  [
+            'hms_invoice_id'      => $prescription->hms_invoice_id,
+            'prescription_id'     => $prescription->id,
+            'medicine_name'       => $medicine['medicine_name'],
+            'generic'             => $medicine['generic'],
+            'generic_id'          => null,
+            'stock_item_id'       => null,
+            'medicine_dosage_id'  => $medicine['medicine_dosage_id'] ?? null,
+            'medicine_bymeal_id'  => $medicine['medicine_bymeal_id'] ?? null,
+            'dose_details'        => $dose_details,
+            'dose_details_bn'     => $dose_details_bn,
+            'daily_quantity'      => $daily_quantity,
+            'by_meal'             => $by_meal,
+            'by_meal_bn'          => $by_meal_bn,
+            'continue_mode'       => $continue_mode,
+            'quantity'            => 0,
+            'is_stock'            => false,
+            'ipd_status'          => false,
+            'opd_status'          => false,
+            'is_active'           => $medicine['is_active'] ?? 1,
+            'order'               => $medicine['order'] ?? 100,
+            'start_date'          => $date,
+            'created_at'          => $date,
+            'updated_at'          => $date,
+        ];
+        $entity = self::create($data);
+        return $entity;
     }
 
     public static function insertIpdPatientMedicine($domain,$id)
