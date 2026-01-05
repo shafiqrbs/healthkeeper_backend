@@ -137,4 +137,37 @@ class CurrentStockModel extends Model
 
     }
 
+    public static function getDispenseStockItem($request, $domain, $warehouseId)
+    {
+        $page = isset($request['page']) && $request['page'] > 0 ? ($request['page'] - 1) : 0;
+        $perPage = isset($request['offset']) && $request['offset'] != '' ? (int)($request['offset']) : 50;
+        $skip = isset($page) && $page != '' ? (int)$page * $perPage : 0;
+
+        $products = self::where([['inv_current_stock.warehouse_id', $warehouseId],['inv_current_stock.config_id', $domain['config_id']]])
+            ->join('inv_stock', 'inv_stock.id', '=', 'inv_current_stock.stock_item_id')
+            ->select([
+                'inv_stock.id',
+                'inv_current_stock.config_id',
+                'inv_current_stock.warehouse_id',
+                'inv_current_stock.stock_item_id',
+                'inv_stock.name',
+                'inv_current_stock.quantity',
+            ]);
+
+        if (!empty($request['term'])) {
+            $products = $products->whereAny([
+                'inv_stock.name'
+            ], 'LIKE', '%'.$request['term'].'%');
+        }
+
+        $total = $products->count();
+        $entities = $products->skip($skip)
+            ->take($perPage)
+            ->orderBy('inv_stock.name', 'ASC')
+            ->get();
+
+        return array('count' => $total, 'entities' => $entities);
+    }
+
+
 }

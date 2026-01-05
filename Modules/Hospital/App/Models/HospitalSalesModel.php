@@ -4,19 +4,12 @@ namespace Modules\Hospital\App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Modules\AppsApi\App\Services\GeneratePatternCodeService;
-use Modules\Core\App\Models\CustomerModel;
-use Modules\Inventory\App\Models\DailyStockModel;
 use Modules\Inventory\App\Models\SalesItemModel;
-use Modules\Inventory\App\Models\StockItemHistoryModel;
-use Modules\Inventory\App\Models\StockItemModel;
-use Ramsey\Collection\Collection;
 
 class HospitalSalesModel extends Model
 {
-    use HasFactory;
 
     protected $table = 'inv_sales';
     public $timestamps = true;

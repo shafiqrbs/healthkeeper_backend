@@ -4,6 +4,7 @@ use App\Http\Middleware\HeaderAuthenticationMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Modules\Core\App\Http\Middleware\LogRequestResponse;
+use Modules\Medicine\App\Http\Controllers\DispenseController;
 use Modules\Medicine\App\Http\Controllers\MedicineController;
 use Modules\Medicine\App\Http\Controllers\MedicineStockController;
 use Modules\Medicine\App\Http\Controllers\PurchaseController;
@@ -82,6 +83,19 @@ Route::prefix('/pharmacy')->middleware([HeaderAuthenticationMiddleware::class,Lo
             'destroy' => 'stock.destroy',
         ]);
     Route::post('/stock/inline-update/{id}', [MedicineStockController::class,'medicineStockInlineUpdate'])->name('medicineStockInlineUpdate');
+
+    Route::apiResource('dispense',
+        DispenseController::class)
+        ->middleware([HeaderAuthenticationMiddleware::class])
+        ->names([
+            'index' => 'medicine.index',
+            'store' => 'medicine.store',
+            'show' => 'medicine.show',
+            'update' => 'medicine.update',
+            'destroy' => 'medicine.destroy',
+        ]);
+    Route::get('dispense/stock-item/{warehouse_id}', [DispenseController::class,'dispenseStockItem'])
+        ->name('dispense_stock_item');
 
 
 });
