@@ -11,7 +11,7 @@ class MedicineGenericModel extends Model
 {
     use HasFactory;
 
-    protected $table = 'medicine_brand';
+    protected $table = 'medicine_generic';
     public $timestamps = true;
     protected $guarded = ['id'];
 
@@ -30,32 +30,24 @@ class MedicineGenericModel extends Model
         });
     }
 
-    public static function getMedicineGenericDropdown($term){
+    public static function insertNewGeneric($medicine,$generic)
+    {
 
-        $entities = self::where(function ($query) use ($term) {
-            $query->where('medicine_generic.name', 'LIKE', '%' . trim($term) . '%');
-        })
-            ->leftJoin('medicine_generic', 'medicine_generic.id', '=', 'medicine_brand.medicineGeneric_id')
-            ->leftJoin('medicine_company', 'medicine_company.id', '=', 'medicine_brand.medicineCompany_id')
-            ->select([
-                DB::raw("
-                    CONCAT(
-                        IF(medicine_brand.medicineForm != '', CONCAT(trim(medicine_brand.medicineForm), '. '), ''),
-                        trim(medicine_brand.name),
-                        IF(medicine_brand.strength != '', CONCAT(' - ', trim(medicine_brand.strength)), '')
-                    ) as name
-                "),
-                'medicine_brand.id as generic_id',
-                'medicine_generic.name as generic',
-                'medicine_brand.packSize',
-                'medicine_company.name as medicine_company',
-            ])
-            ->orderBy('medicine_brand.name', 'ASC')
-            ->take(100)
-            ->get();
+        self::updateOrCreate(
+            [
+                'name' => trim($generic)
+            ]
+        );
+        MedicineBrandModel::updateOrCreate(
+            [
+                'medicineGeneric_id' => $generic->id,
+                'name' => trim($medicine)
+            ]
+        );
 
-        return $entities;
+
 
     }
+
 
 }
