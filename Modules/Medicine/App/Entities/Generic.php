@@ -92,6 +92,26 @@ class Generic
      */
     private $interaction;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Hospital\App\Entities\MedicineDosage")
+     * @ORM\JoinColumn(name="medicine_dosage_id", referencedColumnName="id", nullable=true, onDelete="cascade")
+     **/
+    private $medicineDosage;
+
+    /**
+     * @var \DateTime
+     * @Gedmo\Timestampable(on="create")
+     * @ORM\Column(name="created_at", type="datetime")
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTime
+     * @Gedmo\Timestampable(on="create")
+     * @ORM\Column(name="updated_at", type="datetime")
+     */
+    private $updatedAt;
+
 
     /**
      * Get id

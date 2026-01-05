@@ -30,24 +30,33 @@ class MedicineGenericModel extends Model
         });
     }
 
-    public static function insertNewGeneric($medicine,$generic)
+    public static function insertNewGeneric($medicine,$generic,$dosage)
     {
 
-        self::updateOrCreate(
+        $date = now();
+      //  dd($medicine,$generic,$dosage);
+        $genericEntity =  self::updateOrCreate(
             [
-                'name' => trim($generic)
+                'name' => trim($generic),
+                'medicine_dosage_id' => $dosage
+            ],
+            [
+                'created_at'          => $date,
+                'updated_at'          => $date,
             ]
         );
-        MedicineBrandModel::updateOrCreate(
+        $memdi = MedicineBrandModel::updateOrCreate(
             [
-                'medicineGeneric_id' => $generic->id,
-                'name' => trim($medicine)
+                'medicineGeneric_id' => $genericEntity->id,
+                'name' => trim($medicine),
+
+            ],
+            [
+                'created_at'          => $date,
+                'updated_at'          => $date,
             ]
         );
-
-
 
     }
-
 
 }
