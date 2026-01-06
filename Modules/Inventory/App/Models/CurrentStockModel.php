@@ -145,12 +145,14 @@ class CurrentStockModel extends Model
 
         $products = self::where([['inv_current_stock.warehouse_id', $warehouseId],['inv_current_stock.config_id', $domain['config_id']]])
             ->join('inv_stock', 'inv_stock.id', '=', 'inv_current_stock.stock_item_id')
+            ->join('inv_product', 'inv_product.id', '=', 'inv_stock.product_id')
             ->select([
                 'inv_stock.id',
                 'inv_current_stock.config_id',
                 'inv_current_stock.warehouse_id',
                 'inv_current_stock.stock_item_id',
                 'inv_stock.name',
+                'inv_product.unit_id',
                 'inv_current_stock.quantity',
             ]);
 

@@ -88,11 +88,11 @@ Route::prefix('/pharmacy')->middleware([HeaderAuthenticationMiddleware::class,Lo
         DispenseController::class)
         ->middleware([HeaderAuthenticationMiddleware::class])
         ->names([
-            'index' => 'medicine.index',
-            'store' => 'medicine.store',
-            'show' => 'medicine.show',
-            'update' => 'medicine.update',
-            'destroy' => 'medicine.destroy',
+            'index' => 'dispense.index',
+            'store' => 'dispense.store',
+            'show' => 'dispense.show',
+            'update' => 'dispense.update',
+            'destroy' => 'dispense.destroy',
         ]);
     Route::get('dispense/stock-item/{warehouse_id}', [DispenseController::class,'dispenseStockItem'])
         ->name('dispense_stock_item');
