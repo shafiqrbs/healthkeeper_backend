@@ -35,10 +35,16 @@ class MedicineBrandModel extends Model
         return $this->hasOne(MedicineGenericModel::class, 'id', 'medicine_generic_id');
     }
 
-    public static function getMedicineGenericDropdown($term){
+    public static function getMedicineGenericDropdown($term , $mode ='generic')
+    {
 
         $entities = DB::table('medicine_brand')
-            ->leftJoin('medicine_generic', 'medicine_generic.id', '=', 'medicine_brand.medicineGeneric_id')
+            ->leftJoin(
+                'medicine_generic',
+                'medicine_generic.id',
+                '=',
+                'medicine_brand.medicineGeneric_id'
+            )
             ->select([
                 DB::raw("
             CONCAT(
@@ -59,14 +65,27 @@ class MedicineBrandModel extends Model
         "),
                 'medicine_brand.id AS generic_id',
                 'medicine_generic.name AS generic',
-            ])
-            ->where('medicine_generic.name', 'LIKE', "%{$term}%")
+            ]);
+
+        if ($mode === 'brand') {
+            $entities->where('medicine_brand.name', 'LIKE', "%{$term}%");
+        } else {
+            $entities->where('medicine_generic.name', 'LIKE', "%{$term}%");
+        }
+
+        $results = $entities
+            ->groupBy(
+                'medicine_brand.id',
+                'medicine_brand.name',
+                'medicine_brand.medicineForm',
+                'medicine_brand.strength',
+                'medicine_generic.name'
+            )
             ->orderBy('medicine_brand.name', 'ASC')
-            ->groupBy('medicine_brand.name')
             ->limit(100)
             ->get();
 
-        return $entities;
+        return $results;
 
     }
 

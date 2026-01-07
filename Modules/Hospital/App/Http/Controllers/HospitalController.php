@@ -359,8 +359,9 @@ class HospitalController extends Controller
      */
     public function medicineGenericDropdown(Request $request)
     {
+        $mode = $request->get('mode');
         $term = $request->get('term');
-        $dropdown = MedicineBrandModel::getMedicineGenericDropdown($term);
+        $dropdown = MedicineBrandModel::getMedicineGenericDropdown($term,$mode);
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($dropdown);
     }

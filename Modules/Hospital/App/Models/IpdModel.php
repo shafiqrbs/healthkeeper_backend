@@ -194,6 +194,7 @@ class IpdModel extends Model
                 }elseif(in_array($request['prescription_mode'],['room','admission','hospital'])) {
                     $entities = $entities->where('hms_invoice.referred_mode',$request['prescription_mode']);
                 }
+                $entities = $entities->whereIn('hms_invoice.process',['admitted','refund','paid']);
             }
         }
 
