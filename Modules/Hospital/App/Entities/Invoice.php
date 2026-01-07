@@ -444,9 +444,9 @@ class Invoice
     private $code;
 
     /**
-     * @var integer
+     * @var string
      *
-     * @ORM\Column(name="card_no", type="integer",  nullable=true)
+     * @ORM\Column(name="card_no", type="string",  nullable=true)
      */
     private $cardNo;
 

@@ -149,6 +149,14 @@ class InvoiceParticularTestReport
      *
      * @ORM\Column(type="text", nullable=true)
      */
+     private $impression_two;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
      private $trachea;
 
 

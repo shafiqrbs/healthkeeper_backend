@@ -191,7 +191,6 @@ class EpharmaModel extends Model
             ->where('hms_invoice.barcode', trim($id))
             ->where('is_medicine_delivered', '!=', 1)
             ->first();
-
         return $entity;
     }
 
