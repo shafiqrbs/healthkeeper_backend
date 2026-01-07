@@ -391,21 +391,27 @@ class PatientPrescriptionMedicineModel extends Model
         if (!$prescription) {
             return null;
         }
-
+        $mode = (isset($medicine['mode']) and $medicine['mode']) ? $medicine['mode'] : "default";
         /* ================= STOCK MEDICINE ================= */
-        if ($medicine['mode'] =='medicine' && !empty($medicine['medicine_id']) && empty($medicine['id'])) {
+        if ($mode =='medicine' && !empty($medicine['medicine_id']) && empty($medicine['id'])) {
             return self::ipdStockMedicine($prescription,$medicine);
         }
 
         /* ================= NON-STOCK / GENERIC ================= */
-        if ($medicine['mode'] =='generic' && !empty($medicine['generic']) && empty($medicine['id'])) {
+        if ($mode =='generic' && !empty($medicine['generic']) && empty($medicine['id'])) {
             return self::ipdGenericMedicine($prescription,$medicine);
         }
 
         /* ================= NEW MEDICINE ================= */
-        if ($medicine['mode'] =='new' && !empty($medicine['generic']) && empty($medicine['id'])) {
+        if ($mode =='new' && !empty($medicine['generic']) && empty($medicine['id'])) {
             return self::ipdNewGenericMedicine($prescription,$medicine);
         }
+
+        /* ================= NON-STOCK / GENERIC ================= */
+        if ($mode =='default') {
+            return self::ipdDefaultMedicine($prescription,$medicine);
+        }
+
         return null;
     }
 
@@ -557,6 +563,45 @@ class PatientPrescriptionMedicineModel extends Model
         }
         return null;
 
+
+    }
+
+    public static function ipdDefaultMedicine($prescription,$medicine)
+    {
+        $date = now();
+        $dose_details = '';
+        $dose_details_bn = '';
+        $daily_quantity = 1;
+        $continue_mode = 'sos';
+
+
+        $by_meal = '';
+        $by_meal_bn = '';
+        $generic_name = null;
+        $data =  [
+            'hms_invoice_id'      => $prescription->hms_invoice_id,
+            'prescription_id'     => $prescription->id,
+            'medicine_name'       => $medicine['generic'],
+            'generic_id'          => null,
+            'stock_item_id'       => null,
+            'dose_details'        => $dose_details,
+            'dose_details_bn'     => $dose_details_bn,
+            'daily_quantity'      => $daily_quantity,
+            'by_meal'             => $by_meal,
+            'by_meal_bn'          => $by_meal_bn,
+            'continue_mode'       => $continue_mode,
+            'quantity'            => 0,
+            'is_stock'            => false,
+            'ipd_status'          => false,
+            'opd_status'          => false,
+            'is_active'           => $medicine['is_active'] ?? 1,
+            'order'               => $medicine['order'] ?? 100,
+            'start_date'          => $date,
+            'created_at'          => $date,
+            'updated_at'          => $date,
+        ];
+        $entity = self::create($data);
+        return $entity;
 
     }
 
