@@ -79,6 +79,13 @@ class AdmissionPatient
      */
     private $aboutDeath;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true, length=50)
+     */
+    private $diseasesProfile;
+
 
     /**
      * @var string
@@ -103,7 +110,12 @@ class AdmissionPatient
      */
     private $insulinChartJson;
 
-
+    /**
+     * @var \DateTime
+     * @Gedmo\Timestampable(on="create_at")
+     * @ORM\Column(type="datetime")
+     */
+    private $deathDateTime;
 
      /**
      * @var \DateTime

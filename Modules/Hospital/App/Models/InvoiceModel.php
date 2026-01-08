@@ -598,6 +598,10 @@ class InvoiceModel extends Model
                 'admission_patient.insulin_chart_json as insulin_chart_json',
                 'admission_patient.change_mode as change_mode',
                 'admission_patient.comment as change_comment',
+                'admission_patient.cause_death as cause_death',
+                'admission_patient.about_death as about_death',
+                'admission_patient.diseases_profile as diseases_profile',
+                'admission_patient.death_date_time as death_date_time',
             ])
             ->with(['invoice_particular' => function ($query) {
                 $query->select([

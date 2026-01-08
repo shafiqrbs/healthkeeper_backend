@@ -583,12 +583,18 @@ class IpdModel extends Model
         $invoice = self::salesEventListener($entity)['generateId'];
         $code = self::salesEventListener($entity)['code'];
         $amount = self::insertInvoiceParticular($config,$entity);
+
+
+        $roomPrice = $entity->room->price;
+        $is_free_bed = ($roomPrice == 0 ) ? 1:0;
+
         if ($entity) {
             $entity->update([
                 'invoice' => $invoice,
                 'code' => $code,
                 'patient_payment_mode_id' => $payment_payment_mode_id ?? null,
                 'free_identification' => $parent->free_identification ?? null,
+                'is_free_bed' => $is_free_bed,
                 'day' => $parent->day ?? null,
                 'month' => $parent->month ?? null,
                 'year' => $parent->year ?? null,

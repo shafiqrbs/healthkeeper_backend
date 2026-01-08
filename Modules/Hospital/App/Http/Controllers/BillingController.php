@@ -216,7 +216,19 @@ class BillingController extends Controller
         $service = new JsonRequestResponse();
         InvoiceParticularModel::getCountBedRoom($entity->id);
         $date =  new \DateTime("now");
-        if($entity->amount === $entity->total and $entity->remaining_day == 0){
+        if($entity->amount === $entity->total and $entity->is_free_bed == 1) {
+            $entity->update(['process' => 'paid', 'release_date' => $date]);
+            ParticularModel::where([
+                'is_booked' => 1,
+                'admission_id' => $entity->id
+            ])->update([
+                'is_booked' => 0,
+                'admission_id' => null,
+            ]);
+            $print = BillingModel::getFinalBillShow($entity->id);
+            $data = $service->returnJosnResponse($print);
+            return $data;
+        }elseif($entity->amount === $entity->total and $entity->remaining_day == 0){
             $entity->update(['process' => 'paid','release_date'=>$date]);
             ParticularModel::where([
                 'is_booked' => 1,
