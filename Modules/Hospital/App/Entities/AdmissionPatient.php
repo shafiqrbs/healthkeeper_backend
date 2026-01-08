@@ -105,14 +105,6 @@ class AdmissionPatient
 
 
 
-    /**
-     * @var \DateTime
-     * @Gedmo\Timestampable(on="create_at")
-     * @ORM\Column(type="datetime")
-     */
-    private $deathDateTime;
-
-
      /**
      * @var \DateTime
      * @Gedmo\Timestampable(on="create_at")
