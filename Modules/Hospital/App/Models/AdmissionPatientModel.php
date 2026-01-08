@@ -30,6 +30,22 @@ class AdmissionPatientModel extends Model
         });
     }
 
+    public static function insertDeathCertificate($domain,$id,$data)
+    {
+        self::updateOrCreate(
+            [
+                'hms_invoice_id' => $id,
+            ],
+            [
+                'created_by_id'=> $domain['user_id'],
+                'approved_by_id'=> $domain['user_id'],
+                'cause_death'    => $data['cause_death'],
+                'about_death'    => $data['about_death'],
+                'death_date_time'    => new \DateTime($data['death_date_time']),
+            ]
+        );
+    }
+
 
 
 

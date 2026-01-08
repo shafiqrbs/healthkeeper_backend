@@ -64,6 +64,21 @@ class AdmissionPatient
     private $comment;
 
 
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="text",nullable = true)
+     */
+    private $causeDeath;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="text",nullable = true)
+     */
+    private $aboutDeath;
+
 
     /**
      * @var string
@@ -87,6 +102,15 @@ class AdmissionPatient
      * @ORM\Column( type="json",nullable = true)
      */
     private $insulinChartJson;
+
+
+
+    /**
+     * @var \DateTime
+     * @Gedmo\Timestampable(on="create_at")
+     * @ORM\Column(type="datetime")
+     */
+    private $deathDateTime;
 
 
      /**

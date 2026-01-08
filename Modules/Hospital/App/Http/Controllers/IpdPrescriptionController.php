@@ -16,6 +16,7 @@ use Modules\Core\App\Models\UserModel;
 use Modules\Hospital\App\Entities\Prescription;
 use Modules\Hospital\App\Http\Requests\OPDRequest;
 use Modules\Hospital\App\Http\Requests\PrescriptionRequest;
+use Modules\Hospital\App\Models\AdmissionPatientModel;
 use Modules\Hospital\App\Models\HospitalConfigModel;
 use Modules\Hospital\App\Models\HospitalSalesModel;
 use Modules\Hospital\App\Models\InvoiceContentDetailsModel;
@@ -193,6 +194,7 @@ class IpdPrescriptionController extends Controller
         $domain = $this->domain;
         $data = $request->all();
 
+
         $entity = PrescriptionModel::findByIdOrUid($id);
         $data['json_content'] = json_encode($data);
         $data['prescribe_doctor_id'] = $domain['user_id'];
@@ -208,9 +210,10 @@ class IpdPrescriptionController extends Controller
         InvoiceTransactionModel::insertInvestigations($domain,$entity->id);
         HospitalSalesModel::insertMedicineIssue($domain,$entity->id);
         InvoiceContentDetailsModel::insertContentDetails($domain,$entity->id);
+        AdmissionPatientModel::insertDeathCertificate($domain,$entity->id,$data);
         $return = PrescriptionModel::getShow($entity->id);
         $localMedicines = PatientPrescriptionMedicineModel::getMedicineLocalDropdown($domain);
-        $return['localMedicines'] = $localMedicines;
+        $return['localMedicines'] = '';
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($return);
 
