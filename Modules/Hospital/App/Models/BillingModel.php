@@ -194,8 +194,9 @@ class BillingModel extends Model
             });
         }
 
-        $entities = $entities->whereIn('hms_invoice.process', ['admitted','paid']);
-        $entities = $entities->whereIn('hms_invoice.release_mode', ['discharge','death','referred']);
+        $entities = $entities->whereIn('hms_invoice.process', ['admitted','paid','refund']);
+
+        //  $entities = $entities->whereIn('hms_invoice.release_mode', ['discharge','death','referred']);
 
         if (isset($request['room_id']) && !empty($request['room_id'])){
             $entities = $entities->where('hms_invoice.room_id',$request['room_id']);

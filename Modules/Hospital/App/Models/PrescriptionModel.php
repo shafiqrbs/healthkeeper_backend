@@ -286,6 +286,7 @@ class PrescriptionModel extends Model
                 ->orWhere('hms_prescription.uid', '=', $id);
         })
             ->join('hms_invoice','hms_invoice.id','=','hms_prescription.hms_invoice_id')
+            ->leftjoin('hms_admission_patient_details as admission_patient','admission_patient.hms_invoice_id','=','hms_invoice.id')
             ->leftjoin('hms_invoice_patient_referred','hms_invoice_patient_referred.hms_invoice_id','=','hms_invoice.id')
             ->leftjoin('hms_particular as referred_room','referred_room.id','=','hms_invoice_patient_referred.opd_room_id')
             ->leftjoin('users as doctor','doctor.id','=','hms_prescription.prescribe_doctor_id')
@@ -362,6 +363,10 @@ class PrescriptionModel extends Model
                 'referred_room.name as referred_room',
                 'hms_invoice_patient_referred.comment as referred_comment',
                 'hms_invoice_patient_referred.json_content as referred_json_content',
+                'admission_patient.cause_death as cause_death',
+                'admission_patient.about_death as about_death',
+                'admission_patient.diseases_profile as diseases_profile',
+                'admission_patient.death_date_time as death_date_time',
             ])
             ->with(['invoice_particular'])
             ->with(['prescription_medicine'])
