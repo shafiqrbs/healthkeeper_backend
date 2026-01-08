@@ -22,7 +22,7 @@ class DispenseItem
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Modules\Hospital\App\Entities\Config" , cascade={"detach","merge"} )
+     * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\Config" , cascade={"detach","merge"} )
      * @ORM\JoinColumn(onDelete="CASCADE")
      **/
     private  $config;
@@ -77,6 +77,12 @@ class DispenseItem
      * @ORM\Column(type="datetime")
      */
     private $updatedAt;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\Warehouse")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     **/
+    private  $warehouse;
 
 
 }

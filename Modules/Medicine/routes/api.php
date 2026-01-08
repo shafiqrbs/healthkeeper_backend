@@ -96,6 +96,8 @@ Route::prefix('/pharmacy')->middleware([HeaderAuthenticationMiddleware::class,Lo
         ]);
     Route::get('dispense/stock-item/{warehouse_id}', [DispenseController::class,'dispenseStockItem'])
         ->name('dispense_stock_item');
+    Route::get('dispense/approve/{dispense}', [DispenseController::class,'approve'])
+        ->name('dispense_approve');
 
 
 });

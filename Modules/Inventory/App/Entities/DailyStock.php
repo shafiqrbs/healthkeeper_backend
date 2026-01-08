@@ -161,6 +161,18 @@ class DailyStock
      * @var float
      * @ORM\Column(type="float", nullable = true,options={"default":0})
      */
+    private $dispenseInQuantity = 0.00;
+
+    /**
+     * @var float
+     * @ORM\Column(type="float", nullable = true,options={"default":0})
+     */
+    private $dispenseOutQuantity = 0.00;
+
+    /**
+     * @var float
+     * @ORM\Column(type="float", nullable = true,options={"default":0})
+     */
     private $purchaseReturnQuantity = 0.00;
 
     /**

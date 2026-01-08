@@ -3,12 +3,16 @@
 namespace Modules\Medicine\App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Services\DailyStockService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Modules\Accounting\App\Models\AccountJournalModel;
 use Modules\AppsApi\App\Services\JsonRequestResponse;
 use Modules\Core\App\Models\UserModel;
 use Modules\Inventory\App\Models\CurrentStockModel;
+use Modules\Inventory\App\Models\SalesModel;
+use Modules\Inventory\App\Models\StockItemHistoryModel;
 use Modules\Medicine\App\Http\Requests\DispenseRequest;
 use Modules\Medicine\App\Models\DispenseItemModel;
 use Modules\Medicine\App\Models\DispenseModel;
@@ -131,7 +135,6 @@ class DispenseController extends Controller
 
             if (!empty($input['items'])) {
                 DispenseItemModel::where('dispense_id', $id)->delete();
-
                 DispenseItemModel::insertDispenseItems(
                     $dispense,
                     $input['items']
@@ -195,5 +198,69 @@ class DispenseController extends Controller
             ]);
         });
     }
+
+    public function approve($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $dispense = DispenseModel::where('id', $id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($dispense->process === 'Approved') {
+                return response()->json([
+                    'status'  => ResponseAlias::HTTP_BAD_REQUEST,
+                    'success' => false,
+                    'message' => 'Dispense has been approved already.',
+                ]);
+            }
+
+            $dispense->update([
+                'approved_by_id' => $this->domain['user_id'],
+                'approved_date' => now(),
+                'process' => 'Approved',
+            ]);
+
+            if ($dispense->dispenseItems()->exists()) {
+                foreach ($dispense->dispenseItems as $item) {
+                    StockItemHistoryModel::openingStockQuantity(
+                        $item,
+                        $dispense->dispense_type,
+                        $this->domain
+                    );
+
+                    DailyStockService::maintainDailyStock(
+                        date: now()->toDateString(),
+                        field: $dispense->dispense_type === 'dispense-in'
+                            ? 'dispense_in_quantity'
+                            : 'dispense_out_quantity',
+                        configId: $this->domain['config_id'],
+                        warehouseId: $item->warehouse_id,
+                        stockItemId: $item->stock_item_id,
+                        quantity: $item->quantity
+                    );
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => ResponseAlias::HTTP_OK,
+                'success' => true,
+                'message' => 'Dispense Approved successfully.',
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status'  => ResponseAlias::HTTP_INTERNAL_SERVER_ERROR,
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+
 
 }

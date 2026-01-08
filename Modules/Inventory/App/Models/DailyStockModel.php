@@ -42,17 +42,9 @@ class DailyStockModel extends Model
         'closing_balance',
         'stock_transfer_in',
         'stock_transfer_out',
+        'dispense_in_quantity',
+        'dispense_out_quantity'
     ];
-
-    /*protected $fillable = [
-        'config_id',
-        'inv_date',
-        'warehouse_id',
-        'stock_item_id',
-        'item_name',
-        'sales_price',
-        'purchase_price',
-    ];*/
 
     public static function boot() {
         parent::boot();

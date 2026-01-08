@@ -21,6 +21,7 @@ class DispenseItemModel extends Model
     protected $fillable = [
                 'config_id',
                 'dispense_id',
+                'warehouse_id',
                 'stock_item_id',
                 'unit_id',
 				"stock_item_id",
@@ -72,7 +73,8 @@ class DispenseItemModel extends Model
         $formattedItems = array_map(function ($item) use ($dispense, $timestamp) {
             return [
                 'dispense_id'       => $dispense->id,
-                'config_id'      => $dispense->config_id,
+                'warehouse_id'      => $item['warehouse_id'] ?? null,
+                'config_id'      => $item['config_id'] ?? null,
                 'stock_item_id'  => $item['stock_item_id'] ?? null,
                 'unit_id'  => $item['unit_id'] ?? null,
                 'name'  => $item['name'] ?? null,

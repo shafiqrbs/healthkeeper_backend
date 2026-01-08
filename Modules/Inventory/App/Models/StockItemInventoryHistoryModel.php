@@ -28,6 +28,8 @@ class StockItemInventoryHistoryModel extends Model
         'sub_total',
         'config_id',
         'total',
+        'dispense_id',
+        'dispense_item_id',
         'stock_transfer_item_id',
         'stock_transfer_id'
     ];
@@ -80,6 +82,11 @@ class StockItemInventoryHistoryModel extends Model
                 case 'sales':
                     $data['sale_id'] = $item->sale_id ?? null;
                     $data['sales_item_id'] = $item->id ?? null;
+                    break;
+                case 'dispense-out':
+                case 'dispense-in':
+                    $data['dispense_id'] = $item->dispense_id ?? null;
+                    $data['dispense_item_id'] = $item->id ?? null;
                     break;
                 case 'sales-return':
                     $data['sales_return_id'] = $item->sales_return_id ?? null;

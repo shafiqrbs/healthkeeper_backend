@@ -52,6 +52,8 @@ class DailyStockService
             'asset_out_quantity'        => ['price_type' => 'purchase_price', 'quantity_field' => 'asset_out_quantity'],
             'stock_transfer_in'        => ['price_type' => 'purchase_price', 'quantity_field' => 'stock_transfer_in'],
             'stock_transfer_out'        => ['price_type' => 'purchase_price', 'quantity_field' => 'stock_transfer_out'],
+            'dispense_in_quantity'        => ['price_type' => 'purchase_price', 'quantity_field' => 'dispense_in_quantity'],
+            'dispense_out_quantity'        => ['price_type' => 'purchase_price', 'quantity_field' => 'dispense_out_quantity'],
         ];
 
         if (!isset($fieldMap[$field])) {
@@ -61,7 +63,6 @@ class DailyStockService
 
         $priceType = $fieldMap[$field]['price_type'];
         $quantityField = $fieldMap[$field]['quantity_field'];
-
         // First, find the StockItem. This must happen before firstOrCreate
         $stockItem = StockItemModel::find($stockItemId);
         if (!$stockItem) {
@@ -104,6 +105,8 @@ class DailyStockService
             'asset_in_quantity' => 0,
             'stock_transfer_in' => 0,
             'stock_transfer_out' => 0,
+            'dispense_in_quantity' => 0,
+            'dispense_out_quantity' => 0,
             'sales_quantity' => 0,
             'damage_quantity' => 0,
             'purchase_return_quantity' => 0,
@@ -130,12 +133,14 @@ class DailyStockService
             $dailyStock->purchase_quantity +
             $dailyStock->sales_return_quantity +
             $dailyStock->stock_transfer_in +
+            $dailyStock->dispense_in_quantity +
             $dailyStock->asset_in_quantity;
 
         $dailyStock->total_out_quantity = $dailyStock->sales_quantity +
             $dailyStock->damage_quantity +
             $dailyStock->purchase_return_quantity +
             $dailyStock->production_expense_quantity +
+            $dailyStock->dispense_out_quantity +
             $dailyStock->stock_transfer_out +
             $dailyStock->asset_out_quantity;
 

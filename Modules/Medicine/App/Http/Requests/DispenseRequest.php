@@ -28,6 +28,7 @@ class DispenseRequest extends FormRequest
             'items*.stock_item_id' => 'required|integer|regex:/^\d+(\.\d{1,2})?$/',
             'items*.name' => 'nullable|string',
             'items*.quantity' => 'required|integer',
+            'items*.config_id' => 'required|integer',
         ];
     }
 

@@ -276,6 +276,18 @@ class StockItemInventoryHistory
     private $updatedAt;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Modules\Medicine\App\Entities\Dispense")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     **/
+    private  $dispense;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Medicine\App\Entities\DispenseItem")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     **/
+    private  $dispenseItem;
+
+    /**
      * @return int
      */
     public function getId()

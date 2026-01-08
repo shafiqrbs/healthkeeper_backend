@@ -157,6 +157,8 @@ class DispenseModel extends Model
             ->with(['dispenseItems' => function ($query) {
                 $query->select([
                     'hms_dispense_item.id',
+                    'hms_dispense_item.config_id',
+                    'hms_dispense_item.warehouse_id',
                     'hms_dispense_item.unit_id',
                     'hms_dispense_item.stock_item_id',
                     'hms_dispense_item.dispense_id',

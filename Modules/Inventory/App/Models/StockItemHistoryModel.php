@@ -64,6 +64,8 @@ class StockItemHistoryModel extends Model
                 'purchase' => '+',
                 'sales-return' => '+',
                 'stock-transfer-in' => '+',
+                'dispense-in' => '+',
+                'dispense-out' => '-',
                 'purchase-return' => '-',
                 'production' => '-',
                 'production-issue' => '-',
@@ -80,7 +82,6 @@ class StockItemHistoryModel extends Model
                 $item,
                 $operator,
             );
-
             // Prepare data for creating stock history
             $data = self::prepareStockHistoryData(
                 $existingStockHistory,
@@ -157,8 +158,6 @@ class StockItemHistoryModel extends Model
         } else {
             $closing_quantity = $quantity;
             $closing_balance = $subTotal;
-            $warehouse_closing_quantity = $quantity;
-            $warehouse_closing_balance = $subTotal;
         }
         return [$closing_quantity, $closing_balance, $quantity];
     }
