@@ -299,7 +299,6 @@ class PrescriptionModel extends Model
             ->leftjoin('hms_particular_mode as admit_department','admit_department.id','=','hms_invoice.admit_department_id')
             ->leftjoin('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
             ->leftjoin('hms_particular_mode as particular_payment_mode','particular_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
-            ->leftjoin('hms_admission_patient_details as hms_admission_patient_details','hms_admission_patient_details.hms_id','=','hms_invoice.id')
             ->select([
                 'hms_prescription.id as id',
                 'hms_prescription.uid as prescription_uid',
@@ -363,9 +362,6 @@ class PrescriptionModel extends Model
                 'referred_room.name as referred_room',
                 'hms_invoice_patient_referred.comment as referred_comment',
                 'hms_invoice_patient_referred.json_content as referred_json_content',
-                'hms_admission_patient_details.about_death as about_death',
-                'hms_admission_patient_details.cause_death as cause_death',
-                'hms_admission_patient_details.death_date_time as death_date_time',
             ])
             ->with(['invoice_particular'])
             ->with(['prescription_medicine'])

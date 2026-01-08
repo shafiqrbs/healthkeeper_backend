@@ -213,7 +213,7 @@ class IpdPrescriptionController extends Controller
         AdmissionPatientModel::insertDeathCertificate($domain,$entity->id,$data);
         $return = PrescriptionModel::getShow($entity->id);
         $localMedicines = PatientPrescriptionMedicineModel::getMedicineLocalDropdown($domain);
-        $return['localMedicines'] = '';
+        $return['localMedicines'] = $localMedicines;
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($return);
 
