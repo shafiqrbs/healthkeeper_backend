@@ -32,7 +32,6 @@ class AdmissionPatientModel extends Model
 
     public static function insertDeathCertificate($domain,$id,$data)
     {
-
         self::updateOrCreate(
             [
                 'hms_invoice_id' => $id,
@@ -40,10 +39,11 @@ class AdmissionPatientModel extends Model
             [
                 'created_by_id'=> $domain['user_id'],
                 'approved_by_id'=> $domain['user_id'],
-                'diseases_profile'    => $data['diseases_profile'],
-                'cause_death'    => $data['cause_death'],
-                'about_death'    => $data['about_death'],
-                'death_date_time'    => new \DateTime($data['death_date_time']),
+                'reason'    => (isset($data['reason']) && $data['reason']) ? $data['reason']:null,
+                'diseases_profile'    => (isset($data['diseases_profile']) && $data['diseases_profile']) ? $data['diseases_profile']:null,
+                'cause_death'    => (isset($data['cause_death']) && $data['cause_death']) ? $data['cause_death']:null,
+                'about_death'    => (isset($data['about_death']) && $data['about_death']) ? $data['about_death']:null,
+                'death_date_time'    => (isset($data['death_date_time']) && $data['death_date_time']) ?new \DateTime($data['death_date_time']): new \DateTime(),
             ]
         );
     }

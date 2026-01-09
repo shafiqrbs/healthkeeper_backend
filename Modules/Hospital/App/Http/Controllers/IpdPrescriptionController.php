@@ -157,6 +157,9 @@ class IpdPrescriptionController extends Controller
         if(isset($input['instruction']) and $input['instruction']){
             $findParticular->instruction  = $input['instruction'];
         }
+        if(isset($input['start_date']) and $input['start_date']){
+            $findParticular->start_date  = new \DateTime($input['start_date']);
+        }
         $findParticular->save();
         return response()->json(['success' => true]);
     }
@@ -193,8 +196,6 @@ class IpdPrescriptionController extends Controller
     {
         $domain = $this->domain;
         $data = $request->all();
-
-
         $entity = PrescriptionModel::findByIdOrUid($id);
         $data['json_content'] = json_encode($data);
         $data['prescribe_doctor_id'] = $domain['user_id'];
@@ -210,7 +211,7 @@ class IpdPrescriptionController extends Controller
         InvoiceTransactionModel::insertInvestigations($domain,$entity->id);
         HospitalSalesModel::insertMedicineIssue($domain,$entity->id);
         InvoiceContentDetailsModel::insertContentDetails($domain,$entity->id);
-        AdmissionPatientModel::insertDeathCertificate($domain,$entity->id,$data);
+        AdmissionPatientModel::insertDeathCertificate($domain,$entity->invoice->id,$data);
         $return = PrescriptionModel::getShow($entity->id);
         $localMedicines = PatientPrescriptionMedicineModel::getMedicineLocalDropdown($domain);
         $return['localMedicines'] = $localMedicines;

@@ -260,6 +260,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::prefix('refund-history')->name('refund_refund')->group(function () {
         Route::get('approve/{id}', [RefundHistoryController::class, 'approve'])->name('approve');
         Route::get('print/{id}', [RefundHistoryController::class, 'print'])->name('print');
+        Route::get('ipd-print/{id}', [RefundHistoryController::class, 'ipdPrint'])->name('ipdPrint');
         Route::apiResource('', RefundHistoryController::class)->parameters(['' => 'id']);
 
     });

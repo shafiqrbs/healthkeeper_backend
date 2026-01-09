@@ -363,6 +363,7 @@ class PrescriptionModel extends Model
                 'referred_room.name as referred_room',
                 'hms_invoice_patient_referred.comment as referred_comment',
                 'hms_invoice_patient_referred.json_content as referred_json_content',
+                'admission_patient.reason as reason',
                 'admission_patient.cause_death as cause_death',
                 'admission_patient.about_death as about_death',
                 'admission_patient.diseases_profile as diseases_profile',

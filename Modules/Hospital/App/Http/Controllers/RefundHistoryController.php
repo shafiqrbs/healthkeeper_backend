@@ -88,6 +88,13 @@ class RefundHistoryController extends Controller
         return $service->returnJosnResponse($entity);
     }
 
+     public function ipdPrint($id)
+    {
+        $service = new JsonRequestResponse();
+        $entity = RefundModel::showIpdInvoiceData($id);
+        return $service->returnJosnResponse($entity);
+    }
+
     /**
      * Show the specified resource.
      */
