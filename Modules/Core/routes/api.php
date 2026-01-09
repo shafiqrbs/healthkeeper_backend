@@ -40,7 +40,7 @@ Route::prefix('/core/select')->middleware([HeaderAuthenticationMiddleware::class
     Route::get('/warehouse', [WarehouseController::class,'warehouseDropdown'])->name('core_warehouse_dropdown');
 });
 
-Route::prefix('/core')->middleware([HeaderAuthenticationMiddleware::class,LogRequestResponse::class])->group(function() {
+Route::prefix('/core')->middleware([HeaderAuthenticationMiddleware::class,LogRequestResponse::class,'auth:api'])->group(function() {
 
     Route::get('/customer/details', [CustomerController::class,'details'])->name('customer_details');
     Route::get('/customer/local-storage', [CustomerController::class,'localStorage'])->name('customer_local_storage');
