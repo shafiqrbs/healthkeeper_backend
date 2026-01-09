@@ -111,7 +111,7 @@ class InvoiceParticularModel extends Model
             ->whereIn('hms_invoice_particular.mode', ['room'])
             ->sum('hms_invoice_particular.quantity');
         $remainingDay = ($admissionDay - $totalQuantity);
-        if($entity->room->price == 0 and $entity->free_identification == 1){
+        if($entity->room->price == 0 and $entity->is_free_bed == 1){
             $roomRent = 0;
         }else{
             $roomRent = ($entity->room->price * $remainingDay);

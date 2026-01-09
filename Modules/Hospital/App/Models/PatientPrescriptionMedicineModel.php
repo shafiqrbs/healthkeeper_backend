@@ -325,7 +325,58 @@ class PatientPrescriptionMedicineModel extends Model
                                     'hms_invoice_id' => $prescription->hms_invoice_id,
                                     'prescription_id' => $prescription->id,
                                     'company' => $medicine->company ?? null, // notice key: medicine_name not medicineName
-                                    'medicine_name' => $medicine->generic ?? null, // notice key: medicine_name not medicineName
+                                    'medicine_name' => $medicine->medicine_name ?? null, // notice key: medicine_name not medicineName
+                                    'generic' => $medicine->generic ?? null, // notice key: medicine_name not medicineName
+                                    'generic_id' =>  null, // notice key: medicine_name not medicineName
+                                    'stock_item_id' =>  null,
+                                    'medicine_dosage_id' => $medicine->medicine_dosage_id ?? null,
+                                    'medicine_bymeal_id' => $medicine->medicine_bymeal_id ?? null,
+                                    'dose_details' => $dose_details,
+                                    'dose_details_bn' => $dose_details_bn,
+                                    'by_meal' => $by_meal,
+                                    'by_meal_bn' => $by_meal_bn,
+                                    'continue_mode' => $continue_mode,
+                                    'daily_quantity' => $daily_quantity,
+                                    'quantity' => 0,
+                                    'is_stock' => false,
+                                    'ipd_status' => false,
+                                    'opd_status' => false,
+                                    'is_active' => $medicine->is_active ?? 1,
+                                    'start_date' => $date,
+                                    'created_at' => $date,
+                                    'updated_at' => $date,
+                                ];
+
+                            }else{
+
+                                $dose_details = '';
+                                $dose_details_bn = '';
+                                $daily_quantity = 1;
+                                $continue_mode = 'sos';
+                                $dosage = $medicine->medicine_dosage_id ?? null;
+                                if ($dosage) {
+                                    $dosage = MedicineDosageModel::find($medicine->medicine_dosage_id);
+                                    $dose_details = $dosage->name;
+                                    $dose_details_bn = $dosage->name_bn;
+                                    $continue_mode = $dosage->continue_mode;
+                                    $daily_quantity = $dosage->quantity;
+                                }
+
+                                $by_meal = '';
+                                $by_meal_bn = '';
+                                $bymeal = $medicine->medicine_bymeal_id ?? null;
+                                if ($bymeal) {
+                                    $bymeal = MedicineDosageModel::find($medicine->medicine_bymeal_id);
+                                    $by_meal = $bymeal->name;
+                                    $by_meal_bn = $bymeal->name_bn;
+                                }
+
+                                return [
+
+                                    'hms_invoice_id' => $prescription->hms_invoice_id,
+                                    'prescription_id' => $prescription->id,
+                                    'company' => $medicine->company ?? null, // notice key: medicine_name not medicineName
+                                    'medicine_name' => $medicine->medicine_name ?? null, // notice key: medicine_name not medicineName
                                     'generic' => $medicine->generic ?? null, // notice key: medicine_name not medicineName
                                     'generic_id' =>  null, // notice key: medicine_name not medicineName
                                     'stock_item_id' =>  null,

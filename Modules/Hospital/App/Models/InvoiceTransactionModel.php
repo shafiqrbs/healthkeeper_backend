@@ -661,7 +661,7 @@ class InvoiceTransactionModel extends Model
             $report_mode  = $entity->parent->invoice_mode;
 
             // ---------------- BILL ----------------
-            if ($entity->remaining_day > 0) {
+            if ($entity->remaining_day > 0 and $particular->price > 0) {
 
                 $price      = $particular->price ?? 0;
                 $quantity   = $entity->remaining_day;
@@ -711,30 +711,30 @@ class InvoiceTransactionModel extends Model
                 ];
             }
 
-            // ---------------- REFUND ----------------
-            $lastTransaction = $entity->invoice_transaction()
-                ->whereIn('mode', ['room', 'ipd'])
-                ->latest('id')
-                ->lockForUpdate() // 🔒 important inside transaction
-                ->first();
+            if (!$entity->remaining_day > 0 and $particular->price > 0) {
 
-            if (!$lastTransaction) {
-                throw new \Exception('No previous transaction found for refund');
+                // ---------------- REFUND ----------------
+                $lastTransaction = $entity->invoice_transaction()
+                    ->whereIn('mode', ['room', 'ipd'])
+                    ->latest('id')
+                    ->lockForUpdate() // 🔒 important inside transaction
+                    ->first();
+                if (!$lastTransaction) {
+                    throw new \Exception('No previous transaction found for refund');
+                }
+                $refund = self::finalBillRefund(
+                    $domain,
+                    $entity,
+                    $lastTransaction,
+                    $particular
+                );
+                return [
+                    'mode' => 'refund',
+                    'id' => $refund->id,
+                ];
+            }else{
+                return null;
             }
-
-            $refund = self::finalBillRefund(
-                $domain,
-                $entity,
-                $lastTransaction,
-                $particular
-            );
-
-
-
-            return [
-                'mode' => 'refund',
-                'id'   => $refund->id,
-            ];
         });
     }
 

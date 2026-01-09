@@ -30,6 +30,7 @@ class TreatmentMedicineRequest extends FormRequest
             {
                 return [
                     'medicine_id' => 'integer|nullable',
+                    'generic_id' => 'integer|nullable',
                     'treatment_template_id' => 'integer|nullable',
                     'medicine_name' => 'string|nullable',
                     'generic' => 'string|nullable',
@@ -47,6 +48,7 @@ class TreatmentMedicineRequest extends FormRequest
             {
                 return [
                     'medicine_id' => 'integer|nullable',
+                    'generic_id' => 'integer|nullable',
                     'treatment_template_id' => 'integer|nullable',
                     'medicine_name' => 'string|nullable',
                     'generic' => 'string|nullable',

@@ -63,8 +63,8 @@ class TreatmentMedicineController extends Controller
         $input = $request->validated();
         $input['config_id'] = $config;
         $medicineId = $input['medicine_id'] ?? null;
-        $genericId =  (isset($input['generic_id']) and $input['generic_id']) ? $input['generic_id']:null;
-        if($medicineId and $genericId ){
+        $genericId = $input['generic_id'] ?? null;
+        if($medicineId){
             $medicine = MedicineDetailsModel::find($medicineId);
             $input['opd_quantity'] = $medicine->medicineStock->opd_quantity;
             $input['generic_id'] = $medicine->medicineStock->product_id;
@@ -75,7 +75,9 @@ class TreatmentMedicineController extends Controller
             $input['generic'] = $medicineBrand->generic_name;
         }else{
             $input['medicine_name'] = $input['generic'];
+            $input['generic'] = null;
         }
+
         $entity = TreatmentMedicineModel::create($input);
         $service = new JsonRequestResponse();
         $data = $service->returnJosnResponse($entity);

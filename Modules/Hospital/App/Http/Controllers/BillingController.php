@@ -217,7 +217,12 @@ class BillingController extends Controller
         InvoiceParticularModel::getCountBedRoom($entity->id);
         $date =  new \DateTime("now");
         if($entity->amount === $entity->total and $entity->is_free_bed == 1) {
-            $entity->update(['process' => 'paid', 'release_date' => $date]);
+            $entity->update([
+                'process' => 'paid',
+                'release_date' => $date,
+                'consume_day' => $entity->admission_day,
+                'remaining_day' => $entity->admission_day,
+                'payment_day' => $entity->payment_day]);
             ParticularModel::where([
                 'is_booked' => 1,
                 'admission_id' => $entity->id
@@ -225,9 +230,6 @@ class BillingController extends Controller
                 'is_booked' => 0,
                 'admission_id' => null,
             ]);
-            $print = BillingModel::getFinalBillShow($entity->id);
-            $data = $service->returnJosnResponse($print);
-            return $data;
         }elseif($entity->amount === $entity->total and $entity->remaining_day == 0){
             $entity->update(['process' => 'paid','release_date'=>$date]);
             ParticularModel::where([
@@ -237,15 +239,11 @@ class BillingController extends Controller
                 'is_booked' => 0,
                 'admission_id' => null,
             ]);
-            $print = BillingModel::getFinalBillShow($entity->id);
-            $data = $service->returnJosnResponse($print);
-            return $data;
         }else {
             $data = InvoiceTransactionModel::finalBillClosing($domain, $entity);
             if ($data['mode'] == 'refund') {
                 $entity->update(['process' => 'refund']);
-                $print = RefundModel::showInvoiceData($data['id']);
-            } else {
+            }else{
                 $entity->update(['process' => 'paid','release_date'=>$date]);
                 ParticularModel::where([
                     'is_booked' => 1,
@@ -254,11 +252,11 @@ class BillingController extends Controller
                     'is_booked' => 0,
                     'admission_id' => null,
                 ]);
-                $print = BillingModel::getFinalBillShow($entity->id);
             }
-            $data = $service->returnJosnResponse($print);
-            return $data;
         }
+        $status = ['status'=>'success'];
+        $data = $service->returnJosnResponse($status);
+        return $data;
 
     }
 
