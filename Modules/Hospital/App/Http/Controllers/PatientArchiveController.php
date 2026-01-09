@@ -28,6 +28,7 @@ use Modules\Hospital\App\Models\ParticularModel;
 use Modules\Hospital\App\Models\ParticularModeModel;
 use Modules\Hospital\App\Models\PatientArchiveModel;
 use Modules\Hospital\App\Models\PatientModel;
+use Modules\Hospital\App\Models\PatientPrescriptionMedicineModel;
 use Modules\Hospital\App\Models\PoliceCaseModel;
 use Modules\Hospital\App\Models\PrescriptionModel;
 use function Symfony\Component\TypeInfo\null;
@@ -68,7 +69,7 @@ class PatientArchiveController extends Controller
     /**
      * Show the specified resource.
      */
-    public function store(IpdRequest $request,$id)
+    public function store(IpdRequest $request)
     {
         $domain = $this->domain;
         $input = $request->validated();
@@ -88,14 +89,14 @@ class PatientArchiveController extends Controller
             $input['patient_mode_id'] = $patient_mode_id;
             $entity = IpdModel::create($input);
             IpdModel::insertHmsInvoice($domain,$parentInvoice,$entity,$input);
-            PrescriptionModel::updateOrCreate(
+            $newPrescription = PrescriptionModel::updateOrCreate(
                 ['hms_invoice_id' => $entity->id],
                 [
                     'created_by_id' => $domain['user_id'] ,
                     'process' => "new",
                 ]
             );
-
+            PatientPrescriptionMedicineModel::insertReadmissionPatient($invoice,$newPrescription);
             DB::commit();
             $service = new JsonRequestResponse();
             return $service->returnJosnResponse($invoice);

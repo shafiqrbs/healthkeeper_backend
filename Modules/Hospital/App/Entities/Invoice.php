@@ -71,7 +71,7 @@ class Invoice
     private $customer;
 
     /**
-     * @ORM\OneToOne(targetEntity="Invoice", inversedBy="children")
+     * @ORM\ManyToOne(targetEntity="Invoice", inversedBy="children")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", onDelete="SET NULL", nullable=true)
      * })

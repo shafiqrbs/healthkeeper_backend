@@ -1043,5 +1043,40 @@ class PatientPrescriptionMedicineModel extends Model
 
     }
 
+    public static function insertReadmissionPatient($invoice,$prescription)
+    {
+        $medicines = $invoice->prescription_medicine;
+        $date = new \DateTime();
+        $rows = [];
+        foreach ($medicines as $medicine) {
+            $rows[] = [
+                'hms_invoice_id'      => $prescription->hms_invoice_id,
+                'prescription_id'     => $prescription->id,
+                'medicine_name'       => $medicine->medicine_name,
+                'generic'             => $medicine->generic,
+                'generic_id'          => $medicine->generic_id,
+                'stock_item_id'       => $medicine->stock_item_id,
+                'medicine_dosage_id'  => $medicine->medicine_dosage_id,
+                'medicine_bymeal_id'  => $medicine->medicine_bymeal_id,
+                'dose_details'        => $medicine->dose_details,
+                'dose_details_bn'     => $medicine->dose_details_bn,
+                'daily_quantity'      => $medicine->daily_quantity,
+                'by_meal'             => $medicine->by_meal,
+                'by_meal_bn'          => $medicine->by_meal_bn,
+                'continue_mode'       => $medicine->continue_mode,
+                'quantity'            => $medicine->quantity,
+                'is_stock'            => $medicine->is_stock,
+                'ipd_status'          => $medicine->ipd_status,
+                'opd_status'          => $medicine->opd_status,
+                'is_active'           => $medicine->is_active,
+                'order'               => $medicine->order,
+                'start_date'          => $medicine->start_date,
+                'created_at'          => $date,
+                'updated_at'          => $date,
+            ];
+        }
+        self::insert($rows);
+    }
+
 
 }
