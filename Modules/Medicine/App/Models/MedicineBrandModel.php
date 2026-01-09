@@ -35,6 +35,37 @@ class MedicineBrandModel extends Model
         return $this->hasOne(MedicineGenericModel::class, 'id', 'medicine_generic_id');
     }
 
+    public static function getMedicineBrand($medicineId){
+
+        $entity = DB::table('medicine_brand')
+            ->join(
+                'medicine_generic',
+                'medicine_generic.id',
+                '=',
+                'medicine_brand.medicineGeneric_id'
+            )
+            ->where('medicine_brand.id', $medicineId)
+            ->select(
+                DB::raw("
+            CONCAT(
+                IF(medicine_brand.medicineForm <> '',
+                    CONCAT(medicine_brand.medicineForm,' '),
+                    ''
+                ),
+                 medicine_brand.name,
+                IF(medicine_brand.strength <> '',
+                    CONCAT(' ', medicine_brand.strength),
+                    ''
+                )
+            ) AS medicine_name
+        "),
+                'medicine_generic.name AS generic_name'
+            )
+            ->first();
+
+        return $entity;
+    }
+
     public static function getMedicineGenericDropdown($term , $mode ='generic')
     {
 

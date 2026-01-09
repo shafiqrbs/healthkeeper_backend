@@ -19,6 +19,7 @@ use Modules\Hospital\App\Http\Controllers\OpdController;
 use Modules\Hospital\App\Http\Controllers\ParticularController;
 use Modules\Hospital\App\Http\Controllers\ParticularModeController;
 use Modules\Hospital\App\Http\Controllers\ParticularTypeController;
+use Modules\Hospital\App\Http\Controllers\PatientArchiveController;
 use Modules\Hospital\App\Http\Controllers\PatientWaiverController;
 use Modules\Hospital\App\Http\Controllers\PharmacyController;
 use Modules\Hospital\App\Http\Controllers\PrescriptionController;
@@ -154,6 +155,8 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::post('/setting-matrix/create', [HospitalController::class,'settingMatrixCreate'])->name('particular_module_dropdown');
     Route::get('/prescription/patient/{id}/{prescription}', [PrescriptionController::class,'patientPrescription'])->name('patient_prescription');
     Route::apiResource('opd', OpdController::class)->middleware([HeaderAuthenticationMiddleware::class]);
+    Route::get('patient-archive/re-admission/{id}', [PatientArchiveController::class, 'reAdmission'])->name('reAdmission');
+    Route::apiResource('patient-archive', PatientArchiveController::class)->middleware([HeaderAuthenticationMiddleware::class]);
     Route::patch('/opd/vital-update/{id}', [OpdController::class, 'vitalUpdate'])->name('vitalUpdate');
     Route::patch('/opd/patient-waver/{id}', [OpdController::class, 'patientWaver'])->name('patientWaver');
     Route::post('/opd/police-case/{id}', [OpdController::class, 'policeCase'])->name('patientWaver');

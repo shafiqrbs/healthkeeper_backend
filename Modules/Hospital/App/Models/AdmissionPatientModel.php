@@ -40,10 +40,11 @@ class AdmissionPatientModel extends Model
                 'created_by_id'=> $domain['user_id'],
                 'approved_by_id'=> $domain['user_id'],
                 'reason'    => (isset($data['reason']) && $data['reason']) ? $data['reason']:null,
+                'referred_hospital'    => (isset($data['referred_hospital']) && $data['referred_hospital']) ? $data['referred_hospital']:null,
                 'diseases_profile'    => (isset($data['diseases_profile']) && $data['diseases_profile']) ? $data['diseases_profile']:null,
                 'cause_death'    => (isset($data['cause_death']) && $data['cause_death']) ? $data['cause_death']:null,
                 'about_death'    => (isset($data['about_death']) && $data['about_death']) ? $data['about_death']:null,
-                'death_date_time'    => (isset($data['death_date_time']) && $data['death_date_time']) ?new \DateTime($data['death_date_time']): new \DateTime(),
+                'death_date_time'    => (isset($data['death_date_time']) && $data['death_date_time'] && $data['death_date_time'] !== 'invalid') ? new \DateTime($data['death_date_time']) : new \DateTime(),
             ]
         );
     }

@@ -729,6 +729,13 @@ class Invoice
      */
     private $isFreeBed;
 
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean", nullable=true, options={"default"="false"})
+     */
+    private $isReadmission;
+
 
     /**
      * @var \DateTime

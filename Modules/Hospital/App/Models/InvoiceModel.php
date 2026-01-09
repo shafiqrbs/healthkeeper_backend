@@ -603,6 +603,8 @@ class InvoiceModel extends Model
                 'admission_patient.about_death as about_death',
                 'admission_patient.diseases_profile as diseases_profile',
                 'admission_patient.death_date_time as death_date_time',
+                'admission_patient.reason as reason',
+                'admission_patient.referred_hospital as referred_hospital',
             ])
             ->with(['invoice_particular' => function ($query) {
                 $query->select([

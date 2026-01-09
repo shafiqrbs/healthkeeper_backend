@@ -79,8 +79,6 @@ class IpdPrescriptionController extends Controller
         $domain = $this->domain;
         $entity = PatientPrescriptionMedicineModel::insertIpdSingleMedicine($data);
         $service = new JsonRequestResponse();
-        $localMedicines = PatientPrescriptionMedicineModel::getIpdMedicineLocalDropdown($domain);
-        $entity['localMedicines'] = $localMedicines;
         $data = $service->returnJosnResponse($entity);
         return $data;
     }
@@ -152,7 +150,6 @@ class IpdPrescriptionController extends Controller
                 $findParticular->by_meal = $bymeal->name;
                 $findParticular->by_meal_bn = $bymeal->name_bn;
             }
-
         }
         if(isset($input['instruction']) and $input['instruction']){
             $findParticular->instruction  = $input['instruction'];
@@ -213,8 +210,6 @@ class IpdPrescriptionController extends Controller
         InvoiceContentDetailsModel::insertContentDetails($domain,$entity->id);
         AdmissionPatientModel::insertDeathCertificate($domain,$entity->invoice->id,$data);
         $return = PrescriptionModel::getShow($entity->id);
-        $localMedicines = PatientPrescriptionMedicineModel::getMedicineLocalDropdown($domain);
-        $return['localMedicines'] = $localMedicines;
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($return);
 

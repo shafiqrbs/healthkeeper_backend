@@ -508,36 +508,13 @@ class PatientPrescriptionMedicineModel extends Model
 
         $generic_name = null;
         if (!empty($medicine['generic_id'])) {
-            $entity = DB::table('medicine_brand')
-                ->join(
-                    'medicine_generic',
-                    'medicine_generic.id',
-                    '=',
-                    'medicine_brand.medicineGeneric_id'
-                )
-                ->where('medicine_brand.id', $medicine['generic_id'])
-                ->select(
-                    DB::raw("
-            CONCAT(
-                IF(medicine_brand.medicineForm <> '',
-                    CONCAT(medicine_brand.medicineForm,' '),
-                    ''
-                ),
-                 medicine_brand.name,
-                IF(medicine_brand.strength <> '',
-                    CONCAT(' ', medicine_brand.strength),
-                    ''
-                )
-            ) AS medicine_name
-        "),
-                    'medicine_generic.name AS generic_name'
-                )
-                ->first();
+
+            $medicineBrand = MedicineBrandModel::getMedicineBrand($medicine['generic_id']);
             $data =  [
                 'hms_invoice_id'      => $prescription->hms_invoice_id,
                 'prescription_id'     => $prescription->id,
-                'medicine_name'       => $entity->medicine_name,
-                'generic'             => $entity->generic_name,
+                'medicine_name'       => $medicineBrand->medicine_name,
+                'generic'             => $medicineBrand->generic_name,
                 'generic_id'          => null,
                 'stock_item_id'       => null,
                 'medicine_dosage_id'  => $medicine['medicine_dosage_id'] ?? null,

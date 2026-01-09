@@ -72,6 +72,14 @@ class AdmissionPatient
     private $reason;
 
 
+      /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true)
+     */
+    private $referredHospital;
+
+
     /**
      * @var string
      *

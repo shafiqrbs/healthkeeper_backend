@@ -17,7 +17,7 @@ use Modules\Hospital\App\Models\ParticularDetailsModel;
 use Modules\Hospital\App\Models\ParticularModel;
 use Modules\Hospital\App\Models\ParticularTypeMasterModel;
 use Modules\Hospital\App\Models\ParticularTypeModel;
-
+use Modules\Medicine\App\Models\MedicineBrandModel;
 
 
 class TreatmentMedicineController extends Controller
@@ -63,11 +63,16 @@ class TreatmentMedicineController extends Controller
         $input = $request->validated();
         $input['config_id'] = $config;
         $medicineId = $input['medicine_id'] ?? null;
-        if($medicineId){
+        $genericId =  (isset($input['generic_id']) and $input['generic_id']) ? $input['generic_id']:null;
+        if($medicineId and $genericId ){
             $medicine = MedicineDetailsModel::find($medicineId);
             $input['opd_quantity'] = $medicine->medicineStock->opd_quantity;
             $input['generic_id'] = $medicine->medicineStock->product_id;
             $input['generic'] = $medicine->medicineStock->product->name;
+        }elseif(empty($medicineId) and $genericId > 0 ){
+            $medicineBrand = MedicineBrandModel::getMedicineBrand($genericId);
+            $input['medicine_name'] = $medicineBrand->medicine_name;
+            $input['generic'] = $medicineBrand->generic_name;
         }else{
             $input['medicine_name'] = $input['generic'];
         }

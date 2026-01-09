@@ -144,24 +144,29 @@ class RefundModel extends Model
         $skip = isset($page) && $page!=''? (int)$page * $perPage:0;
         $entities = RefundModel::where([['hms_invoice.config_id',$domain['hms_config']]])
             ->join('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_transaction_refund.hms_invoice_id')
-            ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
+            ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice_transaction_refund.created_by_id')
+            ->leftjoin('users as approvedBy','approvedBy.id','=','hms_invoice_transaction_refund.approved_by_id')
             ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
+            ->leftjoin('hms_particular as room','room.id','=','hms_invoice.room_id')
             ->join('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
             ->select([
-                'hms_invoice.id',
+                'hms_invoice_transaction_refund.id',
                 'hms_invoice.uid',
                 'hms_invoice.barcode',
                 'hms_invoice.invoice as invoice',
                 'customer.customer_id as patient_id',
                 'customer.name',
                 'customer.mobile',
+                'room.display_name as visiting_room',
                 'patient_mode.name as patient_mode_name',
                 'patient_mode.slug as patient_mode_slug',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d-%m-%Y") as created_at'),
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%m-%Y") as admission_date'),
-                'hms_invoice.process as process',
+                'hms_invoice_transaction_refund.process as process',
+                'hms_invoice_transaction_refund.mode as mode',
                 'createdBy.name as created_by',
+                'approvedBy.name as approve_by',
                 'hms_invoice.sub_total as total',
                 'hms_invoice.amount as amount',
                 'hms_invoice.admission_day as admission_day',
@@ -181,22 +186,23 @@ class RefundModel extends Model
             });
         }
 
-        if (isset($request['patient_mode']) && !empty($request['patient_mode'])){
+        if (isset($request['patient_mode']) && !empty($request['patient_mode']) and $request['patient_mode'] !== "all"){
             $entities = $entities->where('hms_invoice_transaction_refund.mode', $request['patient_mode']);
         }
+
         $entities = $entities->whereIn('hms_invoice.process', ['New','done','paid','released','closed','refund','admitted']);
         if (isset($request['customer_id']) && !empty($request['customer_id'])){
             $entities = $entities->where('hms_invoice.customer_id',$request['customer_id']);
         }
 
-        /*if (isset($request['created']) and !empty($request['created'])) {
+        if (isset($request['created']) and !empty($request['created'])) {
             $date = !empty($request['created'])
                 ? new \DateTime($request['created'])
                 : new \DateTime();
             $start_date = $date->format('Y-m-d 00:00:00');
             $end_date = $date->format('Y-m-d 23:59:59');
-            $entities = $entities->whereBetween('hms_invoice.updated_at', [$start_date, $end_date]);
-        }*/
+            $entities = $entities->whereBetween('hms_invoice_transaction_refund.updated_at', [$start_date, $end_date]);
+        }
 
         $total  = $entities->count();
         $entities = $entities->skip($skip)
