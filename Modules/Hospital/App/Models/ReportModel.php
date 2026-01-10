@@ -511,6 +511,57 @@ class ReportModel extends Model
         return $entities;
     }
 
+    public static function getUserDailyInvoiceSummary($domain,$request){
+
+        $summary =self::summaryCollection($domain,$request);
+        $userBase =self::userBaseCollection($domain,$request);
+        $userRefund =self::refundUserCollection($domain,$request);
+
+        $userMaps = [];
+        $userNames = [];
+        foreach ($userBase as $user){
+            $modeName = $user['name'];          // string
+            $userNames[] = $user['name'];
+            $userMaps[$modeName] = $user; // correct
+        }
+
+        $userRefundMaps = [];
+        $refundUserNames = [];
+        foreach ($userRefund as $service) {
+            $mode = $service['name'];
+            $refundUserNames[] = $service['name'];
+            $userRefundMaps[$mode] = $service;
+        }
+
+        $merged = array_values(array_unique(array_merge($userNames, $refundUserNames)));
+
+        $invoiceMerged = [];
+        foreach ($merged as $mode) {
+            $mode_id = $mode;
+            $total  = $userMaps[$mode_id]['total'] ?? 0;
+            $group_name  = $userMaps[$mode_id]['group_name'] ?? 0;
+            $refund_total  = $userRefundMaps[$mode_id]['total'] ?? 0;
+            $sub_total = ($total - $refund_total);
+            $invoiceMerged[] = [
+                'name' => $mode_id,
+                'group_name' => $group_name,
+                'total' => $total,
+                'refund' => $refund_total, // default 0 if not refunded
+                'sub_total' => $sub_total, // default 0 if not refunded
+            ];
+        }
+        $groups = [];
+        foreach ($invoiceMerged as $user){
+            $groups[$user['group_name']][] = $user;
+        }
+        $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
+        $records =[
+            'filter' => $filter,
+            'summary' => $summary,
+            'userBase' => $groups,
+        ];
+        return $records;
+    }
 
     public static function getInvoiceSummary($domain,$request){
 
@@ -794,6 +845,39 @@ class ReportModel extends Model
         return $entities;
     }
 
+    public static function refundUserCollection($domain,$request)
+    {
+        $entities = InvoiceParticularModel::where([['hms_invoice.config_id',$domain['hms_config']]])
+            ->where('hms_invoice_particular.status',1)
+            ->where('hms_invoice_particular.is_refund',1)
+            ->where('hms_invoice_transaction.process','Done')
+            ->join('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
+            ->join('hms_invoice_transaction_refund as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_refund_id')
+            ->join('users as createdBy','createdBy.id','=','hms_invoice_transaction.created_by_id')
+            ->join('cor_setting as employeeGroup','employeeGroup.id','=','createdBy.employee_group_id')
+            ->select([
+                DB::raw('SUM(hms_invoice_particular.refund_amount) as total'),
+                'createdBy.name as name',
+                'employeeGroup.name as group_name',
+            ])->groupBy('createdBy.name');
+
+
+        if (isset($request['start_date']) && isset($request['end_date'])){
+            $start_date = new \DateTime($request['start_date']);
+            $end_date = new \DateTime($request['end_date']);
+            $start_date = $start_date->format('Y-m-d 00:00:00');
+            $end_date = $end_date->format('Y-m-d 23:59:59');
+            $entities = $entities->whereBetween('hms_invoice_transaction.created_at',[$start_date, $end_date]);
+        }else{
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date = $date->format('Y-m-d 23:59:59');
+            $entities = $entities->whereBetween('hms_invoice_transaction.created_at',[$start_date, $end_date]);
+        }
+        $entities = $entities->get();
+        return $entities;
+    }
+
     public static function refundInvoiceModeCollection($domain,$request)
     {
         $entities = InvoiceParticularModel::where([['hms_invoice.config_id',$domain['hms_config']]])
@@ -913,10 +997,12 @@ class ReportModel extends Model
             ->join('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
             ->join('hms_invoice_transaction as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_id')
             ->join('users as createdBy','createdBy.id','=','hms_invoice_transaction.created_by_id')
+            ->join('cor_setting as employeeGroup','employeeGroup.id','=','createdBy.employee_group_id')
             ->select([
                 DB::raw('COUNT(hms_invoice_particular.id) as total_count'),
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
                 'createdBy.name as name',
+                'employeeGroup.name as group_name',
             ]);
         if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
             $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);
