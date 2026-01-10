@@ -151,6 +151,12 @@ class IpdPrescriptionController extends Controller
                 $findParticular->by_meal_bn = $bymeal->name_bn;
             }
         }
+        if(isset($input['by_meal']) and $input['by_meal']){
+            $findParticular->by_meal  = $input['by_meal'];
+        }
+        if(isset($input['dose_details']) and $input['dose_details']){
+            $findParticular->dose_details  = $input['dose_details'];
+        }
         if(isset($input['instruction']) and $input['instruction']){
             $findParticular->instruction  = $input['instruction'];
         }

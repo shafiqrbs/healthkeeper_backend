@@ -151,7 +151,7 @@ class IpdModel extends Model
                 DB::raw('DATE_FORMAT(hms_invoice.appointment_date, "%d-%M-%Y") as appointment'),
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%M-%Y") as admission_date'),
                 DB::raw('DATE_FORMAT(customer.dob, "%d-%M-%Y") as dob'),
-                DB::raw("CONCAT(UCASE(LEFT(hms_invoice.process, 1)), LCASE(SUBSTRING(hms_invoice.process, 2))) as process"),
+                'hms_invoice.process',
                 'vr.name as visiting_room',
                 'vr.display_name as room_name',
                 'patient_mode.name as patient_mode_name',
@@ -180,24 +180,9 @@ class IpdModel extends Model
                     ->orWhere('customer.health_id', 'LIKE', "%{$term}%");
             });
         }
-
         if (isset($request['prescription_mode']) && !empty($request['prescription_mode'])){
-            if (!empty($request['prescription_mode'])) {
-                if ($request['prescription_mode'] === 'prescription') {
-                    $entities = $entities->whereNotNull('prescription.id');
-                    $entities = $entities->where('prescription.process','done');
-                } elseif ($request['prescription_mode'] === 'non-prescription') {
-                    $entities = $entities->where(function ($q) {
-                        $q->whereNull('prescription.id')
-                            ->orWhere('prescription.process', 'new');
-                    });
-                }elseif(in_array($request['prescription_mode'],['room','admission','hospital'])) {
-                    $entities = $entities->where('hms_invoice.referred_mode',$request['prescription_mode']);
-                }
-                $entities = $entities->whereIn('hms_invoice.process',['admitted','refund','paid']);
-            }
+            $entities = $entities->whereIn('hms_invoice.process',['admitted','refund','paid']);
         }
-
         if (isset($request['ipd_mode']) && !empty($request['ipd_mode'])){
             if ($request['ipd_mode'] === 'new' and !empty($request['referred_mode']) and $request['referred_mode']) {
                 $entities = $entities->whereIn('hms_invoice.process',['ipd','closed']);

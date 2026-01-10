@@ -279,6 +279,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
 
     Route::prefix('reports')->middleware([HeaderAuthenticationMiddleware::class])->group(function() {
         Route::get('/dashboard-daily-summary', [ReportsController::class,'dailySummary'])->name('dashboard_daily_summary');
+        Route::get('/user-daily-invoice-summary', [ReportsController::class,'userDailyInvoiceSummary'])->name('dashboard_daily_summary');
         Route::get('/daily-collection-service-report', [ReportsController::class,'dailyCollectionServiceReport'])->name('daily_collection_service_report');
         Route::get('/daily-opd-emergency-ipd-report', [ReportsController::class,'dailyOpdEmergencyIpd'])->name('daily_collection_service_report');
         Route::get('/summary-group-investigation', [ReportsController::class,'summaryGroupInvestigation'])->name('report_patient_ticket');

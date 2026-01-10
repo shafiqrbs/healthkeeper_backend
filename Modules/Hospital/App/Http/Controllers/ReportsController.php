@@ -58,6 +58,18 @@ class ReportsController extends Controller
     }
 
 
+     /**
+     * Display a listing of the resource.
+     */
+    public function userDailyInvoiceSummary(Request $request){
+
+        $data = ReportModel::getUserDailyInvoiceSummary($this->domain,$request);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse($data);
+        return $data;
+    }
+
+
     /**
      * Display a listing of the resource.
      */
