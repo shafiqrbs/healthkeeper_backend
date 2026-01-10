@@ -709,9 +709,7 @@ class InvoiceTransactionModel extends Model
                     'mode' => 'bill',
                     'id'   => $invoiceTransaction->id,
                 ];
-            }
-
-            if (!$entity->remaining_day > 0 and $particular->price > 0) {
+            }else{
 
                 // ---------------- REFUND ----------------
                 $lastTransaction = $entity->invoice_transaction()
@@ -732,8 +730,6 @@ class InvoiceTransactionModel extends Model
                     'mode' => 'refund',
                     'id' => $refund->id,
                 ];
-            }else{
-                return null;
             }
         });
     }
