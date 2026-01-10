@@ -145,8 +145,18 @@ class FileUploadController extends Controller
     public function fileProcessToDB(Request $request)
     {
         set_time_limit(0);
+        ini_set('max_execution_time', 300);
         $fileID = $request->file_id;
         $getFile = FileUploadModel::find($fileID);
+
+        if (!$getFile) {
+            return response()->json([
+                'status' => ResponseAlias::HTTP_BAD_REQUEST,
+                'success' => false,
+                'message' => 'File not found'
+            ]);
+        }
+
         if ($getFile->is_process) {
             return response()->json([
                 'status' => ResponseAlias::HTTP_BAD_REQUEST,
@@ -164,23 +174,29 @@ class FileUploadController extends Controller
         };
 
         $allData = $reader->load($filePath)->getActiveSheet()->toArray();
-
         // for process data with header
         $spreadsheet = $reader->load($filePath);
-        $data = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $rows = $worksheet->toArray(null, true, true, true);
 
-        // Use the first row as headers
-        $headers = array_shift($data);
+        // Remove completely empty rows
+        $rows = array_filter($rows, fn($row) => array_filter($row));
 
-        // Map rows to headers
+        // Extract headers and trim them
+        $headers = array_map('trim', array_shift($rows));
+
         $dataWithHeaders = [];
-        foreach ($data as $row) {
+        foreach ($rows as $row) {
             $mappedRow = [];
             foreach ($headers as $column => $headerName) {
-                $mappedRow[$headerName] = $row[$column] ?? null; // Use header name as key
+                $mappedRow[$headerName] = isset($row[$column]) ? trim((string)$row[$column]) : null;
             }
-            $dataWithHeaders[] = $mappedRow;
+            // Skip row if important fields are missing (optional)
+            if (!empty($mappedRow['StockItemID']) && !empty($mappedRow['WarehouseID'])) {
+                $dataWithHeaders[] = $mappedRow;
+            }
         }
+
 
         // Remove headers
         $keys = array_map('trim', array_shift($allData));
@@ -225,7 +241,7 @@ class FileUploadController extends Controller
             $productionDate = $values['ProductionDate'] ?? null;
             $expireDate = $values['ExpiredDate'] ?? null;
 
-            if (!$stockItemId || !isset($stockItems[$stockItemId]) || !$warehouseId) {
+            if (!$stockItemId || !isset($stockItems[$stockItemId]) || !$warehouseId || $openingStock == 0) {
                 continue;
             }
 
