@@ -2,23 +2,14 @@
 
 namespace Modules\Hospital\App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
-use Modules\AppsApi\App\Services\GeneratePatternCodeService;
-use Modules\Core\App\Models\CustomerModel;
-use Modules\Inventory\App\Models\SalesItemModel;
-use Modules\Inventory\App\Models\StockItemModel;
+use Modules\Core\App\Models\UserWarehouseModel;
 use Modules\Medicine\App\Models\MedicineBrandModel;
 use Modules\Medicine\App\Models\MedicineGenericModel;
-use Ramsey\Collection\Collection;
-use function Illuminate\Database\Eloquent\Factories\forEachSequence;
-use function Symfony\Component\String\length;
 
 class PatientPrescriptionMedicineModel extends Model
 {
-    use HasFactory;
 
     protected $table = 'hms_patient_prescription_medicine';
     public $timestamps = true;
@@ -1238,67 +1229,64 @@ class PatientPrescriptionMedicineModel extends Model
         }
     }
 
-    public static function getPatientIpdMedicine($id){
+    public static function getPatientIpdMedicine($id)
+    {
         $today = now()->toDateString();
 
-        $rows = self::join('hms_invoice', 'hms_invoice.id', '=', 'hms_patient_prescription_medicine.hms_invoice_id')
-            ->leftJoin(
-                'hms_patient_prescription_medicine_daily_history',
-                function ($join) use ($today) {
-                    $join->on(
-                        'hms_patient_prescription_medicine_daily_history.prescription_medicine_id',
-                        '=',
-                        'hms_patient_prescription_medicine.id'
-                    )->whereDate(
-                        'hms_patient_prescription_medicine_daily_history.created_at',
-                        '=',
-                        $today
-                    );
-                }
-            )
-            // Only medicines that DO NOT have today's history
+        $warehouseId = UserWarehouseModel::where('user_id', auth()->id())
+            ->value('warehouse_id');
+
+        if (!$warehouseId) {
+            return collect();
+        }
+
+        return self::query()
+            ->join('hms_invoice', 'hms_invoice.id', '=', 'hms_patient_prescription_medicine.hms_invoice_id')
+
+            ->leftJoin('hms_patient_prescription_medicine_daily_history', function ($join) use ($today) {
+                $join->on(
+                    'hms_patient_prescription_medicine_daily_history.prescription_medicine_id',
+                    '=',
+                    'hms_patient_prescription_medicine.id'
+                )->whereDate(
+                    'hms_patient_prescription_medicine_daily_history.created_at',
+                    $today
+                );
+            })
+
+            ->leftJoin('inv_current_stock', function ($join) use ($warehouseId) {
+                $join->on(
+                    'inv_current_stock.stock_item_id',
+                    '=',
+                    'hms_patient_prescription_medicine.stock_item_id'
+                )->where(
+                    'inv_current_stock.warehouse_id',
+                    $warehouseId
+                );
+            })
+
+            // exclude medicines already given today
             ->whereNull('hms_patient_prescription_medicine_daily_history.id')
 
             ->where(function ($query) use ($id) {
                 $query->where('hms_invoice.id', $id)
                     ->orWhere('hms_invoice.uid', $id);
             })
+
             ->where([
                 'hms_patient_prescription_medicine.is_active' => 1,
-                'hms_patient_prescription_medicine.is_stock' => 1
+                'hms_patient_prescription_medicine.is_stock'  => 1,
             ])
-            ->select('hms_patient_prescription_medicine.*')
+
+            ->select(
+                'hms_patient_prescription_medicine.*',
+                'inv_current_stock.quantity as stock_quantity'
+            )
+
             ->orderBy('hms_patient_prescription_medicine.medicine_name', 'ASC')
             ->get();
-
-        return $rows;
-
-        /*$rows = self::join('hms_invoice', 'hms_invoice.id', '=', 'hms_patient_prescription_medicine.hms_invoice_id')
-            ->leftJoin(
-                'hms_patient_prescription_medicine_daily_history',
-                'hms_patient_prescription_medicine_daily_history.prescription_medicine_id',
-                '=',
-                'hms_patient_prescription_medicine.id'
-            )
-            ->where(function($query) {
-                $query->whereDate('hms_patient_prescription_medicine_daily_history.created_at', '!=', now()->toDateString())
-                    ->orWhereNull('hms_patient_prescription_medicine_daily_history.id');
-            })
-            ->where(function ($query) use ($id) {
-                $query->where('hms_invoice.id', $id)
-                    ->orWhere('hms_invoice.uid', $id);
-            })
-            ->where([
-                'hms_patient_prescription_medicine.is_active'=> 1,
-                'hms_patient_prescription_medicine.is_stock'=> 1
-            ])
-            ->select('hms_patient_prescription_medicine.*')
-            ->orderBy('hms_patient_prescription_medicine.medicine_name','ASC')
-            ->get();
-
-        return $rows;*/
-
     }
+
 
     public static function insertReadmissionPatient($invoice,$prescription)
     {
