@@ -569,21 +569,49 @@ class ReportModel extends Model
         $patientMode =self::patientModeBaseCollection($domain,$request);
         $patientServiceMode =self::patientServiceModeBaseCollection($domain,$request);
         $userBase =self::userBaseCollection($domain,$request);
-        $serviceGroups =self::serviceBaseGroupInvestigation($domain,$request);
-        $services =self::serviceBaseInvestigation($domain,$request);
-        $financialServices =self::financialServiceGroupInvestigation($domain,$request);
 
-        $refundInvestigations =self::refundServiceBaseInvestigation($domain,$request);
+        $serviceGroups =self::serviceBaseGroupInvestigation($domain,$request);
+
+        $financialServices =self::financialServiceGroupInvestigation($domain,$request);
         $refundServiceGroups =self::refundFinancialServiceGroupInvestigation($domain,$request);
 
-        $refundPatientRoomBaseCollection =self::refundPatientRoomBaseCollection($domain,$request);
+        $particularInvoiceModes = InvoiceParticularModel::getParticularInvoiceModes();
 
+
+        $services =self::serviceBaseInvestigation($domain,$request);
+        $refundInvestigations =self::refundServiceBaseInvestigation($domain,$request);
+
+
+        $investigationMaps = [];
+        foreach ($services as $service) {
+            $modeName = $service['name'];          // string
+            $investigationMaps[$modeName] = $service['total']; // correct
+        }
+
+        $refundInvestigationMaps = [];
+        foreach ($refundInvestigations as $service) {
+            $mode = $service['name'];
+            $refundInvestigationMaps[$mode] = $service['total'];
+        }
+
+        $investigationMerged = [];
+        foreach ($services as $mode) {
+            $mode_id = $mode->name;
+            $total  = $investigationMaps[$mode_id] ?? 0;
+            $refund_total  = $refundInvestigationMaps[$mode_id] ?? 0;
+            $sub_total = ($total - $refund_total);
+            $investigationMerged[] = [
+                'name' => $mode_id,
+                'total' => $total,
+                'refund' => $refund_total, // default 0 if not refunded
+                'sub_total' => $sub_total, // default 0 if not refunded
+            ];
+        }
+
+        $refundPatientRoomBaseCollection =self::refundPatientRoomBaseCollection($domain,$request);
         $refundTotalAmount =self::refundTotalAmount($domain,$request);
 
-        $financialServicesModes = InvoiceParticularModel::getParticularInvoiceModes();
-
         $invoiceModes =self::invoiceModeCollection($domain,$request);
-
         $refundInvoiceModes =self::refundInvoiceModeCollection($domain,$request);
 
         $invoiceModeMap = [];
@@ -599,7 +627,7 @@ class ReportModel extends Model
         }
 
         $invoiceMerged = [];
-        foreach ($financialServicesModes as $mode) {
+        foreach ($particularInvoiceModes as $mode) {
             $mode_id = $mode->name;
             $total  = $invoiceModeMap[$mode_id] ?? 0;
             $refund_total  = $refundInvoiceModeMap[$mode_id] ?? 0;
@@ -611,6 +639,9 @@ class ReportModel extends Model
                 'sub_total' => $sub_total, // default 0 if not refunded
             ];
         }
+
+
+
 
         $financialServicesModes = ParticularModeModel::getParticularModuleDropdown('financial-service');
         $refundMap = [];
@@ -639,26 +670,22 @@ class ReportModel extends Model
                 'sub_total' => $sub_total,
             ];
         }
+
         $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
         $records =[
             'filter' => $filter,
             'summary' => $summary,
-            'invoiceMode' => $invoiceModes,
+            'refundTotal' => $refundTotalAmount,
+            'invoiceMode' => $invoiceMerged,
             'userBase' => $userBase,
             'patientMode' => $patientMode,
             'patientServiceMode' => $patientServiceMode,
             'serviceGroups' => $serviceGroups,
-            'services' => $services,
-            'financialServices' => $financialServices,
-            'refundInvestigations' => $refundInvestigations,
-            'refundServiceGroups' => $refundServiceGroups,
-            'refundPatientRoom' => $refundPatientRoomBaseCollection,
-            'refundTotalAmount' => $refundTotalAmount,
-            'financialServicesModes' => $financialServicesModes,
-            'financialServicesMerged' => $financialServicesMerged,
-            'refundInvoiceModeMap' => $refundInvoiceModeMap,
+            'services' => $investigationMerged,
+            'financialServices' => $financialServicesMerged,
+            'financialServicesModes' => $financialServicesMerged,
             'invoiceMerged' => $invoiceMerged,
-           // 'serviceFees' => $serviceFees,
+
         ];
         return $records;
     }
@@ -808,17 +835,8 @@ class ReportModel extends Model
             ->join('hms_invoice_transaction as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_id')
             ->select([
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
-                DB::raw("
-                    CONCAT(
-                        UPPER(LEFT(hms_invoice_particular.report_mode, 1)),
-                        LOWER(SUBSTRING(hms_invoice_particular.report_mode, 2)),
-                        '-',
-                        UPPER(LEFT(hms_invoice_particular.mode, 1)),
-                        LOWER(SUBSTRING(hms_invoice_particular.mode, 2))
-                    ) as name
-                "),
+                DB::raw('hms_invoice_particular.mode as name'),
             ])->groupBy('hms_invoice_particular.mode')
-            ->groupBy('hms_invoice_particular.report_mode')
             ->orderBy('name','ASC');
 
         if (isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
@@ -1136,7 +1154,7 @@ class ReportModel extends Model
             ->leftjoin('hms_invoice_transaction_refund as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_refund_id')
             ->leftjoin('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
             ->leftjoin('hms_particular as hms_particular','hms_particular.id','=','hms_invoice_particular.particular_id')
-            ->select([DB::raw('SUM(hms_invoice_particular.refund_amount) as total_refund_amount')]);
+            ->select([DB::raw('SUM(hms_invoice_particular.refund_amount) as refund')]);
         if (isset($request['start_date']) && isset($request['end_date'])){
             $start_date = new \DateTime($request['start_date']);
             $end_date = new \DateTime($request['end_date']);
@@ -1163,8 +1181,8 @@ class ReportModel extends Model
             ->leftjoin('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
             ->leftjoin('hms_particular as hms_particular','hms_particular.id','=','hms_invoice_particular.particular_id')
             ->select([
-                DB::raw('COUNT(hms_invoice_particular.id) as total_refund_count'),
-                DB::raw('SUM(hms_invoice_particular.refund_amount) as total_refund_amount'),
+                DB::raw('COUNT(hms_invoice_particular.id) as count'),
+                DB::raw('SUM(hms_invoice_particular.refund_amount) as total'),
                 'hms_particular.display_name as name',
             ])->groupBy('particular_id');
         if (isset($request['start_date']) && isset($request['end_date'])){
