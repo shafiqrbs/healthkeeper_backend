@@ -160,6 +160,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::patch('/opd/vital-update/{id}', [OpdController::class, 'vitalUpdate'])->name('vitalUpdate');
     Route::patch('/opd/patient-waver/{id}', [OpdController::class, 'patientWaver'])->name('patientWaver');
     Route::post('/opd/police-case/{id}', [OpdController::class, 'policeCase'])->name('patientWaver');
+    Route::patch('/prescription/update-template/{id}', [PrescriptionController::class,'updateTemplate'])->name('opd_updateTemplate');
     Route::apiResource('prescription', PrescriptionController::class)
         ->middleware([HeaderAuthenticationMiddleware::class])
         ->names([
@@ -171,7 +172,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
         ]);
     Route::get('/prescription/vital/{id}', [PrescriptionController::class, 'vitalCheck'])->name('vitalCheck');
     Route::post('/ipdprescription/inline-update/{id}', [IpdPrescriptionController::class,'medicineInlineUpdate'])->name('particular_matrix_inline_update');
-    Route::patch('/ipdprescription/update-template/{id}', [IpdPrescriptionController::class,'updateTemplate'])->name('particular_matrix_inline_update');
+    Route::patch('/ipdprescription/update-template/{id}', [IpdPrescriptionController::class,'updateTemplate'])->name('ipd_updateTemplate');
     Route::get('/ipdprescription/medicine-delete/{id}', [IpdPrescriptionController::class,'deleteMedicine'])->name('deleteMedicine');
     Route::post('/ipdprescription/ordering', [IpdPrescriptionController::class,'updateOrdering'])->name('matrixUpdateOrdering');
     Route::apiResource('ipdprescription', IpdPrescriptionController::class)

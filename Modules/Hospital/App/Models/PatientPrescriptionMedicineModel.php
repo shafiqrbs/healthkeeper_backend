@@ -435,6 +435,212 @@ class PatientPrescriptionMedicineModel extends Model
         }
     }
 
+    public static function insertOpdTemplateMedicine($prescription,$medicines)
+    {
+
+        $date =  new \DateTime("now");
+        DB::beginTransaction();
+        try {
+            if (!empty($medicines)) {
+                $prescription->prescription_medicine()->forceDelete();
+                if($prescription->prescription_medicine()->count() === 0){
+                    $insertData = collect($medicines)
+                        ->map(function ($medicine) use ($prescription,$date) {
+                            $medicineDetails = MedicineDetailsModel::find($medicine->medicine_id);
+                            if ($medicineDetails) {
+                                $medicineStock = $medicineDetails->medicineStock;
+                                $dose_details ='';
+                                $dose_details_bn ='';
+                                $daily_quantity = 1;
+                                $continue_mode = 'sos';
+
+                                $dosage = $medicine->medicine_dosage_id ?? null;
+                                if ($dosage) {
+                                    $dosage = MedicineDosageModel::find($medicine->medicine_dosage_id);
+                                    $dose_details = $dosage->name;
+                                    $dose_details_bn = $dosage->name_bn;
+                                    $continue_mode = $dosage->continue_mode;
+                                    $daily_quantity = $dosage->quantity;
+                                }
+
+                                $by_meal = '';
+                                $by_meal_bn = '';
+                                $bymeal = $medicine->medicine_bymeal_id ?? null;
+                                if ($bymeal) {
+                                    $bymeal = MedicineDosageModel::find($medicine->medicine_bymeal_id);
+                                    $by_meal = $bymeal->name;
+                                    $by_meal_bn = $bymeal->name_bn;
+                                }
+
+                                return [
+
+                                    'hms_invoice_id' => $prescription->hms_invoice_id,
+                                    'prescription_id' => $prescription->id,
+                                    'company' => $medicineDetails->company ?? null, // notice key: medicine_name not medicineName
+                                    'medicine_name' => $medicineDetails->name ?? null, // notice key: medicine_name not medicineName
+                                    'generic' => $medicineStock->product->name ?? null, // notice key: medicine_name not medicineName
+                                    'generic_id' => $medicineStock->product->id ?? null, // notice key: medicine_name not medicineName
+                                    'medicine_id' => $medicineDetails->id ?? null,
+                                    'stock_item_id' => $medicineStock->stock_item_id ?? null,
+                                    'medicine_dosage_id' => $medicine->medicine_dosage_id ?? null,
+                                    'medicine_bymeal_id' => $medicine->medicine_bymeal_id ?? null,
+                                    'dose_details' => $dose_details,
+                                    'dose_details_bn' => $dose_details_bn,
+                                    'daily_quantity' => $daily_quantity,
+                                    'by_meal' => $by_meal,
+                                    'by_meal_bn' => $by_meal_bn,
+                                    'continue_mode' => $continue_mode,
+                                    'quantity' => $medicineStock->opd_quantity ?? 0,
+                                    'opd_quantity' => $medicineStock->opd_quantity ?? 0,
+                                    'ipd_status' => $medicineStock->ipd_status,
+                                    'opd_status' => $medicineStock->opd_status,
+                                    'opd_admin_status' => $medicineStock->admin_status,
+                                    'is_stock' => true,
+                                    'is_active' => $medicine->is_active ?? 1,
+                                    'start_date' => $date,
+                                    'created_at' => $date,
+                                    'updated_at' => $date,
+                                ];
+
+                            }elseif($medicine->generic) {
+
+                                $dose_details = '';
+                                $dose_details_bn = '';
+                                $daily_quantity = 1;
+                                $continue_mode = 'sos';
+
+                                $dosage = $medicine->medicine_dosage_id ?? null;
+                                if ($dosage) {
+                                    $dosage = MedicineDosageModel::find($medicine->medicine_dosage_id);
+                                    $dose_details = $dosage->name;
+                                    $dose_details_bn = $dosage->name_bn;
+                                    $continue_mode = $dosage->continue_mode;
+                                    $daily_quantity = $dosage->quantity;
+                                }
+
+                                $by_meal = '';
+                                $by_meal_bn = '';
+                                $bymeal = $medicine->medicine_bymeal_id ?? null;
+                                if ($bymeal) {
+                                    $bymeal = MedicineDosageModel::find($medicine->medicine_bymeal_id);
+                                    $by_meal = $bymeal->name;
+                                    $by_meal_bn = $bymeal->name_bn;
+                                }
+
+                                return [
+
+                                    'hms_invoice_id' => $prescription->hms_invoice_id,
+                                    'prescription_id' => $prescription->id,
+                                    'company' => $medicine->company ?? null, // notice key: medicine_name not medicineName
+                                    'medicine_name' => $medicine->medicine_name ?? null, // notice key: medicine_name not medicineName
+                                    'generic' => $medicine->generic ?? null, // notice key: medicine_name not medicineName
+                                    'generic_id' =>  null, // notice key: medicine_name not medicineName
+                                    'stock_item_id' =>  null,
+                                    'medicine_dosage_id' => $medicine->medicine_dosage_id ?? null,
+                                    'medicine_bymeal_id' => $medicine->medicine_bymeal_id ?? null,
+                                    'dose_details' => $dose_details,
+                                    'dose_details_bn' => $dose_details_bn,
+                                    'by_meal' => $by_meal,
+                                    'by_meal_bn' => $by_meal_bn,
+                                    'continue_mode' => $continue_mode,
+                                    'daily_quantity' => $daily_quantity,
+                                    'quantity' => 0,
+                                    'is_stock' => false,
+                                    'ipd_status' => false,
+                                    'opd_status' => false,
+                                    'is_active' => $medicine->is_active ?? 1,
+                                    'start_date' => $date,
+                                    'created_at' => $date,
+                                    'updated_at' => $date,
+                                ];
+
+                            }else{
+
+                                $dose_details = '';
+                                $dose_details_bn = '';
+                                $daily_quantity = 1;
+                                $continue_mode = 'sos';
+                                $dosage = $medicine->medicine_dosage_id ?? null;
+                                if ($dosage) {
+                                    $dosage = MedicineDosageModel::find($medicine->medicine_dosage_id);
+                                    $dose_details = $dosage->name;
+                                    $dose_details_bn = $dosage->name_bn;
+                                    $continue_mode = $dosage->continue_mode;
+                                    $daily_quantity = $dosage->quantity;
+                                }
+
+                                $by_meal = '';
+                                $by_meal_bn = '';
+                                $bymeal = $medicine->medicine_bymeal_id ?? null;
+                                if ($bymeal) {
+                                    $bymeal = MedicineDosageModel::find($medicine->medicine_bymeal_id);
+                                    $by_meal = $bymeal->name;
+                                    $by_meal_bn = $bymeal->name_bn;
+                                }
+
+                                return [
+
+                                    'hms_invoice_id' => $prescription->hms_invoice_id,
+                                    'prescription_id' => $prescription->id,
+                                    'company' => $medicine->company ?? null, // notice key: medicine_name not medicineName
+                                    'generic' => $medicine->generic ?? null, // notice key: medicine_name not medicineName
+                                    'generic_id' =>  null, // notice key: medicine_name not medicineName
+                                    'stock_item_id' =>  null,
+                                    'medicine_dosage_id' => $medicine->medicine_dosage_id ?? null,
+                                    'medicine_bymeal_id' => $medicine->medicine_bymeal_id ?? null,
+                                    'dose_details' => $dose_details,
+                                    'dose_details_bn' => $dose_details_bn,
+                                    'by_meal' => $by_meal,
+                                    'by_meal_bn' => $by_meal_bn,
+                                    'continue_mode' => $continue_mode,
+                                    'daily_quantity' => $daily_quantity,
+                                    'quantity' => 0,
+                                    'is_stock' => false,
+                                    'ipd_status' => false,
+                                    'opd_status' => false,
+                                    'is_active' => $medicine->is_active ?? 1,
+                                    'start_date' => $date,
+                                    'created_at' => $date,
+                                    'updated_at' => $date,
+                                ];
+                            }
+                            return null; // explicit
+                        })
+                        ->filter() // ✅ remove nulls
+                        ->values() // ✅ reset array keys (important for upsert)
+                        ->toArray();
+
+                    $requiredKeys = [
+                        'hms_invoice_id','prescription_id','company','medicine_name','generic',
+                        'generic_id','medicine_id','stock_item_id','medicine_dosage_id',
+                        'medicine_bymeal_id','dose_details','dose_details_bn','by_meal','by_meal_bn',
+                        'continue_mode','quantity','daily_quantity','is_stock','start_date'
+                    ];
+                    $insertData = collect($insertData)->map(function ($item) use ($requiredKeys) {
+                        foreach ($requiredKeys as $key) {
+                            if (!array_key_exists($key, $item)) {
+                                $item[$key] = null;
+                            }
+                        }
+                        return $item;
+                    })->toArray();
+                    foreach ($insertData as $item) {
+                        PatientPrescriptionMedicineModel::updateOrCreate(
+                            [
+                                'prescription_id' => $item['prescription_id'],
+                                'medicine_name' => $item['medicine_name'],
+                            ],
+                            $item
+                        );
+                    }
+                }
+                DB::commit();
+            }
+        } catch (\Throwable $e) {
+            DB::rollBack();
+        }
+    }
+
     public static function insertIpdSingleMedicine($medicine)
     {
 

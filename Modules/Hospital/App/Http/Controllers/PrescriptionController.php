@@ -28,7 +28,7 @@ use Modules\Hospital\App\Models\ParticularModeModel;
 use Modules\Hospital\App\Models\PatientModel;
 use Modules\Hospital\App\Models\PatientPrescriptionMedicineModel;
 use Modules\Hospital\App\Models\PrescriptionModel;
-
+use Modules\Hospital\App\Models\TreatmentMedicineModel;
 
 
 class PrescriptionController extends Controller
@@ -150,6 +150,23 @@ class PrescriptionController extends Controller
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($return);
 
+    }
+
+
+    public function updateTemplate(Request $request,$id)
+    {
+        $domain = $this->domain;
+        $entity = PrescriptionModel::findByIdOrUid($id);
+        $templateId = $request->get('template_id');
+        if($templateId){
+            $template = TreatmentMedicineModel::where(['treatment_template_id'=> $templateId])->get();
+            PatientPrescriptionMedicineModel::insertOpdTemplateMedicine($entity,$template);
+        }
+        $return = PrescriptionModel::getShow($id);
+        $localMedicines = PatientPrescriptionMedicineModel::getMedicineLocalDropdown($domain);
+        $return['localMedicines'] = $localMedicines;
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($return);
     }
 
     /**
