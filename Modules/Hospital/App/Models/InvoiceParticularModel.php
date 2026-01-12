@@ -66,49 +66,63 @@ class InvoiceParticularModel extends Model
 
     public static function getPatientCountBedRoom($domain){
 
-
         InvoiceModel::where('hms_invoice.config_id', $domain['hms_config'])
             ->where('process', $domain['admitted'])
-            ->chunk(100, function ($entities) {
+            ->chunk(25, function ($entities) {
                 foreach ($entities as $entity) {
-                    $admissionDate = new \DateTime($entity->admission_date);
-                    $currentDate = new \DateTime('now');
-                    $interval = $admissionDate->diff($currentDate);
-                    $consumeDay = (int) $interval->days + 1;
-                    $totalQuantity = DB::table('hms_invoice_particular')
-                        ->join('hms_particular', 'hms_particular.id', '=', 'hms_invoice_particular.particular_id')
-                        ->join('hms_particular_type', 'hms_particular_type.id', '=', 'hms_particular.particular_type_id')
-                        ->join('hms_particular_master_type', 'hms_particular_master_type.id', '=', 'hms_particular_type.particular_master_type_id')
-                        ->where('hms_invoice_particular.hms_invoice_id', $entity->id)
-                        ->where('hms_invoice_particular.status', 1)
-                        ->whereIn('hms_particular_master_type.slug', ['bed', 'cabin'])
-                        ->sum('hms_invoice_particular.quantity');
-
-                    $remainingDay = $totalQuantity - $consumeDay;
-                    $entity->update([
-                        'admission_day' => $totalQuantity,
-                        'consume_day' => $consumeDay,
-                        'remaining_day' => $remainingDay,
-                    ]);
+                    self::getPatientSingleCountBedRoom($entity);
                 }
             });
         }
 
-    public static function getCountBedRoom($id){
-
-        $entity = InvoiceModel::find($id);
-
+    public static function getPatientSingleCountBedRoom($entity)
+    {
+        if($entity->process !== 'admitted'){
+            return false;
+        }
         $admissionDate = new \DateTime($entity->admission_date);
-        $currentDate = new \DateTime('now');
-
-        $interval = $admissionDate->diff($currentDate);
-        $dayCount  = (int)$interval->days;
+        $currentDate   = new \DateTime('now');
+        $dayCount = (int) $admissionDate
+            ->setTime(0, 0, 0)
+            ->diff($currentDate->setTime(0, 0, 0))
+            ->days;
         $admissionDay = ($dayCount == 0) ? 1 : $dayCount;
         $totalQuantity = DB::table('hms_invoice_particular')
             ->join('hms_particular', 'hms_particular.id', '=', 'hms_invoice_particular.particular_id')
-            ->where('hms_invoice_particular.hms_invoice_id', $id)
+            ->where('hms_invoice_particular.hms_invoice_id', $entity->id)
             ->where('hms_invoice_particular.status', 1)
-            ->whereIn('hms_invoice_particular.mode', ['room'])
+            ->whereIn('hms_invoice_particular.mode', ['room','bed','cabin'])
+            ->sum('hms_invoice_particular.quantity');
+        $remainingDay = ($admissionDay - $totalQuantity);
+        if($entity->room->price == 0 and $entity->is_free_bed == 1){
+            $roomRent = 0;
+        }else{
+            $roomRent = ($entity->room->price * $remainingDay);
+        }
+        $amount = InvoiceTransactionModel::where(['hms_invoice_id'=> $entity->id,'process'=>'Done'])->sum('sub_total');
+        $total = ($amount + $roomRent);
+        $entity->update(['admission_day' => $admissionDay, 'payment_day' => $totalQuantity, 'consume_day' => $totalQuantity,'remaining_day' => $remainingDay,'room_rent' => $roomRent,'total' => $total,'amount' => $amount]);
+
+    }
+
+    public static function getCountBedRoom($id){
+
+        $entity = InvoiceModel::find($id);
+        if($entity->process !== 'admitted'){
+            return false;
+        }
+        $admissionDate = new \DateTime($entity->admission_date);
+        $currentDate   = new \DateTime('now');
+        $dayCount = (int) $admissionDate
+            ->setTime(0, 0, 0)
+            ->diff($currentDate->setTime(0, 0, 0))
+            ->days;
+        $admissionDay = ($dayCount == 0) ? 1 : $dayCount;
+        $totalQuantity = DB::table('hms_invoice_particular')
+            ->join('hms_particular', 'hms_particular.id', '=', 'hms_invoice_particular.particular_id')
+            ->where('hms_invoice_particular.hms_invoice_id', $entity->id)
+            ->where('hms_invoice_particular.status', 1)
+            ->whereIn('hms_invoice_particular.mode', ['room','bed','cabin'])
             ->sum('hms_invoice_particular.quantity');
         $remainingDay = ($admissionDay - $totalQuantity);
         if($entity->room->price == 0 and $entity->is_free_bed == 1){

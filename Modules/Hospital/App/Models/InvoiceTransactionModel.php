@@ -654,7 +654,9 @@ class InvoiceTransactionModel extends Model
         return DB::transaction(function () use ($domain, $entity) {
 
             // Ensure room count is updated first
-            InvoiceParticularModel::getCountBedRoom($entity->id);
+            if($entity->process == 'admitted'){
+                InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
+            }
 
             $particular   = $entity->room;
             $date         = now();

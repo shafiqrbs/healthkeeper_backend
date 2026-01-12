@@ -116,6 +116,9 @@ class BillingController extends Controller
     {
         $service = new JsonRequestResponse();
         $entity = InvoiceModel::findByIdOrUid($id);
+        if($entity->invoice_mode == 'ipd' and $entity->process == 'admitted'){
+            InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
+        }
         if($entity->process == 'billing'){
             $entity = BillingModel::getAdmissionBilling($id);
         }else{
@@ -199,7 +202,9 @@ class BillingController extends Controller
     {
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
-        InvoiceParticularModel::getCountBedRoom($entity->id);
+        if($entity->process == 'admitted'){
+            InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
+        }
         $entity = BillingModel::getFinalBillShow($id);
         $data = $service->returnJosnResponse($entity);
         return $data;
@@ -214,7 +219,9 @@ class BillingController extends Controller
         $domain = $this->domain;
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
-        InvoiceParticularModel::getCountBedRoom($entity->id);
+        if($entity->process == 'admitted'){
+            InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
+        }
         $date =  new \DateTime("now");
         if($entity->amount === $entity->total and $entity->is_free_bed == 1) {
             $entity->update([
