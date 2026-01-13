@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\AppsApi\App\Services\GeneratePatternCodeService;
 use Modules\Core\App\Models\CustomerModel;
+use Modules\Hospital\App\Entities\InvoiceTransactionRefund;
 use Ramsey\Collection\Collection;
+use function Symfony\Component\TypeInfo\null;
 
 class InvoiceParticularModel extends Model
 {
@@ -77,9 +79,11 @@ class InvoiceParticularModel extends Model
 
     public static function getPatientSingleCountBedRoom($entity)
     {
+
         if($entity->process !== 'admitted'){
             return false;
         }
+
         $admissionDate = new \DateTime($entity->admission_date);
         $currentDate   = new \DateTime('now');
         $dayCount = (int) $admissionDate
@@ -89,11 +93,13 @@ class InvoiceParticularModel extends Model
         $admissionDay = ($dayCount == 0) ? 1 : $dayCount;
         $totalQuantity = DB::table('hms_invoice_particular')
             ->join('hms_particular', 'hms_particular.id', '=', 'hms_invoice_particular.particular_id')
+            ->join('hms_invoice', 'hms_invoice.id', '=', 'hms_invoice_particular.hms_invoice_id')
             ->where('hms_invoice_particular.hms_invoice_id', $entity->id)
             ->where('hms_invoice_particular.status', 1)
             ->whereIn('hms_invoice_particular.mode', ['room','bed','cabin'])
             ->sum('hms_invoice_particular.quantity');
         $remainingDay = ($admissionDay - $totalQuantity);
+
         if($entity->is_free_bed == 1){
             $roomRent = 0;
         }elseif($entity->room){
@@ -102,10 +108,19 @@ class InvoiceParticularModel extends Model
             return false;
         }
         $amount = InvoiceTransactionModel::where(['hms_invoice_id'=> $entity->id,'process'=>'Done'])->sum('sub_total');
+        $refund = RefundModel::getRoomRefundAmount($entity);
         $total = ($amount + $roomRent);
-
-        $entity->update(['admission_day' => $admissionDay, 'payment_day' => $totalQuantity, 'consume_day' => $totalQuantity,'remaining_day' => $remainingDay,'room_rent' => $roomRent,'total' => $total,'amount' => $amount]);
-
+        $entity->update([
+            'admission_day' => $admissionDay,
+            'payment_day'   => $totalQuantity,
+            'consume_day'   => $totalQuantity,
+            'remaining_day' => $remainingDay,
+            'room_rent'     => $roomRent,
+            'total'         => $total,
+            'amount'        => $amount,
+            'refund_amount' => $refund['refund_amount'] ?? 0,
+            'refund_day'    => $refund['refund_quantity'] ?? 0,
+        ]);
     }
 
     public static function getCountBedRoom($id){
@@ -134,9 +149,19 @@ class InvoiceParticularModel extends Model
             $roomRent = ($entity->room->price * $remainingDay);
         }
         $amount = InvoiceTransactionModel::where(['hms_invoice_id'=> $entity->id,'process'=>'Done'])->sum('sub_total');
+        $refund = RefundModel::getRoomRefundAmount($entity);
         $total = ($amount + $roomRent);
-        $entity->update(['admission_day' => $admissionDay, 'payment_day' => $totalQuantity, 'consume_day' => $totalQuantity,'remaining_day' => $remainingDay,'room_rent' => $roomRent,'total' => $total,'amount' => $amount]);
-        return $totalQuantity;
+        $entity->update([
+            'admission_day' => $admissionDay,
+            'payment_day'   => $totalQuantity,
+            'consume_day'   => $totalQuantity,
+            'remaining_day' => $remainingDay,
+            'room_rent'     => $roomRent,
+            'total'         => $total,
+            'amount'        => $amount,
+            'refund_amount' => $refund['refund_amount'] ?? 0,
+            'refund_day'    => $refund['refund_quantity'] ?? 0,
+        ]);
     }
 
     public static function updateWaverParticular($entity,$data)

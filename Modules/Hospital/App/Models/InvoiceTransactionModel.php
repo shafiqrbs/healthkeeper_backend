@@ -779,4 +779,18 @@ class InvoiceTransactionModel extends Model
         }
         return false;
     }
+
+    public static function updateInvoiceTransaction($entity)
+    {
+        $invoices = $entity->invoice_transaction;
+        foreach ( $invoices as $transaction){
+            $amount = InvoiceParticularModel::where('invoice_transaction_id', $transaction->id)->sum('sub_total');
+            $transaction->update(['sub_total' => $amount, 'total' => $amount, 'amount' =>$amount]);
+        }
+        $amount = InvoiceTransactionModel::where(['hms_invoice_id'=> $entity->id,'process'=>'Done'])->sum('sub_total');
+        $entity->update([
+            'amount'        => $amount,
+        ]);
+
+    }
 }

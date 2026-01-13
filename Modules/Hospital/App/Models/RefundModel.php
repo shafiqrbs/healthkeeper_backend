@@ -613,6 +613,20 @@ class RefundModel extends Model
         return $entity;
     }
 
+    public static function getRoomRefundAmount($entity)
+    {
+
+        $return = DB::table('hms_invoice_particular')
+            ->join('hms_invoice_transaction_refund', 'hms_invoice_transaction_refund.id', '=', 'hms_invoice_particular.invoice_transaction_refund_id')
+            ->where('hms_invoice_particular.hms_invoice_id', $entity->id)
+            ->where('hms_invoice_particular.status', 1)
+            ->where('hms_invoice_transaction_refund.process', 'Done')
+            ->where('hms_invoice_transaction_refund.mode', 'bill')
+            ->whereIn('hms_invoice_particular.mode', ['room','bed','cabin'])
+            ->select('hms_invoice_particular.refund_quantity','hms_invoice_particular.refund_amount')->first();
+        return $return;
+    }
+
 
 
 

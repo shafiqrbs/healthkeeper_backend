@@ -480,18 +480,14 @@ class ParticularModel extends Model
                 $q->where('hms_particular.is_booked', 0);
 
             } elseif ($mode === 'occupied') {
-                $q->where('hms_particular.is_booked', 1)
-                    ->whereNotNull('hms_particular.admission_id');
-
+                $q->where('hms_particular.is_booked', 1)->whereNotNull('hms_particular.admission_id');
+                $q->where('hms_invoice.process','admitted');
             } elseif ($mode === 'non-paying') {
                 $q->where('hms_particular.price', 0);
-
             } elseif ($mode === 'paying') {
                 $q->where('hms_particular.price', '>', 1);
-
             } elseif ($mode === 'bed') {
                 $q->whereIn('hms_particular_master_type.slug', ['bed']);
-
             } elseif ($mode === 'cabin') {
                 $q->whereIn('hms_particular_master_type.slug', ['cabin']);
             }

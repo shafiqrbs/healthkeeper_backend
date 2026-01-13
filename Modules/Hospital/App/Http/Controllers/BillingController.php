@@ -202,7 +202,20 @@ class BillingController extends Controller
     {
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
+        InvoiceTransactionModel::updateInvoiceTransaction($entity);
+        InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
         if($entity->process == 'admitted'){
+            $entity->update([
+                'admission_day' => 0,
+                'payment_day'   => 0,
+                'consume_day'   => 0,
+                'remaining_day' => 0,
+                'room_rent'     => 0,
+                'total'         => 0,
+                'amount'        => 0,
+                'refund_amount' => 0,
+                'refund_day'    => 0,
+            ]);
             InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
         }
         $entity = BillingModel::getFinalBillShow($id);
@@ -236,7 +249,7 @@ class BillingController extends Controller
                 'is_booked' => 0,
                 'admission_id' => null,
             ]);
-        }elseif($entity->amount === $entity->total and $entity->remaining_day == 0){
+        }elseif((float)$entity->amount === (float)$entity->total and (int)$entity->remaining_day === 0){
             $entity->update(['process' => 'paid','release_date'=>$date]);
             ParticularModel::where([
                 'is_booked' => 1,
