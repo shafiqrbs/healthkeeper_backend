@@ -231,7 +231,8 @@ class OpdController extends Controller
     public function sendPrescription(Request $request,$id)
     {
         $service = new JsonRequestResponse();
-        $userId = $request->header('X-Api-User');
+        $domain = $this->domain;
+        $userId = $domain['user_id'];
         $doctor = ParticularModel::getDoctorNurseLabUser($userId,'doctor');
         $doctorId = $doctor ? $doctor->id : null;
         $entity = PrescriptionModel::updateOrCreate(

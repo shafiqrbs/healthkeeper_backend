@@ -115,7 +115,7 @@ class Particular
     /**
      * @var string
      *
-     * @ORM\Column(name="price", type="decimal", nullable=true)
+     * @ORM\Column(name="price", type="decimal", nullable=true,options={"default"=0})
      */
     private $price;
 

@@ -451,6 +451,7 @@ class ParticularModel extends Model
                 'hms_invoice.admission_date',
                 'hms_invoice.invoice',
                 'hms_invoice.process',
+                'hms_invoice.is_free_bed',
                 'hms_invoice.admission_day',
                 'hms_invoice.consume_day',
                 'hms_invoice.remaining_day',
@@ -477,12 +478,24 @@ class ParticularModel extends Model
         $entity->when($request['mode'] ?? null, function ($q, $mode) {
             if ($mode === 'empty') {
                 $q->where('hms_particular.is_booked', 0);
+
             } elseif ($mode === 'occupied') {
                 $q->where('hms_particular.is_booked', 1)
                     ->whereNotNull('hms_particular.admission_id');
+
+            } elseif ($mode === 'non-paying') {
+                $q->where('hms_particular.price', 0);
+
+            } elseif ($mode === 'paying') {
+                $q->where('hms_particular.price', '>', 1);
+
+            } elseif ($mode === 'bed') {
+                $q->whereIn('hms_particular_master_type.slug', ['bed']);
+
+            } elseif ($mode === 'cabin') {
+                $q->whereIn('hms_particular_master_type.slug', ['cabin']);
             }
         });
-
         $total  = $entity->count();
         $entities = $entity->skip($skip)
             ->take($perPage)

@@ -94,13 +94,16 @@ class InvoiceParticularModel extends Model
             ->whereIn('hms_invoice_particular.mode', ['room','bed','cabin'])
             ->sum('hms_invoice_particular.quantity');
         $remainingDay = ($admissionDay - $totalQuantity);
-        if($entity->room->price == 0 and $entity->is_free_bed == 1){
+        if($entity->is_free_bed == 1){
             $roomRent = 0;
-        }else{
+        }elseif($entity->room){
             $roomRent = ($entity->room->price * $remainingDay);
+        }else{
+            return false;
         }
         $amount = InvoiceTransactionModel::where(['hms_invoice_id'=> $entity->id,'process'=>'Done'])->sum('sub_total');
         $total = ($amount + $roomRent);
+
         $entity->update(['admission_day' => $admissionDay, 'payment_day' => $totalQuantity, 'consume_day' => $totalQuantity,'remaining_day' => $remainingDay,'room_rent' => $roomRent,'total' => $total,'amount' => $amount]);
 
     }

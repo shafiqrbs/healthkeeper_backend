@@ -210,7 +210,6 @@ class BillingController extends Controller
         return $data;
     }
 
-
     /**
      * Show the specified resource.
      */

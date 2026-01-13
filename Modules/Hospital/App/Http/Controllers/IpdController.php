@@ -42,6 +42,7 @@ use Modules\Hospital\App\Models\PrescriptionModel;
 use Modules\Inventory\App\Models\SalesModel;
 use Modules\Inventory\App\Models\StockItemHistoryModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
+use function Doctrine\Common\Collections\first;
 use function Symfony\Component\TypeInfo\null;
 
 
@@ -300,6 +301,64 @@ class IpdController extends Controller
         $entities = ParticularModel::getRoomCabinTransfer($entity);
         $service = new JsonRequestResponse();
         $data = $service->returnJosnResponse($entities);
+        return $data;
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function processDischarge($id)
+    {
+        $domain = $this->domain;
+        $date = new \DateTime();
+        $entity = InvoiceModel::findByIdOrUid($id);
+        $userId = $domain['user_id'];
+        $doctor = ParticularModel::getDoctorNurseLabUser($userId,'doctor');
+        $doctorId = $doctor ? $doctor->id : null;
+        PrescriptionModel::updateOrCreate(
+            [
+                'hms_invoice_id'=> $entity->id,
+            ],
+            [
+                'created_by_id' => $userId ,
+                'process' => "close",
+                'doctor_id' => $doctorId
+            ]
+        );
+        $entity->update([
+            'release_mode' => 'discharge',
+            'release_date' => $date,
+            'is_prescription' => 1,
+        ]);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse();
+        return $data;
+    }
+
+      /**
+     * Show the form for editing the specified resource.
+     */
+    public function freeDischarge($id)
+    {
+        $date = new \DateTime();
+        $entity = InvoiceModel::findByIdOrUid($id);
+        InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
+        $entity->update([
+            'process' => 'paid',
+            'release_date' => $date,
+            'consume_day' => $entity->admission_day,
+            'remaining_day' => $entity->admission_day,
+            'payment_day' => $entity->admission_day]);
+        ParticularModel::where([
+            'is_booked' => 1,
+            'admission_id' => $entity->id
+        ])->update([
+            'is_booked' => 0,
+            'admission_id' => null,
+        ]);
+        $service = new JsonRequestResponse();
+        $status = ['status'=>'success'];
+        $data = $service->returnJosnResponse($status);
         return $data;
     }
 
