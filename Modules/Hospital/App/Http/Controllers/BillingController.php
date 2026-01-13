@@ -223,7 +223,7 @@ class BillingController extends Controller
             InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
         }
         $date =  new \DateTime("now");
-        if($entity->amount === $entity->total and $entity->is_free_bed == 1) {
+        if($entity->is_free_bed == 1) {
             $entity->update([
                 'process' => 'paid',
                 'release_date' => $date,
