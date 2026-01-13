@@ -203,7 +203,6 @@ class BillingController extends Controller
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
         InvoiceTransactionModel::updateInvoiceTransaction($entity);
-        InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
         if($entity->process == 'admitted'){
             $entity->update([
                 'admission_day' => 0,

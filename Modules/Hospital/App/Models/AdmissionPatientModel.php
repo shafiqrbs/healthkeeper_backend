@@ -44,6 +44,7 @@ class AdmissionPatientModel extends Model
                 'diseases_profile'    => (isset($data['diseases_profile']) && $data['diseases_profile']) ? $data['diseases_profile']:null,
                 'cause_death'    => (isset($data['cause_death']) && $data['cause_death']) ? $data['cause_death']:null,
                 'about_death'    => (isset($data['about_death']) && $data['about_death']) ? $data['about_death']:null,
+                'dead_date_time'    => (isset($data['dead_date_time']) && $data['dead_date_time']) ? $data['dead_date_time']:null,
                 'death_date_time'    => (isset($data['death_date_time']) && $data['death_date_time'] && $data['death_date_time'] !== 'invalid') ? new \DateTime($data['death_date_time']) : new \DateTime(),
             ]
         );

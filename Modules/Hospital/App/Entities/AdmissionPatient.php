@@ -111,6 +111,12 @@ class AdmissionPatient
     private $approveComment;
 
 
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true, length=100)
+     */
+    private $deadDateTime;
 
 
      /**
