@@ -73,8 +73,8 @@ class PatientArchiveController extends Controller
     {
         $domain = $this->domain;
         $input = $request->validated();
-        $invoice = InvoiceModel::where('uid',$input['hms_invoice_id'])->first();
-        $parentInvoice = $invoice->parent;
+        $reAdmission = InvoiceModel::where('uid',$input['hms_invoice_id'])->first();
+        $parentInvoice = $reAdmission->parent;
         DB::beginTransaction();
         try {
 
@@ -88,7 +88,7 @@ class PatientArchiveController extends Controller
             ])->id;
             $input['patient_mode_id'] = $patient_mode_id;
             $entity = IpdModel::create($input);
-            IpdModel::insertHmsInvoice($domain,$parentInvoice,$entity,$input);
+            IpdModel::insertReadmissionHmsInvoice($domain,$parentInvoice,$reAdmission,$entity,$input);
             $newPrescription = PrescriptionModel::updateOrCreate(
                 ['hms_invoice_id' => $entity->id],
                 [
@@ -96,10 +96,11 @@ class PatientArchiveController extends Controller
                     'process' => "new",
                 ]
             );
-            PatientPrescriptionMedicineModel::insertReadmissionPatient($invoice,$newPrescription);
+            PatientPrescriptionMedicineModel::insertReadmissionPatient($reAdmission,$newPrescription);
             DB::commit();
+            $status = ['status'=>'success'];
             $service = new JsonRequestResponse();
-            return $service->returnJosnResponse($invoice);
+            return $service->returnJosnResponse($status);
         } catch (\Exception $e) {
             // Something went wrong, rollback the transaction
             DB::rollBack();

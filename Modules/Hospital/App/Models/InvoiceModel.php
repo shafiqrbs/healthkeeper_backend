@@ -570,6 +570,7 @@ class InvoiceModel extends Model
                 'cor_customers.profession',
                 'cor_customers.religion_id',
                 'cor_customers.nid',
+                'cor_customers.nid as identity',
                 'cor_customers.identity_mode',
                 'cor_customers.address',
                 'religion.name as religion_name',

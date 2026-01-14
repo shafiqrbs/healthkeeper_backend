@@ -491,6 +491,14 @@ class ParticularModel extends Model
                 $q->whereIn('hms_particular_master_type.slug', ['cabin']);
             }
         });
+        if (isset($request['created']) and !empty($request['created'])) {
+            $date = !empty($request['created'])
+                ? new \DateTime($request['created'])
+                : new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date = $date->format('Y-m-d 23:59:59');
+            $entity = $entity->whereBetween('hms_invoice.admission_date', [$start_date, $end_date]);
+        }
         $total  = $entity->count();
         $entities = $entity->skip($skip)
             ->take($perPage)

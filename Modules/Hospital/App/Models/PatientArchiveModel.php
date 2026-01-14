@@ -151,7 +151,7 @@ class PatientArchiveModel extends Model
                 DB::raw('DATE_FORMAT(hms_invoice.appointment_date, "%d-%M-%Y") as appointment'),
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%M-%Y") as admission_date'),
                 DB::raw('DATE_FORMAT(customer.dob, "%d-%M-%Y") as dob'),
-                DB::raw("CONCAT(UCASE(LEFT(hms_invoice.process, 1)), LCASE(SUBSTRING(hms_invoice.process, 2))) as process"),
+                'hms_invoice.process as process',
                 'vr.name as visiting_room',
                 'vr.display_name as room_name',
                 'referred_vr.display_name as referred_room_name',
@@ -181,32 +181,7 @@ class PatientArchiveModel extends Model
                     ->orWhere('customer.health_id', 'LIKE', "%{$term}%");
             });
         }
-        $entities = $entities->whereIn('hms_invoice.process',['released','closed','done','paid']);
-
-       /* if (isset($request['ipd_mode']) && !empty($request['ipd_mode'])){
-            if ($request['ipd_mode'] === 'new' and !empty($request['referred_mode']) and $request['referred_mode']) {
-                $entities = $entities->whereIn('hms_invoice.process',['ipd','closed']);
-                $entities = $entities->where('hms_invoice.referred_mode', $request['referred_mode'])
-                    ->whereNull('hms_invoice.parent_id')->whereDoesntHave('children');
-            } elseif ($request['ipd_mode'] === 'admission') {
-                $entities = $entities->whereIn('hms_invoice.process',['confirmed','billing']);
-                $entities = $entities->whereNotNull('hms_invoice.parent_id');
-            } elseif ($request['ipd_mode'] === 'admitted') {
-                $entities = $entities->where('hms_invoice.process','admitted');
-                $entities = $entities->whereNotNull('hms_invoice.parent_id');
-            }
-            $entities
-                ->leftJoin('hms_particular as admit_consultant', 'admit_consultant.id', '=', 'hms_invoice.admit_consultant_id')
-                ->leftJoin('hms_particular as admit_doctor', 'admit_doctor.id', '=', 'hms_invoice.admit_doctor_id')
-                ->leftJoin('hms_particular_mode as admit_unit', 'admit_unit.id', '=', 'hms_invoice.admit_unit_id')
-                ->leftJoin('hms_particular_mode as admit_department', 'admit_department.id', '=', 'hms_invoice.admit_department_id')
-                ->addSelect([
-                    'admit_consultant.name as admit_consultant_name',
-                    'admit_doctor.name as admit_doctor_name',
-                    'admit_unit.name as admit_unit_name',
-                    'admit_department.name as admit_department_name',
-                ]);
-        }*/
+        $entities = $entities->whereIn('hms_invoice.process',['discharged','closed','done','paid']);
 
         if (isset($request['patient_mode']) && !empty($request['patient_mode']) && $request['patient_mode'] !== 'all' ){
             if (is_array($request['patient_mode'])) {

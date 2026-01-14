@@ -197,7 +197,8 @@ class IpdModel extends Model
                 $entities = $entities->whereNotNull('hms_invoice.parent_id');
             } elseif ($request['ipd_mode'] === 'revised') {
                 $entities = $entities->where('hms_invoice.process','revised');
-                $entities = $entities->whereNotNull('hms_invoice.parent_id');
+            } elseif ($request['ipd_mode'] === 'billing') {
+                $entities = $entities->where('hms_invoice.process','billing');
             }
             $entities
                 ->leftJoin('hms_invoice as parent_invoice', 'parent_invoice.id', '=', 'hms_invoice.parent_id')
@@ -584,6 +585,47 @@ class IpdModel extends Model
                 'year' => $parent->year ?? null,
                 'guardian_name' => $parent->guardian_name ?? null,
                 'guardian_mobile' => $parent->guardian_mobile ?? null,
+                'admit_consultant_id' => $config->consultant_by_id ?? null,
+                'process' => 'confirmed',
+                'invoice_mode' => 'ipd',
+                'sub_total' => $amount,
+                'total' => $amount,
+            ]);
+            $parent->update([
+                'process' => 'closed',
+            ]);
+        }
+        return $entity->id;
+    }
+
+    public static function insertReadmissionHmsInvoice($domain,$parent,$reAdmission,$entity,$data)
+    {
+
+        $config = HospitalConfigModel::find($domain['hms_config']);
+        $payment_payment_mode_id = $parent->patient_payment_mode_id;
+
+        $invoice = self::salesEventListener($entity)['generateId'];
+        $code = self::salesEventListener($entity)['code'];
+        $amount = self::insertInvoiceParticular($config,$entity);
+
+        $roomPrice = $entity->room->price;
+        $is_free_bed = ($roomPrice == 0 ) ? 1:0;
+        if ($entity) {
+            $entity->update([
+                'invoice' => $invoice,
+                'code' => $code,
+                'patient_payment_mode_id' => $payment_payment_mode_id ?? null,
+                'free_identification' => $parent->free_identification ?? null,
+                'is_free_bed' => $is_free_bed,
+                'day' => $parent->day ?? null,
+                'month' => $parent->month ?? null,
+                'year' => $parent->year ?? null,
+                'admit_unit_id' => $reAdmission->admit_unit_id ?? null,
+                'patient_payment_mode_id ' => $reAdmission->patient_payment_mode_id  ?? null,
+                'weight' => $reAdmission->weight ?? null,
+                'admit_department_id' => $reAdmission->admit_department_id ?? null,
+                'guardian_name' => $reAdmission->guardian_name ?? null,
+                'guardian_mobile' => $reAdmission->guardian_mobile ?? null,
                 'admit_consultant_id' => $config->consultant_by_id ?? null,
                 'process' => 'confirmed',
                 'invoice_mode' => 'ipd',

@@ -69,7 +69,7 @@ class InvoiceParticularModel extends Model
     public static function getPatientCountBedRoom($domain){
 
         InvoiceModel::where('hms_invoice.config_id', $domain['hms_config'])
-            ->where('process', $domain['admitted'])
+            ->whereIn('process', ['admitted','paid'])
             ->chunk(25, function ($entities) {
                 foreach ($entities as $entity) {
                     self::getPatientSingleCountBedRoom($entity);
@@ -80,7 +80,7 @@ class InvoiceParticularModel extends Model
     public static function getPatientSingleCountBedRoom($entity)
     {
 
-        if($entity->process !== 'admitted'){
+        if (!in_array($entity->process, ['admitted', 'paid'], true)) {
             return false;
         }
 
@@ -109,6 +109,8 @@ class InvoiceParticularModel extends Model
         }
         $amount = InvoiceTransactionModel::where(['hms_invoice_id'=> $entity->id,'process'=>'Done'])->sum('sub_total');
         $refund = RefundModel::getRoomRefundAmount($entity);
+        $refundAmount = $refund?->refund_amount ?? 0;
+        $refundDay    = $refund?->refund_quantity ?? 0;
         $total = ($amount + $roomRent);
         $entity->update([
             'admission_day' => $admissionDay,
@@ -117,16 +119,15 @@ class InvoiceParticularModel extends Model
             'remaining_day' => $remainingDay,
             'room_rent'     => $roomRent,
             'total'         => $total,
-            'amount'        => $amount,
-            'refund_amount' => $refund['refund_amount'] ?? 0,
-            'refund_day'    => $refund['refund_quantity'] ?? 0,
+            'refund_amount' => $refundAmount,
+            'refund_day'    => $refundDay,
         ]);
     }
 
     public static function getCountBedRoom($id){
 
         $entity = InvoiceModel::find($id);
-        if($entity->process !== 'admitted'){
+        if(in_array(!$entity->process,['admitted','paid'])){
             return false;
         }
         $admissionDate = new \DateTime($entity->admission_date);
@@ -149,7 +150,8 @@ class InvoiceParticularModel extends Model
             $roomRent = ($entity->room->price * $remainingDay);
         }
         $amount = InvoiceTransactionModel::where(['hms_invoice_id'=> $entity->id,'process'=>'Done'])->sum('sub_total');
-        $refund = RefundModel::getRoomRefundAmount($entity);
+        $refundAmount = $refund?->refund_amount ?? 0;
+        $refundDay    = $refund?->refund_quantity ?? 0;
         $total = ($amount + $roomRent);
         $entity->update([
             'admission_day' => $admissionDay,
@@ -158,9 +160,8 @@ class InvoiceParticularModel extends Model
             'remaining_day' => $remainingDay,
             'room_rent'     => $roomRent,
             'total'         => $total,
-            'amount'        => $amount,
-            'refund_amount' => $refund['refund_amount'] ?? 0,
-            'refund_day'    => $refund['refund_quantity'] ?? 0,
+            'refund_amount' => $refundAmount,
+            'refund_day'    => $refundDay,
         ]);
     }
 

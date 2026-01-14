@@ -23,6 +23,7 @@ use Modules\Domain\App\Models\DomainModel;
 use Modules\Hospital\App\Models\CategoryModel;
 use Modules\Hospital\App\Models\HospitalConfigModel;
 use Modules\Hospital\App\Models\InvoiceModel;
+use Modules\Hospital\App\Models\InvoiceParticularModel;
 use Modules\Hospital\App\Models\MedicineModel;
 use Modules\Hospital\App\Models\ParticularMatrixModel;
 use Modules\Hospital\App\Models\ParticularModel;
@@ -102,8 +103,9 @@ class HospitalController extends Controller
 
     public function allRoomCabin(Request $request)
     {
-
-        $data = ParticularModel::getAllRoomCabin($request, $this->domain);
+        $domain = $this->domain;
+        InvoiceParticularModel::getPatientCountBedRoom($domain);
+        $data = ParticularModel::getAllRoomCabin($request, $domain);
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');
         $response->setContent(json_encode([
