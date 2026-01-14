@@ -327,6 +327,7 @@ class IpdModel extends Model
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%M-%Y") as admission_date'),
                 DB::raw('DATE_FORMAT(customer.dob, "%d-%M-%Y") as dob'),
                 'hms_invoice.process as process',
+                'hms_invoice.release_mode as release_mode',
                 'vr.name as visiting_room',
                 'vr.display_name as room_name',
                 'patient_mode.name as patient_mode_name',
