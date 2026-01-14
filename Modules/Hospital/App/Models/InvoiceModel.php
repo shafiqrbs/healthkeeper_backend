@@ -217,6 +217,7 @@ class InvoiceModel extends Model
                 'customer.health_id',
                 'doctor.name as doctor_name',
                 'customer.name',
+                'customer.age',
                 'customer.mobile',
                 'customer.address',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),

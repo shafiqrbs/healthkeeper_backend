@@ -449,6 +449,7 @@ class ParticularModel extends Model
                 'hms_particular.is_booked',
                 'hms_particular.admission_id',
                 'hms_invoice.admission_date',
+                'hms_invoice.id as invoice_id',
                 'hms_invoice.invoice',
                 'hms_invoice.process',
                 'hms_invoice.is_free_bed',
@@ -478,10 +479,8 @@ class ParticularModel extends Model
         $entity->when($request['mode'] ?? null, function ($q, $mode) {
             if ($mode === 'empty') {
                 $q->where('hms_particular.is_booked', 0);
-
             } elseif ($mode === 'occupied') {
                 $q->where('hms_particular.is_booked', 1)->whereNotNull('hms_particular.admission_id');
-                $q->where('hms_invoice.process','admitted');
             } elseif ($mode === 'non-paying') {
                 $q->where('hms_particular.price', 0);
             } elseif ($mode === 'paying') {
