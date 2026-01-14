@@ -107,8 +107,6 @@ class BillingController extends Controller
         return $response;
     }
 
-
-
     /**
      * Show the specified resource.
      *//**/
@@ -116,7 +114,7 @@ class BillingController extends Controller
     {
         $service = new JsonRequestResponse();
         $entity = InvoiceModel::findByIdOrUid($id);
-        if($entity->invoice_mode == 'ipd' and $entity->process == 'admitted'){
+        if($entity->invoice_mode == 'ipd' and in_array($entity->process,['admitted','paid','refund'])){
             InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
         }
         if($entity->process == 'billing'){
@@ -203,7 +201,7 @@ class BillingController extends Controller
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
         InvoiceTransactionModel::updateInvoiceTransaction($entity);
-        if($entity->process == 'admitted'){
+        if(in_array($entity->process,['admitted','paid','refund'])){
             $entity->update([
                 'admission_day' => 0,
                 'payment_day'   => 0,
@@ -241,35 +239,14 @@ class BillingController extends Controller
                 'consume_day' => $entity->admission_day,
                 'remaining_day' => $entity->admission_day,
                 'payment_day' => $entity->payment_day]);
-            ParticularModel::where([
-                'is_booked' => 1,
-                'admission_id' => $entity->id
-            ])->update([
-                'is_booked' => 0,
-                'admission_id' => null,
-            ]);
         }elseif((float)$entity->amount === (float)$entity->total and (int)$entity->remaining_day === 0){
             $entity->update(['process' => 'paid','release_date'=>$date]);
-            ParticularModel::where([
-                'is_booked' => 1,
-                'admission_id' => $entity->id
-            ])->update([
-                'is_booked' => 0,
-                'admission_id' => null,
-            ]);
         }else {
             $data = InvoiceTransactionModel::finalBillClosing($domain, $entity);
             if ($data['mode'] == 'refund') {
                 $entity->update(['process' => 'refund']);
             }else{
                 $entity->update(['process' => 'paid','release_date'=>$date]);
-                ParticularModel::where([
-                    'is_booked' => 1,
-                    'admission_id' => $entity->id
-                ])->update([
-                    'is_booked' => 0,
-                    'admission_id' => null,
-                ]);
             }
         }
         $status = ['status'=>'success'];

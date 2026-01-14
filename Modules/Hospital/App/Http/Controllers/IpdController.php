@@ -325,8 +325,16 @@ class IpdController extends Controller
                 'doctor_id' => $doctorId
             ]
         );
+        ParticularModel::where([
+            'is_booked' => 1,
+            'admission_id' => $entity->id
+        ])->update([
+            'is_booked' => 0,
+            'admission_id' => null,
+        ]);
         $entity->update([
             'release_mode' => 'discharge',
+            'process' => 'discharged',
             'release_date' => $date,
             'is_prescription' => 1,
         ]);
@@ -349,13 +357,6 @@ class IpdController extends Controller
             'consume_day' => $entity->admission_day,
             'remaining_day' => $entity->admission_day,
             'payment_day' => $entity->admission_day]);
-        ParticularModel::where([
-            'is_booked' => 1,
-            'admission_id' => $entity->id
-        ])->update([
-            'is_booked' => 0,
-            'admission_id' => null,
-        ]);
         $service = new JsonRequestResponse();
         $status = ['status'=>'success'];
         $data = $service->returnJosnResponse($status);

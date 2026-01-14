@@ -80,7 +80,7 @@ class InvoiceParticularModel extends Model
     public static function getPatientSingleCountBedRoom($entity)
     {
 
-        if (!in_array($entity->process, ['admitted', 'paid'], true)) {
+        if (!in_array($entity->process, ['admitted','paid','refund'], true)) {
             return false;
         }
 
@@ -118,7 +118,9 @@ class InvoiceParticularModel extends Model
             'consume_day'   => $totalQuantity,
             'remaining_day' => $remainingDay,
             'room_rent'     => $roomRent,
+            'sub_total'         => $total,
             'total'         => $total,
+            'amount'        => $amount,
             'refund_amount' => $refundAmount,
             'refund_day'    => $refundDay,
         ]);
@@ -127,7 +129,7 @@ class InvoiceParticularModel extends Model
     public static function getCountBedRoom($id){
 
         $entity = InvoiceModel::find($id);
-        if(in_array(!$entity->process,['admitted','paid'])){
+        if (!in_array($entity->process, ['admitted','paid','refund'], true)) {
             return false;
         }
         $admissionDate = new \DateTime($entity->admission_date);
@@ -160,6 +162,8 @@ class InvoiceParticularModel extends Model
             'remaining_day' => $remainingDay,
             'room_rent'     => $roomRent,
             'total'         => $total,
+            'sub_total'         => $total,
+            'amount'        => $amount,
             'refund_amount' => $refundAmount,
             'refund_day'    => $refundDay,
         ]);
