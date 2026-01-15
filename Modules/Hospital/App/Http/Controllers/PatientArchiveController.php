@@ -74,6 +74,23 @@ class PatientArchiveController extends Controller
         $domain = $this->domain;
         $input = $request->validated();
         $reAdmission = InvoiceModel::where('uid',$input['hms_invoice_id'])->first();
+
+        if($reAdmission->process === 'paid'){
+
+            ParticularModel::where([
+                'is_booked' => 1,
+                'admission_id' => $reAdmission->id
+            ])->update([
+                'is_booked' => 0,
+                'admission_id' => null,
+            ]);
+            $reAdmission->update([
+                'release_mode' => 're-admission',
+                'process' => 're-admission',
+                'is_prescription' => 1,
+            ]);
+
+        }
         $parentInvoice = $reAdmission->parent;
         DB::beginTransaction();
         try {

@@ -114,7 +114,7 @@ class PatientArchiveModel extends Model
 
     public static function getRecords($request,$domain)
     {
-        $sortBy =  isset($request['sortBy']) && $request['sortBy'] ? $request['sortBy'] : 'created_at';
+        $sortBy =  isset($request['sortBy']) && $request['sortBy'] ? $request['sortBy'] : 'updated_at';
         $orderBy =  isset($request['order']) && $request['order'] ? $request['order'] : 'DESC';
 
         $page =  isset($request['page']) && $request['page'] > 0?($request['page'] - 1 ) : 0;
@@ -181,7 +181,8 @@ class PatientArchiveModel extends Model
                     ->orWhere('customer.health_id', 'LIKE', "%{$term}%");
             });
         }
-        $entities = $entities->whereIn('hms_invoice.process',['discharged','closed','done','paid']);
+
+        $entities = $entities->whereIn('hms_invoice.process',['discharged','closed','done','paid','re-admission']);
 
         if (isset($request['patient_mode']) && !empty($request['patient_mode']) && $request['patient_mode'] !== 'all' ){
             if (is_array($request['patient_mode'])) {
