@@ -191,7 +191,7 @@ class RefundModel extends Model
             $entities = $entities->where('hms_invoice_transaction_refund.mode', $request['patient_mode']);
         }
 
-        $entities = $entities->whereIn('hms_invoice.process', ['New','done','paid','released','closed','refund','admitted']);
+        $entities = $entities->whereIn('hms_invoice.process', ['New','Done','paid','discharged','closed','refund','admitted']);
         if (isset($request['customer_id']) && !empty($request['customer_id'])){
             $entities = $entities->where('hms_invoice.customer_id',$request['customer_id']);
         }
