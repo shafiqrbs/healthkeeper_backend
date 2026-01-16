@@ -158,13 +158,13 @@ class ParticularController extends Controller
         }
 
         if (array_key_exists('opd_referred', $input)) {
-            $findParticular->opd_referred = $findParticular->opd_referred ? 0:1;
+            $findParticular->opd_referred = (($input['opd_referred'] == true) || ($input['opd_referred'] == 1))  ? 1:0;
         }
         if (array_key_exists('ordering', $input)) {
             $findParticular->ordering =  $input['ordering'];
         }
         if (array_key_exists('is_available', $input)) {
-            $findParticular->is_available = $findParticular->is_available ? 0:1;
+            $findParticular->is_available = (($input['is_available'] == true) || ($input['is_available'] == 1))  ? 1:0;
         }
 
         if (array_key_exists('diagnostic_department_id', $input)) {
@@ -180,15 +180,15 @@ class ParticularController extends Controller
         }
 
         if (array_key_exists('is_opd', $input)) {
-            $findParticular->is_opd = $findParticular->is_opd ? 0:1;
+            $findParticular->is_opd = (($input['is_opd'] == true) || ($input['is_opd'] == 1)) ? 1 : 0;
         }
 
-         if (array_key_exists('is_custom_report', $input)) {
-            $findParticular->is_custom_report = $findParticular->is_custom_report ? 0:1;
+        if (array_key_exists('is_custom_report', $input)) {
+            $findParticular->is_custom_report = (($input['is_custom_report'] == true) || ($input['is_custom_report'] == 1))  ? 1:0;
         }
 
         if (array_key_exists('status', $input)) {
-            $findParticular->status = $findParticular->status ? 0:1;
+            $findParticular->status = (($input['status'] == true )|| ($input['status'] == 1))  ? 1:0;
         }
 
         $findParticular->save();

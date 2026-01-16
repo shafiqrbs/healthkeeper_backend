@@ -1140,8 +1140,7 @@ class ReportModel extends Model
             $end_date = $date->format('Y-m-d 23:59:59');
             $entities = $entities->whereBetween('hms_invoice_transaction.created_at',[$start_date, $end_date]);
         }
-        $entities = $entities->orderBy('hms_particular.name','ASC')
-            ->get();
+        $entities = $entities->orderBy('hms_particular.name','ASC')->get();
         return $entities;
     }
 
