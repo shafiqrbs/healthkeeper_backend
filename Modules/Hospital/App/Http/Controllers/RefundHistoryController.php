@@ -93,6 +93,13 @@ class RefundHistoryController extends Controller
     {
         $service = new JsonRequestResponse();
         $entity = RefundModel::showIpdInvoiceData($id);
+        $refundId = RefundModel::where([
+            'hms_invoice_id' => $entity->invoice_id,
+            'mode' => 'bill'
+        ])->first()?->id;
+        if($refundId){
+            $entity['refundRoom'] = InvoiceParticularModel::where(['mode'=>'room','invoice_transaction_refund_id' => $refundId,'is_refund'=>1])->select('refund_amount','refund_quantity')->first();
+        }
         return $service->returnJosnResponse($entity);
     }
 

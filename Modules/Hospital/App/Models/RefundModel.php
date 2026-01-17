@@ -553,6 +553,7 @@ class RefundModel extends Model
                 'parent_patient_mode.slug as parent_patient_mode_slug',
                 DB::raw('DATE_FORMAT(hms_invoice_transaction_refund.updated_at, "%d %b %Y, %h:%i %p") as created'),
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d %b %Y, %h:%i %p") as admission_date'),
+                'hms_invoice.id as invoice_id',
                 'hms_invoice.invoice as invoice',
                 'hms_invoice.comment',
                 'hms_invoice.guardian_name as guardian_name',

@@ -37,7 +37,7 @@ class InvoiceParticularTestReportModel extends Model
                 $query->where("hms_invoice_particular_test_report.{$mode}", 'LIKE', trim($term) . '%');
             })
             ->join('hms_invoice_particular', 'hms_invoice_particular.id', '=', 'hms_invoice_particular_test_report.invoice_particular_id')
-            ->select(["{$mode}"])
+            ->select(["{$mode} as name"])
             ->orderBy("{$mode}", 'ASC')
             ->groupBy("{$mode}")
             ->take(100)

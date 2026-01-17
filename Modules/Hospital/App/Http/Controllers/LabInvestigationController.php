@@ -118,11 +118,9 @@ class LabInvestigationController extends Controller
      */
     public function reportKeywordSearch(Request $request,$id)
     {
-        $domain = $this->domain;
         $input = $request->input();
         $mode = $input['field_name'];
         $term = $input['term'];
-
         $dropdown = InvoiceParticularTestReportModel::reportKeywordSearch($id,$mode,$term);
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($dropdown);

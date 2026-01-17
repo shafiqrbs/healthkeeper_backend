@@ -124,6 +124,7 @@ class BillingController extends Controller
         }
         $data = $service->returnJosnResponse($entity);
         return $data;
+
     }
 
     /**
@@ -146,8 +147,7 @@ class BillingController extends Controller
         $data = $request->all();
         $entity = InvoiceModel::findByIdOrUid($id);
         if($entity->process == "billing"){
-            $transactionId = InvoiceTransactionModel::insertAdmissionInvoiceTransaction($domain,$entity,$data);
-           //$invoice = IpdModel::getIpdAdmissionShow($id);
+           $transactionId = InvoiceTransactionModel::insertAdmissionInvoiceTransaction($domain,$entity,$data);
            $invoice = InvoiceTransactionModel::showInvoiceData($transactionId);
         }else{
            $transactionId =  InvoiceTransactionModel::insertInvoiceTransaction($domain,$entity,$data);
@@ -177,10 +177,16 @@ class BillingController extends Controller
      */
     public function destroy($id)
     {
+        $transaction = InvoiceTransactionModel::find($id);
+        $entity = InvoiceModel::findByIdOrUid($transaction->hms_invoice_id);
         $service = new JsonRequestResponse();
-        PrescriptionModel::find($id)->delete();
-        $entity = ['message' => 'delete'];
-        return $service->returnJosnResponse($entity);
+        $transaction->delete();
+        $amount = InvoiceTransactionModel::where('hms_invoice_id', $entity->id)->where('process','Done')->sum('amount');
+        $total = InvoiceParticularModel::where('hms_invoice_id', $entity->id)->where('status',true)->sum('sub_total');
+        InvoiceParticularModel::getCountBedRoom($entity->id);
+        $entity->update(['sub_total' => $total , 'total' => $total, 'amount' => $amount]);
+        $status = ['message' => 'delete'];
+        return $service->returnJosnResponse($status);
     }
 
      /**

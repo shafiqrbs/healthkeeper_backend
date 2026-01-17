@@ -428,112 +428,147 @@ class InvoiceTransactionModel extends Model
         return $entity;
     }
 
-    public static function insertInvoiceTransaction($domain,$entity,$data)
+    public static function insertInvoiceTransaction($domain, $entity, $data)
     {
+        return DB::transaction(function () use ($domain, $entity, $data) {
 
-        $date =  new \DateTime("now");
-        $hms_invoice_id =  $entity->id;
-        if($entity->parent_id > 0){
-            $invoiceMode  = $entity->parent->invoice_mode;
-        }else{
-            $invoiceMode  = $entity->invoice_mode;
-        }
+            $date = now();
+            $invoiceId = $entity->id;
+            $mode = $data['mode'];
+            $investigations = $data['json_content'] ?? [];
 
-        $investigations = $data['json_content'];
-        $mode = $data['mode'];
+            $invoiceMode = $entity->parent_id > 0
+                ? $entity->parent->invoice_mode
+                : $entity->invoice_mode;
 
-        $roomId = $entity->room_id;
-        if (!empty($investigations) && is_array($investigations)) {
+            if (empty($investigations) || !is_array($investigations)) {
+                return null;
+            }
+
+            /** -------------------------------
+             * Create Invoice Transaction
+             * --------------------------------*/
             $invoiceTransaction = InvoiceTransactionModel::create([
-                'hms_invoice_id'=> $entity->id,
-                'created_by_id'=> $domain['user_id'],
-                'approved_by_id'=> $domain['user_id'],
-                'mode'    => $mode,
-                'process'    => 'Done',
-                'updated_at'    => $date,
-                'created_at'    => $date,
+                'hms_invoice_id' => $invoiceId,
+                'created_by_id'  => $domain['user_id'],
+                'approved_by_id' => $domain['user_id'],
+                'mode'           => $mode,
+                'process'        => 'Done',
+                'created_at'     => $date,
+                'updated_at'     => $date,
             ]);
-            if (!empty($investigations) && is_array($investigations) and $mode == "investigation") {
-                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$date,$invoiceMode) {
-                    $particular = $investigation['particular_id'] ?? '';
-                    if (
-                        ($investigation['is_selected'] ?? false) == true &&
-                        $particular &&
-                        ($investigation['is_new'] ?? false) == false
-                    ) {
-                        InvoiceParticularModel::where('hms_invoice_id', $hms_invoice_id)
+
+            /** -------------------------------
+             * INVESTIGATION MODE
+             * --------------------------------*/
+            if ($mode === 'investigation') {
+
+                foreach ($investigations as $investigation) {
+
+                    if (!($investigation['is_selected'] ?? false)) {
+                        continue;
+                    }
+
+                    // Existing particular
+                    if (!($investigation['is_new'] ?? false) && !empty($investigation['particular_id'])) {
+                        InvoiceParticularModel::where('hms_invoice_id', $invoiceId)
                             ->where('id', $investigation['particular_id'])
                             ->update([
                                 'invoice_transaction_id' => $invoiceTransaction->id,
-                                'status' => 1,
-                                'is_invoice' => 1,
+                                'status'                 => 1,
+                                'is_invoice'             => 1,
                             ]);
-                    }elseif (
-                        ($investigation['is_selected'] ?? false) == true &&
-                        ($investigation['is_new'] ?? true) == true
-                    ) {
 
-                        $particular = ParticularModel::find($investigation['id']);
-                        if($particular){
-                            InvoiceParticularModel::updateOrCreate(
-                                [
-                                    'hms_invoice_id'             => $hms_invoice_id,
-                                    'particular_id'              => $particular->id,
-                                ],
-                                [
-                                    'invoice_transaction_id' => $invoiceTransaction->id,
-                                    'name'      => $particular->name,
-                                    'category_id'      => $particular->category_id,
-                                    'quantity'      => 1,
-                                    'status'      => 1,
-                                    'is_invoice' => 1,
-                                    'mode' => $mode,
-                                    'report_mode' => $invoiceMode,
-                                    'price'         => $particular->price ?? 0,
-                                    'estimate_price'  => $particular->price ?? 0,
-                                    'sub_total'         => $particular->price ?? 0,
-                                    'updated_at'    => $date,
-                                    'created_at'    => $date,
-                                ]
-                            );
-                        }
+                        continue;
                     }
 
-                })->toArray();
-            }elseif (!empty($investigations) && is_array($investigations) and $mode == "room") {
-                collect($investigations)->map(function ($investigation) use ($hms_invoice_id,$invoiceTransaction,$mode,$roomId,$date,$invoiceMode) {
-                    $particular = ParticularModel::find($roomId);
-                    if($particular){
+                    // New particular
+                    if ($investigation['is_new'] ?? false) {
+
+                        $particular = ParticularModel::find($investigation['id']);
+                        if (!$particular) {
+                            continue;
+                        }
+
                         InvoiceParticularModel::updateOrCreate(
                             [
-                                'hms_invoice_id'             => $hms_invoice_id,
-                                'invoice_transaction_id' => $invoiceTransaction->id
+                                'hms_invoice_id' => $invoiceId,
+                                'particular_id'  => $particular->id,
+                                'invoice_transaction_id' => $invoiceTransaction->id,
                             ],
                             [
-                                'particular_id'      => $particular->id,
-                                'name'      => $particular->display_name,
-                                'quantity'      => $investigation['days'],
-                                'status'      => 1,
-                                'process'      => 'Done',
-                                'is_invoice' => 1,
-                                'mode' => $mode,
-                                'report_mode' => $invoiceMode,
-                                'price' => $particular->price ?? 0,
-                                'estimate_price' => $particular->price ?? 0,
-                                'sub_total'         => ($particular->price * $investigation['days']) ?? 0,
-                                'updated_at'    => $date,
-                                'created_at'    => $date,
+                                'name'                   => $particular->name,
+                                'category_id'            => $particular->category_id,
+                                'quantity'               => 1,
+                                'status'                 => 1,
+                                'is_invoice'             => 1,
+                                'mode'                   => $mode,
+                                'report_mode'            => $invoiceMode,
+                                'price'                  => $particular->price ?? 0,
+                                'estimate_price'         => $particular->price ?? 0,
+                                'sub_total'              => $particular->price ?? 0,
+                                'created_at'             => $date,
+                                'updated_at'             => $date,
                             ]
                         );
                     }
-                })->toArray();
+                }
             }
-        }
-        $amount = InvoiceParticularModel::where('invoice_transaction_id', $invoiceTransaction->id)->sum('sub_total');
-        $invoiceTransaction->update(['sub_total' => $amount , 'total' => $amount , 'amount' => $amount]);
-        return $invoiceTransaction->id;
 
+            /** -------------------------------
+             * ROOM MODE
+             * --------------------------------*/
+            if ($mode === 'room') {
+
+                $room = ParticularModel::find($entity->room_id);
+                if ($room) {
+                    foreach ($investigations as $investigation) {
+
+                        $days = (int) ($investigation['days'] ?? 0);
+                        if ($days <= 0) {
+                            continue;
+                        }
+
+                        InvoiceParticularModel::updateOrCreate(
+                            [
+                                'hms_invoice_id'         => $invoiceId,
+                                'invoice_transaction_id'=> $invoiceTransaction->id,
+                            ],
+                            [
+                                'particular_id'  => $room->id,
+                                'name'           => $room->display_name,
+                                'quantity'       => $days,
+                                'status'         => 1,
+                                'process'        => 'Done',
+                                'is_invoice'     => 1,
+                                'mode'           => $mode,
+                                'report_mode'    => $invoiceMode,
+                                'price'          => $room->price ?? 0,
+                                'estimate_price' => $room->price ?? 0,
+                                'sub_total'      => ($room->price * $days),
+                                'created_at'     => $date,
+                                'updated_at'     => $date,
+                            ]
+                        );
+                    }
+                }
+            }
+
+            /** -------------------------------
+             * Update Transaction Amount
+             * --------------------------------*/
+            $amount = InvoiceParticularModel::where('invoice_transaction_id', $invoiceTransaction->id)
+                ->sum('sub_total');
+            $invoiceTransaction->update([
+                'sub_total' => $amount,
+                'total'     => $amount,
+                'amount'    => $amount,
+            ]);
+
+            return $invoiceTransaction->id;
+        });
     }
+
 
     public static function insertAdmissionInvoiceTransaction($domain,$invoice,$data)
     {
