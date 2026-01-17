@@ -1323,5 +1323,17 @@ class PatientPrescriptionMedicineModel extends Model
         self::insert($rows);
     }
 
+    public static function dosageMealKeywordSearch($mode,$term)
+    {
+        $entities = self::where(function ($query) use ($mode,$term) {
+            $query->where("hms_patient_prescription_medicine.{$mode}", 'LIKE', trim($term) . '%');
+        })->select(["{$mode}"])
+            ->orderBy("{$mode}", 'ASC')
+            ->groupBy("{$mode}")
+            ->take(100)
+            ->get();
+        return $entities;
+    }
+
 
 }

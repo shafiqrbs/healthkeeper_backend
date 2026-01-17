@@ -175,6 +175,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::patch('/ipdprescription/update-template/{id}', [IpdPrescriptionController::class,'updateTemplate'])->name('ipd_updateTemplate');
     Route::get('/ipdprescription/medicine-delete/{id}', [IpdPrescriptionController::class,'deleteMedicine'])->name('deleteMedicine');
     Route::post('/ipdprescription/ordering', [IpdPrescriptionController::class,'updateOrdering'])->name('matrixUpdateOrdering');
+    Route::get('/ipdprescription/dosage-meal-search', [IpdPrescriptionController::class,'dosageMealKeywordSearch'])->name('dosageMealKeywordSearch');
     Route::apiResource('ipdprescription', IpdPrescriptionController::class)
         ->middleware([HeaderAuthenticationMiddleware::class])
         ->names([
@@ -234,6 +235,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
         Route::get('/sample-confirm/{id}', [LabInvestigationController::class,'barcodeConfirm'])->name('barcodeConfirm_update');
         Route::get('test-reports', [LabInvestigationController::class, 'labReports'])->name('lab_reports');
         Route::get('/category-group/{id}', [LabInvestigationController::class, 'categoryGroup'])->name('lab_category_group_reports');
+        Route::get('/report-keyword-search/{id}', [LabInvestigationController::class, 'reportKeywordSearch'])->name('reportKeywordSearch');
         Route::apiResource('', LabInvestigationController::class)->parameters(['' => 'id']);
         Route::post('/report/inline-update/{id}', [LabInvestigationController::class,'inlineUpdate'])->name('inline_update');
         Route::get('{id}/report/{reportId}', [LabInvestigationController::class, 'report'])->name('report');

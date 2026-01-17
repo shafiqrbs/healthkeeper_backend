@@ -30,4 +30,20 @@ class InvoiceParticularTestReportModel extends Model
         });
     }
 
+    public static function reportKeywordSearch($reportId, $mode, $term)
+    {
+        $entities = self::where(function ($query) use ($reportId,$mode,$term) {
+                $query->where("hms_invoice_particular.particular_id",$reportId);
+                $query->where("hms_invoice_particular_test_report.{$mode}", 'LIKE', trim($term) . '%');
+            })
+            ->join('hms_invoice_particular', 'hms_invoice_particular.id', '=', 'hms_invoice_particular_test_report.invoice_particular_id')
+            ->select(["{$mode}"])
+            ->orderBy("{$mode}", 'ASC')
+            ->groupBy("{$mode}")
+            ->take(100)
+            ->get();
+        return $entities;
+
+    }
+
 }

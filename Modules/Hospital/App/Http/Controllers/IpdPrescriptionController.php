@@ -222,6 +222,19 @@ class IpdPrescriptionController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function dosageMealKeywordSearch(Request $request)
+    {
+        $input = $request->input();
+        $mode = $input['field_name'];
+        $term = $input['term'];
+        $dropdown = PatientPrescriptionMedicineModel::dosageMealKeywordSearch($mode,$term);
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($dropdown);
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function deleteMedicine($id)

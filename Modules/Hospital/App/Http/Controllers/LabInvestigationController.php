@@ -112,6 +112,21 @@ class LabInvestigationController extends Controller
         return $data;
     }
 
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function reportKeywordSearch(Request $request,$id)
+    {
+        $domain = $this->domain;
+        $input = $request->input();
+        $mode = $input['field_name'];
+        $term = $input['term'];
+        $dropdown = InvoiceParticularTestReportModel::reportKeywordSearch($id,$mode,$term);
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($dropdown);
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
