@@ -1266,7 +1266,7 @@ class PatientPrescriptionMedicineModel extends Model
             })
 
             // exclude medicines already given today
-            ->whereNull('hms_patient_prescription_medicine_daily_history.id')
+//            ->whereNull('hms_patient_prescription_medicine_daily_history.id')
 
             ->where(function ($query) use ($id) {
                 $query->where('hms_invoice.id', $id)
@@ -1280,7 +1280,8 @@ class PatientPrescriptionMedicineModel extends Model
 
             ->select(
                 'hms_patient_prescription_medicine.*',
-                'inv_current_stock.quantity as stock_quantity'
+                'inv_current_stock.quantity as stock_quantity',
+                'hms_patient_prescription_medicine_daily_history.id as daily_history_id'
             )
 
             ->orderBy('hms_patient_prescription_medicine.medicine_name', 'ASC')
