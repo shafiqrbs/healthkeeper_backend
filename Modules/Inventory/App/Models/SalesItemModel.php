@@ -77,16 +77,27 @@ class SalesItemModel extends Model
         return $this->belongsTo(StockItemModel::class , 'stock_item_id');
     }
 
-    // SalesItemModel
-    public function currentWarehouseStock(): HasOne
+    protected $appends = ['current_warehouse_stock'];
+    protected $hidden = ['currentWarehouseStocks'];
+
+    public function getCurrentWarehouseStockAttribute()
     {
-        return $this->hasOne(
+        if (!$this->relationLoaded('currentWarehouseStocks')) {
+            return null;
+        }
+
+        return $this->currentWarehouseStocks
+            ->firstWhere('warehouse_id', $this->warehouse_id);
+    }
+
+    public function currentWarehouseStocks()
+    {
+        return $this->hasMany(
             CurrentStockModel::class,
             'stock_item_id',
             'product_id'
         );
     }
-
 
     /**
      * Insert multiple sales items.

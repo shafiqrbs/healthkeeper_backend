@@ -145,7 +145,6 @@ class EpharmaModel extends Model
     public static function getShow($id)
     {
         $entity = InvoiceModel::with([
-//            'sales.salesItems.currentWarehouseStock.quantity',
             'sales.salesItems' => function ($query) {
                 $query->select([
                     'inv_sales_item.id',
@@ -155,6 +154,7 @@ class EpharmaModel extends Model
                     'inv_sales_item.name as name',
                     'inv_sales_item.uom',
                     'inv_sales_item.quantity',
+                    'inv_sales_item.warehouse_id',
                     'inv_sales_item.sales_price',
                     'inv_sales_item.purchase_price',
                     'inv_sales_item.price',
@@ -162,7 +162,16 @@ class EpharmaModel extends Model
                     'inv_sales_item.bonus_quantity',
                 ])->where('inv_sales_item.quantity', '>', 0)
                     ->orderBy('inv_sales_item.name', 'ASC')
-                    ->with('currentWarehouseStock');
+                    ->with([
+                        'currentWarehouseStocks' => function ($query) {
+                            $query->select([
+                                'inv_current_stock.id',
+                                'inv_current_stock.stock_item_id',
+                                'inv_current_stock.warehouse_id',
+                                'inv_current_stock.quantity',
+                            ]);
+                        }
+                    ]);
             }
         ])
             ->leftJoin('cor_customers','cor_customers.id','=','hms_invoice.customer_id')
