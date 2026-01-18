@@ -128,6 +128,11 @@ class InvoiceModel extends Model
         return $this->hasMany(AdmissionPatientPrescriptionHistoryModel::class, 'hms_invoice_id');
     }
 
+    public function prescriptions()
+    {
+        return $this->hasMany(PatientPrescriptionMedicineDailyHistoryModel::class, 'hms_invoice_id', 'id');
+    }
+
     public static function invoicePrescriptionProcess($entity){
 
         if(empty($entity->referred_mode) and ($entity->process =='opd' || $entity->process == 'emergency')){

@@ -340,6 +340,29 @@ class MedicineStockController extends Controller
         ]);
     }
 
+    public function patientMedicineIssueReport(Request $request)
+    {
+        $params = $request->only(['warehouse_id', 'stock_item_id', 'start_date', 'end_date','page','offset']);
+
+
+        if (!$params['start_date']) {
+            return response([
+                'result' => false,
+                'message' => 'Start date missing.',
+                'status' => ResponseAlias::HTTP_BAD_REQUEST
+            ]);
+        }
+
+        $items = HospitalSalesModel::getPatientMedicineIssueDetails($params,$this->domain);
+
+        return response([
+            'result' => true,
+            'message' => 'Stock item history.',
+            'status' => ResponseAlias::HTTP_OK,
+            'total' => $items['count'],
+            'data' => $items['items']
+        ]);
+    }
     public function medicineIssueReport(Request $request)
     {
         $params = $request->only(['warehouse_id', 'stock_item_id', 'start_date', 'end_date','page','offset']);

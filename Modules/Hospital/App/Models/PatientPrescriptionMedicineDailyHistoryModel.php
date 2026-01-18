@@ -36,6 +36,11 @@ class PatientPrescriptionMedicineDailyHistoryModel extends Model
         });
     }
 
+    public function stock()
+    {
+        return $this->belongsTo(StockItemModel::class, 'stock_id', 'id'); // inv_stock_item
+    }
+
 
     public static function insertDailyMedicine($domain,$id,$medicines,$warehouse_id)
     {
