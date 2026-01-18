@@ -378,6 +378,7 @@ class LabInvestigationModel extends Model
                          'name' => $row->name,
                          'reference_value' => $row->reference_value,
                          'unit' => $row->unit,
+                         'result' => $row->sample_value,
                          'sample_value' => $row->sample_value
                      ];
                      InvoicePathologicalReportModel::create($input);
