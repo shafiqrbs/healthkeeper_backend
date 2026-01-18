@@ -598,7 +598,7 @@ class InvoiceParticularTestReport
     /**
      * @var boolean
      *
-     * @ORM\Column(type="boolean",options={"default"="false"})
+     * @ORM\Column(type="string", nullable=true)
      */
     private $afbNotFound;
 
@@ -606,7 +606,7 @@ class InvoiceParticularTestReport
      /**
      * @var boolean
      *
-     * @ORM\Column(type="boolean",options={"default"="false"})
+      * @ORM\Column(type="string", nullable=true)
      */
     private $afbFound;
 
@@ -614,7 +614,7 @@ class InvoiceParticularTestReport
      /**
      * @var boolean
      *
-     * @ORM\Column(type="boolean",options={"default"="false"})
+      * @ORM\Column(type="string", nullable=true)
      */
     private $afbScanty;
 
@@ -643,7 +643,7 @@ class InvoiceParticularTestReport
     /**
      * @var boolean
      *
-     * @ORM\Column(type="boolean",options={"default"="false"})
+     * @ORM\Column(type="string", nullable=true)
      */
     private $afbSampleFound;
 
@@ -651,14 +651,14 @@ class InvoiceParticularTestReport
     /**
      * @var boolean
      *
-     * @ORM\Column(type="boolean",options={"default"="false"})
+     * @ORM\Column(type="string", nullable=true)
      */
     private $afbSampleNotFound;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(type="boolean",options={"default"="false"})
+     * @ORM\Column(type="string", nullable=true)
      */
     private $afbSampleScanty;
 
