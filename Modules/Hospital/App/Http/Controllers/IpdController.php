@@ -219,25 +219,30 @@ class IpdController extends Controller
                 'approve_comment' => $input['comment'] ?? null,
             ]
         );
+        $roomId = !empty($input['room_id']) ? (int)$input['room_id'] : 0;
+        if ($admission->change_mode == 'change' and $roomId > 0) {
 
-        if ($admission->change_mode == 'change') {
-
-            $roomId = !empty($input['room_id']) ? (int)$input['room_id'] : 0;
             // Free previous room safely
-            if ($entity->room) {
-                $entity->room->update(['is_booked' => false, 'admission_id' => null]);
-            }
+            ParticularModel::where([
+                'is_booked' => 1,
+                'admission_id' => $entity->id
+            ])->update([
+                'is_booked' => 0,
+                'admission_id' => null,
+            ]);
+
             // Assign new room
             if ($roomId > 0) {
                 $entity->update(['room_id' => $roomId]);
                 $entity->room->update(['is_booked' => true, 'admission_id' => $entity->id]);
+                IpdModel::changeUpdateInvoiceParticular(
+                    $domain['hms_config'],
+                    $entity,
+                    $input
+                );
+                $entity->update(['process' => 'confirmed']);
             }
-            IpdModel::changeUpdateInvoiceParticular(
-                $domain['hms_config'],
-                $entity,
-                $input
-            );
-            $entity->update(['process' => 'confirmed']);
+
 
         }elseif ($admission->change_mode == 'change_day') {
 
