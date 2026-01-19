@@ -300,19 +300,6 @@ class InvoiceParticularTestReport
      */
     private $AfbMycobacteriaSpecies;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(type="boolean",options={"default"="false"})
-     */
-    private $negative;
-
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(type="boolean",options={"default"="false"})
-     */
-    private $positive;
 
     /**
      * @var boolean
