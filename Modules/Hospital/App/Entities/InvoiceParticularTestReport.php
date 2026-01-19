@@ -36,6 +36,21 @@ class InvoiceParticularTestReport
      */
     private $name;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="test_id", type="string", length=20, nullable=true)
+     */
+    private $testId;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="sample_id", type="string",length=20, nullable=true)
+     */
+    private $sampleId;
+
      /**
      * @var string
      *
@@ -248,8 +263,7 @@ class InvoiceParticularTestReport
     private $TbRegistrationNumber;
 
 
-
-      /**
+    /**
      * @var string
      *
      * @ORM\Column(type="string", nullable=true)
@@ -287,16 +301,16 @@ class InvoiceParticularTestReport
     private $AfbMycobacteriaSpecies;
 
     /**
-     * @var string
+     * @var boolean
      *
-     * @ORM\Column(type="string", nullable=true, length=50)
+     * @ORM\Column(type="boolean",options={"default"="false"})
      */
     private $negative;
 
     /**
-     * @var string
+     * @var boolean
      *
-     * @ORM\Column(type="string", nullable=true, length=50)
+     * @ORM\Column(type="boolean",options={"default"="false"})
      */
     private $positive;
 
@@ -873,6 +887,11 @@ class InvoiceParticularTestReport
      */
      private $lastCovidTestDate;
 
+    /**
+     * @var \DateTime
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $testDate;
 
 
      /**

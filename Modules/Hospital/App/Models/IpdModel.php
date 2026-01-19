@@ -382,6 +382,9 @@ class IpdModel extends Model
             } elseif ($request['ipd_mode'] === 'confirmed') {
                 $entities = $entities->whereIn('hms_invoice.process',['confirmed','billing']);
                 $entities = $entities->whereNotNull('hms_invoice.parent_id');
+            } elseif ($request['ipd_mode'] === 'billing') {
+                $entities = $entities->whereIn('hms_invoice.process',['billing']);
+                $entities = $entities->whereNotNull('hms_invoice.parent_id');
             } elseif ($request['ipd_mode'] === 'admitted') {
                 $entities = $entities->where('hms_invoice.process','admitted');
                 $entities = $entities->whereNotNull('hms_invoice.parent_id');
