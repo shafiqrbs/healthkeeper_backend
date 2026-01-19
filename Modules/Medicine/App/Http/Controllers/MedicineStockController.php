@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
 use Modules\AppsApi\App\Services\JsonRequestResponse;
 use Modules\Core\App\Models\UserModel;
 use Modules\Hospital\App\Models\HospitalSalesModel;
+use Modules\Hospital\App\Models\InvoiceModel;
 use Modules\Inventory\App\Models\StockItemHistoryModel;
 use Modules\Medicine\App\Http\Requests\MedicineStockInlineRequest;
 use Modules\Medicine\App\Models\MedicineStockItemHistoryModel;
@@ -375,8 +376,22 @@ class MedicineStockController extends Controller
                 'status' => ResponseAlias::HTTP_BAD_REQUEST
             ]);
         }
+        if (!$params['end_date']) {
+            return response([
+                'result' => false,
+                'message' => 'End date missing.',
+                'status' => ResponseAlias::HTTP_BAD_REQUEST
+            ]);
+        }
+        if (!$params['warehouse_id']) {
+            return response([
+                'result' => false,
+                'message' => 'Warehouse missing.',
+                'status' => ResponseAlias::HTTP_BAD_REQUEST
+            ]);
+        }
 
-        $items = HospitalSalesModel::getMedicineIssueDetails($params,$this->domain);
+        $items = InvoiceModel::getMedicineIssueDetails($params,$this->domain);
 
         return response([
             'result' => true,
