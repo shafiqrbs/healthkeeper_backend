@@ -141,45 +141,43 @@ class MedicineStockModel extends Model
 
     }
 
-    public static function getCategoryStockForScrollingForWorkorder($domain, $category, $request): array
+    public static function getCategoryStockForScrollingForWorkorder($domain, $category, $request)
     {
-        $page = isset($request['page']) && $request['page'] > 0 ? ($request['page'] - 1) : 0;
-        $perPage = isset($request['offset']) && $request['offset'] != '' ? (int)$request['offset'] : 25;
-        $perPage = min($perPage, 100);
+        $page = max(((int)($request['page'] ?? 1)) - 1, 0);
+        $perPage = min((int)($request['offset'] ?? 25), 100);
         $skip = $page * $perPage;
 
-        // Build query
-        $entities = StockItemModel::where([
-            ['inv_stock.config_id', $domain['config_id']],
-            ['inv_product.is_delete', 0]
-        ])
-            ->where(function ($query) use ($category) {
-                $query->where('inv_product.category_id', '=', $category);
-            })
+        $query = StockItemModel::query()
             ->join('inv_product', 'inv_product.id', '=', 'inv_stock.product_id')
+            ->where('inv_stock.config_id', $domain['config_id'])
+            ->where('inv_product.is_delete', 0)
             ->select([
-                'inv_stock.id as id',
+                'inv_stock.id',
                 'inv_stock.id as stock_item_id',
-                'inv_product.name as name',
+                'inv_stock.quantity',
+                'inv_product.name',
             ]);
 
+        // Search
         if ($request->filled('term')) {
-            $search = $request->term;
-            $entities->where('inv_stock.name', 'LIKE', "%{$search}%");
+            $search = trim($request->term);
+            $query->where('inv_product.name', 'LIKE', "%{$search}%");
         }
 
+        // Clone query for total count
+        $total = (clone $query)->count();
 
-        // Get total count before pagination
-        $total = $entities->count();
-
-        // Apply pagination
-        $stockItems = $entities
-            ->orderBy('name')
+        // Pagination
+        $data = $query
+            ->orderBy('inv_product.name', 'ASC')
             ->skip($skip)
             ->take($perPage)
             ->get();
 
-        return ['data' => $stockItems, 'count' => $total];
+        return [
+            'data'  => $data,
+            'count' => $total
+        ];
     }
 
     public static function getCategoryStockForScrolling($domain, $category, $request)

@@ -85,6 +85,7 @@ class EpharmaModel extends Model
                 'inv_sales.id as sale_id',
                 'hms_prescription.id as prescription_id',
                 'hms_invoice.id as id',
+                'hms_invoice.invoice as invoice',
                 'hms_invoice.uid as uid',
                 'hms_invoice.barcode as barcode',
                 'hms_invoice.is_medicine_delivered as is_medicine_delivered',
@@ -95,12 +96,8 @@ class EpharmaModel extends Model
                 'customer.health_id',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d-%m-%Y") as created_at'),
-                DB::raw('DATE_FORMAT(hms_invoice.medicine_delivered_date, "%d-%M-%Y") as delivered_date'),
+                DB::raw('hms_invoice.medicine_delivered_date as delivered_date'),
                 'hms_invoice.process as process',
-                'hms_invoice.medicine_delivered_comment as comment',
-                'vr.name as visiting_room',
-                'vr.id as visiting_room_id',
-                'inv_sales.invoice as invoice',
                 'patient_mode.name as patient_mode_name',
                 'patient_payment_mode.name as patient_payment_mode_name',
                 'createdBy.name as created_by',
@@ -116,7 +113,7 @@ class EpharmaModel extends Model
             }]);
 
         if (isset($request['term']) && !empty($request['term'])){
-            $entities = $entities->whereAny(['hms_invoice.invoice','cor_customers.name','cor_customers.mobile','salesBy.username','createdBy.username','acc_transaction_mode.name','hms_invoice.total'],'LIKE','%'.$request['term'].'%');
+            $entities = $entities->whereAny(['hms_invoice.invoice','customer.name','customer.mobile','customer.customer_id','createdBy.username','hms_invoice.barcode'],'LIKE','%'.$request['term'].'%');
         }
 
         if (isset($request['customer_id']) && !empty($request['customer_id'])){

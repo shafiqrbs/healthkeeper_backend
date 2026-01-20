@@ -34,6 +34,11 @@ class StockTransferItemModel extends Model
         return $this->belongsTo(StockTransferModel::class, 'stock_transfer_id');
     }
 
+    public function purchaseItem()
+    {
+        return $this->belongsTo(PurchaseItemModel::class, 'purchase_item_id');
+    }
+
     public function purchaseItems()
     {
         return $this->hasMany(PurchaseItemModel::class, 'stock_item_id', 'stock_item_id')

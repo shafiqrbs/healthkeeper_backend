@@ -98,7 +98,7 @@ class StockTransferController extends Controller
      */
     public function show($id)
     {
-        $findStockTransfer = StockTransferModel::getDetails($id);
+        $findStockTransfer = StockTransferModel::getDetailsTransfer($id);
         if (!$findStockTransfer) {
             return response()->json(['status' => 400, 'message' => 'Data not found.']);
         }

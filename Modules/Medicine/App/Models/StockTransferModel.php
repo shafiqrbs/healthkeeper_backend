@@ -55,9 +55,11 @@ class StockTransferModel extends Model
         return $patternCodeService->invoiceNo([
             'config' => $model->config_id,
             'table'  => 'inv_stock_transfer',
-            'prefix' => 'IND-',
+            'prefix' => 'Req-',
         ]);
     }
+
+
 
 
 
@@ -336,6 +338,77 @@ class StockTransferModel extends Model
         }
 
         return $entity;
+    }
+
+
+    public static function getDetailsTransfer($id)
+    {
+        $entity = self::where('inv_stock_transfer.uid', $id)
+            ->leftJoin('users as createdBy', 'createdBy.id', '=', 'inv_stock_transfer.created_by_id')
+            ->leftJoin('users as approveBy', 'approveBy.id', '=', 'inv_stock_transfer.approved_by_id')
+            ->join('cor_warehouses as fw', 'fw.id', '=', 'inv_stock_transfer.from_warehouse_id')
+            ->join('cor_warehouses as tw', 'tw.id', '=', 'inv_stock_transfer.to_warehouse_id')
+            ->select([
+                'inv_stock_transfer.id',
+                'inv_stock_transfer.invoice',
+                'inv_stock_transfer.uid',
+                'inv_stock_transfer.config_id',
+                'inv_stock_transfer.from_warehouse_id',
+                'fw.name as from_warehouse',
+                'inv_stock_transfer.to_warehouse_id',
+                'tw.name as to_warehouse',
+                'inv_stock_transfer.created_by_id',
+                'createdBy.name as created_by',
+                'inv_stock_transfer.approved_by_id',
+                'approveBy.name as approved_by',
+                'inv_stock_transfer.notes',
+                'inv_stock_transfer.process',
+                DB::raw('DATE_FORMAT(inv_stock_transfer.created_at, "%d-%m-%Y") as created'),
+                DB::raw('DATE_FORMAT(inv_stock_transfer.updated_at, "%d-%m-%Y") as invoice_date'),
+            ])
+            ->with([
+                'stockTransferItems.purchaseItem' => function ($q) {
+                    $q->select(
+                        'inv_purchase_item.id',
+                        'inv_purchase_item.expired_date'
+                    );
+                }
+            ])
+            ->first();
+
+        if (!$entity) {
+            return null;
+        }
+
+        return [
+            'id' => $entity->id,
+            'uid' => $entity->uid,
+            'invoice' => $entity->invoice,
+            'process' => $entity->process,
+            'from_warehouse' => $entity->from_warehouse,
+            'to_warehouse' => $entity->to_warehouse,
+            'created_by' => $entity->created_by,
+            'approved_by' => $entity->approved_by,
+            'created' => $entity->created,
+            'invoice_date' => $entity->invoice_date,
+            'notes' => $entity->notes,
+
+            'stock_transfer_items' => $entity->stockTransferItems->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'stock_item_id' => $item->stock_item_id,
+                    'purchase_item_id' => $item->purchase_item_id,
+                    'name' => $item->name,
+                    'uom' => $item->uom,
+                    'quantity' => $item->quantity,
+                    'stock_quantity' => $item->stock_quantity,
+                    'request_quantity' => $item->request_quantity,
+                    'expired_date' => optional($item->purchaseItem)->expired_date
+                        ? Carbon::parse($item->purchaseItem->expired_date)->format('d-M-Y')
+                        : null,
+                ];
+            }),
+        ];
     }
 
 
