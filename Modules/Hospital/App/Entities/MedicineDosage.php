@@ -59,7 +59,7 @@ class MedicineDosage
     /**
      * @var string
      *
-     * @ORM\Column(name="mode", type="string", length=20, nullable=true)
+     * @ORM\Column(name="duration_mode", type="string",options={"default"="Dosage"})
      */
     private $mode;
 
