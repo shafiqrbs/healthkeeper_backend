@@ -698,6 +698,12 @@ class InvoiceParticularTestReport
      */
     private $afbSampleScantyThree;
 
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",options={"default"="false"})
+     */
+    private $isDstGenexpert;
 
     /**
      * @var string
