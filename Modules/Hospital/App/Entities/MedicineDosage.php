@@ -59,9 +59,17 @@ class MedicineDosage
     /**
      * @var string
      *
-     * @ORM\Column(name="duration_mode", type="string",options={"default"="Dosage"})
+     * @ORM\Column(name="mode", type="string",options={"default"="Dosage"})
      */
     private $mode;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="prescription_mode", type="string",options={"default"="ipd"})
+     */
+    private $prescriptionMode;
 
     /**
      * @var string
