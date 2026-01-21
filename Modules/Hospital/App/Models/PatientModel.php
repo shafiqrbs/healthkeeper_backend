@@ -3,6 +3,7 @@
 namespace Modules\Hospital\App\Models;
 
 use Cviebrock\EloquentSluggable\Sluggable;
+use Database\Factories\PatientModelFactory;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
@@ -22,13 +23,18 @@ use Modules\Inventory\App\Models\ConfigSalesModel;
 
 class PatientModel extends Model
 {
-    use HasFactory;
-    use Sluggable;
+    use HasFactory, Sluggable , HasFactory;
 
     protected $table = 'cor_customers';
     public $timestamps = true;
     protected $guarded = ['id'];
     protected $fillable = [];
+
+
+    protected static function newFactory()
+    {
+        return PatientModelFactory::new();
+    }
 
     public static function getAllCustomers()
     {

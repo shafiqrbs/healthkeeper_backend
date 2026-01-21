@@ -525,6 +525,8 @@ class ReportModel extends Model
             $userMaps[$modeName] = $user; // correct
         }
 
+
+
         $userRefundMaps = [];
         $refundUserNames = [];
         foreach ($userRefund as $service) {
@@ -532,14 +534,13 @@ class ReportModel extends Model
             $refundUserNames[] = $service['name'];
             $userRefundMaps[$mode] = $service;
         }
-
         $merged = array_values(array_unique(array_merge($userNames, $refundUserNames)));
 
         $invoiceMerged = [];
         foreach ($merged as $mode) {
             $mode_id = $mode;
             $total  = $userMaps[$mode_id]['total'] ?? 0;
-            $group_name  = $userMaps[$mode_id]['group_name'] ?? 0;
+            $group_name  = $userMaps[$mode_id]['group_name'] ?? $userRefundMaps[$mode_id]['group_name'];
             $refund_total  = $userRefundMaps[$mode_id]['total'] ?? 0;
             $sub_total = ($total - $refund_total);
             $invoiceMerged[] = [

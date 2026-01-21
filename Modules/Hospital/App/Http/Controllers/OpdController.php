@@ -183,33 +183,42 @@ class OpdController extends Controller
 
     public static function createOrUpdatePatient(array $input, $domain, $uniqueKey = null, $patient = null)
     {
-        $dob = null;
-        if (!empty($input['dob']) && $input['dob'] !== 'invalid') {
-            $dob = new \DateTime($input['dob']);
-        }
-        $data = [
-            'domain_id'           => $domain['global_id'],
-            'customer_unique_key' => $uniqueKey,
-            'name'                => $input['name'] ?? null,
-            'mobile'              => $input['mobile'] ?? null,
-            'address'             => $input['address'] ?? null,
-            'dob'                 => $dob,
-            'age'                 => $input['year'] ?? null,
-            'upazilla_id'         => $input['upazilla_id'] ?? null,
-            'gender'              => $input['gender'] ?? 'male',
-            'identity_mode'       => $input['identity_mode'] ?? null,
-            'health_id'           => $input['health_id'] ?? null,
-            'nid'                 => $input['identity'] ?? null,
-            'country_id'          => $input['country_id'] ?? 19,
-        ];
+        return DB::transaction(function () use ($input, $domain, $uniqueKey, $patient) {
 
-        if ($patient) {
-            $patient->update($data);
-            return $patient;
-        }
+            $dob = null;
+            if (!empty($input['dob']) && $input['dob'] !== 'invalid') {
+                $dob = new \DateTime($input['dob']);
+            }
 
-        return PatientModel::create($data);
+            $data = [
+                'domain_id'           => $domain['global_id'],
+                'customer_unique_key' => $uniqueKey,
+                'name'                => $input['name'] ?? null,
+                'mobile'              => $input['mobile'] ?? null,
+                'address'             => $input['address'] ?? null,
+                'dob'                 => $dob,
+                'age'                 => $input['year'] ?? null,
+                'upazilla_id'         => $input['upazilla_id'] ?? null,
+                'gender'              => $input['gender'] ?? 'male',
+                'identity_mode'       => $input['identity_mode'] ?? null,
+                'health_id'           => $input['health_id'] ?? null,
+                'nid'                 => $input['identity'] ?? null,
+                'country_id'          => $input['country_id'] ?? 19,
+            ];
+
+            if ($patient) {
+                $lockedPatient = PatientModel::where('id', $patient->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                $lockedPatient->update($data);
+                return $lockedPatient;
+            }
+
+            return PatientModel::create($data);
+        });
     }
+
 
     /**
      * Show the specified resource.

@@ -10,7 +10,7 @@ use Modules\Core\App\Models\VendorModel;
 class GeneratePatternCodeService
 {
 
-    public function customerCode($queryParams = [])
+    /*public function customerCode($queryParams = [])
     {
 
         $prefix     = $queryParams['prefix'];
@@ -36,7 +36,38 @@ class GeneratePatternCodeService
         return $data;
 
 
+    }*/
+
+    public function customerCode($queryParams = [])
+    {
+        $prefix = $queryParams['prefix'] ?? '';
+        $domain = $queryParams['domain'];
+        $table  = $queryParams['table'];
+
+        $now = Carbon::now();
+        $start = $now->copy()->startOfMonth();
+        $end   = $now->copy()->endOfMonth();
+
+        $lastCode = DB::table($table)
+            ->where('domain_id', $domain)
+            ->whereBetween('created_at', [$start, $end])
+            ->max('code');
+
+        $code = ((int)$lastCode) + 1;
+
+        $customerId = sprintf(
+            "%s%s%s",
+            $prefix,
+            $now->format('ym'),
+            str_pad($code, 5, '0', STR_PAD_LEFT)
+        );
+
+        return [
+            'code' => $code,
+            'generateId' => $customerId
+        ];
     }
+
 
     public function PatientCode($queryParams = [])
     {
