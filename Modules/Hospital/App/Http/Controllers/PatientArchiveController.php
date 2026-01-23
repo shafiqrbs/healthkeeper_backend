@@ -74,8 +74,7 @@ class PatientArchiveController extends Controller
         $domain = $this->domain;
         $input = $request->validated();
         $reAdmission = InvoiceModel::where('uid',$input['hms_invoice_id'])->first();
-
-        if($reAdmission->process === 'paid'){
+        if (in_array($reAdmission->process, ['paid','discharged','re-admission'])) {
 
             ParticularModel::where([
                 'is_booked' => 1,
@@ -85,11 +84,10 @@ class PatientArchiveController extends Controller
                 'admission_id' => null,
             ]);
             $reAdmission->update([
-                'release_mode' => 're-admission',
-                'process' => 're-admission',
+                'release_mode'    => 're-admission',
+                'process'         => 're-admission',
                 'is_prescription' => 1,
             ]);
-
         }
         $parentInvoice = $reAdmission->parent;
         DB::beginTransaction();
