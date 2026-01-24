@@ -113,7 +113,46 @@ class InvoiceTransactionModel extends Model
                     ]
                 );
             })->toArray();
+
+            $query = InvoiceParticularModel::where('hms_invoice_id', $entity->id)
+                ->where('price', 0)
+                ->where('is_available', 1)
+                ->where('mode', 'investigation')
+                ->where('status', 0);
+            $freeCount = $query->count();
+            if($freeCount > 0 ){
+                self::insertFreeTransactionInvoice($domain,$entity);
+            }
+
         }
+    }
+
+    public static function insertFreeTransactionInvoice($domain,$invoice){
+
+        $date =  new \DateTime("now");
+        $invoiceTransaction = self::updateOrCreate(
+            [
+                'hms_invoice_id'       => $invoice->id,
+                'is_free'              => 1,
+            ],
+            [
+                'mode' => 'investigation',
+                'process' => 'Done',
+                'created_by_id'    => $domain['user_id'],
+                'updated_at'    => $date,
+                'created_at'    => $date,
+            ]
+        );
+        InvoiceParticularModel::where('hms_invoice_id', $invoice->id)
+            ->where('price', 0)
+            ->where('is_available', 1)
+            ->where('mode', 'investigation')
+            ->where('status', 0)
+            ->update([
+                'invoice_transaction_id' => $invoiceTransaction->id,
+                'status' => 1,
+            ]);
+
     }
 
     public static function insertIpdInvestigations($domain,$id,$data)

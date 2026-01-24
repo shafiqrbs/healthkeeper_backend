@@ -432,7 +432,11 @@ class IpdModel extends Model
         }
 
         if (isset($request['process']) && !empty($request['process'])){
-            $entities = $entities->where('hms_invoice.process',$request['process']);
+            if ($request['process'] == 'paid') {
+                $entities = $entities->whereIn('hms_invoice.process', ['paid','refund']);
+            } else {
+                $entities = $entities->where('hms_invoice.process', $request['process']);
+            }
         }
 
         if (isset($request['room_id']) && !empty($request['room_id'])){

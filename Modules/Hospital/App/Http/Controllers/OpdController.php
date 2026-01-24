@@ -157,7 +157,7 @@ class OpdController extends Controller
             $getNextOpdRoom = InvoiceModel::getNextOpdRoom($this->domain);
             $invoice = InvoiceModel::getShow($invoiceId);
             $invoice['opd_selected_room'] = $getNextOpdRoom['name'];
-            $invoice['opd_selected_room_id']=$getNextOpdRoom['id'];
+            $invoice['opd_selected_room_id'] = $getNextOpdRoom['id'];
             $service = new JsonRequestResponse();
             return $service->returnJosnResponse($invoice);
         } catch (\Exception $e) {
