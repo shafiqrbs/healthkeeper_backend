@@ -201,6 +201,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::get('/ipd/internal-transfer/{id}', [IpdController::class, 'internalTransfer'])->name('find_bill');
     Route::get('/ipd/free-discharge/{id}', [IpdController::class, 'freeDischarge'])->name('find_bill');
     Route::get('/ipd/discharge-process/{id}', [IpdController::class, 'processDischarge'])->name('find_bill');
+    Route::get('/ipd/room-cancel/{id}', [IpdController::class, 'processCancel'])->name('find_bill');
     Route::patch('/ipd/internal-transfer-process/{id}', [IpdController::class, 'internalTransferProcess'])->name('find_bill');
     Route::get('/ipd/efresh-order/{id}', [IpdController::class,'efreshOrder'])->name('ipd_efreshOrder');
     Route::post('/ipd/patient-chart/{id}', [IpdController::class,'patientChart'])->name('ipd_data_process');

@@ -151,6 +151,7 @@ class InvoiceTransactionModel extends Model
             ->update([
                 'invoice_transaction_id' => $invoiceTransaction->id,
                 'status' => 1,
+                'is_invoice' => 1,
             ]);
 
     }

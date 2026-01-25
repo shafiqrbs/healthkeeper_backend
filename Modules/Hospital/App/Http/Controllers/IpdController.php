@@ -354,7 +354,28 @@ class IpdController extends Controller
         return $data;
     }
 
-      /**
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function processCancel($id)
+    {
+        $entity = InvoiceModel::findByIdOrUid($id);
+        ParticularModel::where([
+            'is_booked' => 1,
+            'admission_id' => $entity->id
+        ])->update([
+            'is_booked' => 0,
+            'admission_id' => null,
+        ]);
+        $entity->update([
+            'process' => 'cancel',
+        ]);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse();
+        return $data;
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function freeDischarge($id)
