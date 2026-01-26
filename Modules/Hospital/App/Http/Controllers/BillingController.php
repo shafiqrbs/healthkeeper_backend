@@ -250,9 +250,9 @@ class BillingController extends Controller
         }else {
             $data = InvoiceTransactionModel::finalBillClosing($domain, $entity);
             if ($data['mode'] == 'refund') {
-                $entity->update(['process' => 'refund']);
+                $entity->update(['process' => 'refund','release_date'=> $date]);
             }else{
-                $entity->update(['process' => 'paid','release_date'=>$date]);
+                $entity->update(['process' => 'paid','release_date'=> $date]);
             }
         }
         $status = ['status'=>'success'];
