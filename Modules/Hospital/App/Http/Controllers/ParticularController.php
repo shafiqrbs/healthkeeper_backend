@@ -301,9 +301,16 @@ class ParticularController extends Controller
      */
     public function destroy($id)
     {
-        $service = new JsonRequestResponse();
-        ParticularModel::find($id)->delete();
+
+        DB::transaction(function () use ($id) {
+            ParticularModel::find($id)
+                ->update([
+                    'is_delete' => 1,
+                    'status'    => 0
+                ]);
+        });
         $entity = ['message' => 'delete'];
+        $service = new JsonRequestResponse();
         return $service->returnJosnResponse($entity);
     }
 

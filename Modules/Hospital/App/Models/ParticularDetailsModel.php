@@ -98,6 +98,7 @@ class ParticularDetailsModel extends Model
         $patient_type_id = (isset($data['patient_type_id']) and $data['patient_type_id']) ? $data['patient_type_id']:null;
         $payment_mode_id = (isset($data['payment_mode_id']) and $data['payment_mode_id']) ? $data['payment_mode_id']:null;
         $cabin_mode_id = (isset($data['cabin_mode_id']) and $data['cabin_mode_id']) ? $data['cabin_mode_id']:null;
+        $gender_mode_id= (isset($data['gender_mode_id']) and $data['gender_mode_id']) ? $data['gender_mode_id']:null;
 
         $payment = ParticularModeModel::find($payment_mode_id);
         $patient = ParticularModeModel::find($patient_type_id);
@@ -118,6 +119,7 @@ class ParticularDetailsModel extends Model
                 'patient_type_id'   => $patient_type_id,
                 'payment_mode_id'   => $payment_mode_id,
                 'cabin_mode_id'   => $cabin_mode_id,
+                'gender_mode_id'   => $gender_mode_id,
             ]
         );
         ParticularModel::updateOrCreate(

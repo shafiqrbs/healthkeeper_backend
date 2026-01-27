@@ -70,7 +70,7 @@ class ParticularModel extends Model
         $perPage = isset($request['offset']) && $request['offset']!=''? (int)($request['offset']):0;
         $skip = isset($page) && $page!=''? (int)$page*$perPage:0;
 
-        $entity = self::where('hms_particular.config_id',$config)
+        $entity = self::where('hms_particular.config_id',$config)->where('hms_particular.is_delete',0)
             ->leftJoin('hms_particular_details','hms_particular_details.particular_id','=','hms_particular.id')
             ->join('hms_particular_type','hms_particular_type.id','=','hms_particular.particular_type_id')
             ->join('hms_particular_master_type','hms_particular_master_type.id','=','hms_particular_type.particular_master_type_id')

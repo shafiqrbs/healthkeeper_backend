@@ -152,7 +152,7 @@ class ProductModel extends Model
 
         $config =  $domain['hms_config'];
         $user =  $domain['user_id'];
-        $entities = MedicineDetailsModel::where('hms_medicine_details.config_id', $config)->where('hms_medicine_details.status',1)
+        $entities = MedicineDetailsModel::where('hms_medicine_details.config_id', $config)
             ->leftjoin('hms_medicine_stock', 'hms_medicine_stock.id', '=', 'hms_medicine_details.medicine_stock_id')
             ->leftjoin('inv_product', 'hms_medicine_stock.product_id', '=', 'inv_product.id')
             ->leftjoin('hms_medicine_dosage as dosage', 'dosage.id', '=', 'hms_medicine_stock.medicine_dosage_id')
@@ -179,11 +179,14 @@ class ProductModel extends Model
                 'hms_particular_mode.name_bn as duration_mode_bn',
             ])
             ->withCount([
-            'prescription_medicine as prescription_count' => function ($q) use($user) {
-                $q->join('hms_prescription', 'hms_prescription.id', '=', 'hms_patient_prescription_medicine.prescription_id')
-                    ->where('hms_prescription.created_by_id', $user);  // example filter
-            }
+                'prescription_medicine as prescription_count' => function ($q) use($user) {
+                    $q->join('hms_prescription', 'hms_prescription.id', '=', 'hms_patient_prescription_medicine.prescription_id')
+                        ->where('hms_prescription.created_by_id', $user);  // example filter
+                }
             ])
+            /*->whereAny([
+                'hms_medicine_details.name'
+            ], 'LIKE', '%omep%')*/
             ->orderBy('prescription_count', 'DESC')
             ->orderBy('hms_medicine_details.name', 'ASC')
             ->get();

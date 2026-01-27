@@ -155,9 +155,9 @@ class MedicineModel extends Model
 
         if (isset($request['term']) && !empty($request['term'])) {
             $products = $products->whereAny([
-                'inv_product.name',
+               // 'inv_product.name',
                 'hms_medicine_details.name',
-                'inv_category.name'
+              //  'inv_category.name'
             ], 'LIKE', '%'.$request['term'].'%');
         }
 
