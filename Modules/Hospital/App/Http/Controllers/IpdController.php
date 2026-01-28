@@ -258,7 +258,6 @@ class IpdController extends Controller
             if ($entity->room) {
                 $entity->room->update(['is_booked' => false,'admission_id' => null]);
             }
-
             $entity->update([
                 'process' => 'canceled',
                 'room_id' => null,
