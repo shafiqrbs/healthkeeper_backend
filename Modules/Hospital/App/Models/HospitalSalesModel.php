@@ -327,13 +327,13 @@ class HospitalSalesModel extends Model
                 'item_name'
             )
             ->orderBy('warehouse_id')
+            ->orderBy('item_name')
             ->orderBy('stock_item_id');
 
         /** Pagination */
         if (!empty($params['page']) && !empty($params['offset'])) {
             $total = (clone $query)->count();
             $items = $query->skip($skip)->take($perPage)->get();
-
             return [
                 'count' => $total,
                 'items' => $items,

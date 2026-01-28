@@ -405,8 +405,6 @@ class MedicineStockController extends Controller
     public function medicineSummeryReport(Request $request)
     {
         $params = $request->only(['warehouse_id', 'start_date', 'end_date','page','offset']);
-
-
         if (!$params['start_date']) {
             return response([
                 'result' => false,
