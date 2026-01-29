@@ -185,7 +185,7 @@ class PatientPrescriptionMedicine
      *
      * @ORM\Column(type="boolean",options={"default"="false"})
      */
-    private $opdAdminStatus;
+    private $adminStatus;
 
     /**
      * @var boolean

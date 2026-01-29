@@ -564,6 +564,135 @@ class ReportModel extends Model
         return $records;
     }
 
+    public static function getDashboardOverview($domain,$request){
+
+        $summary =self::summaryCollection($domain,$request);
+        $patientOverview =self::patientOverview($domain,$request);
+        dd($summary);
+        $patientMode =self::patientModeBaseCollection($domain,$request);
+        $patientServiceMode =self::patientServiceModeBaseCollection($domain,$request);
+        $userBase =self::userBaseCollection($domain,$request);
+
+        $serviceGroups =self::serviceBaseGroupInvestigation($domain,$request);
+
+        $financialServices =self::financialServiceGroupInvestigation($domain,$request);
+        $refundServiceGroups =self::refundFinancialServiceGroupInvestigation($domain,$request);
+
+        $particularInvoiceModes = InvoiceParticularModel::getParticularInvoiceModes();
+
+
+        $services =self::serviceBaseInvestigation($domain,$request);
+        $refundInvestigations =self::refundServiceBaseInvestigation($domain,$request);
+
+
+        $investigationMaps = [];
+        foreach ($services as $service) {
+            $modeName = $service['name'];          // string
+            $investigationMaps[$modeName] = $service['total']; // correct
+        }
+
+        $refundInvestigationMaps = [];
+        foreach ($refundInvestigations as $service) {
+            $mode = $service['name'];
+            $refundInvestigationMaps[$mode] = $service['total'];
+        }
+
+        $investigationMerged = [];
+        foreach ($services as $mode) {
+            $mode_id = $mode->name;
+            $total  = $investigationMaps[$mode_id] ?? 0;
+            $refund_total  = $refundInvestigationMaps[$mode_id] ?? 0;
+            $sub_total = ($total - $refund_total);
+            $investigationMerged[] = [
+                'name' => $mode_id,
+                'total' => $total,
+                'refund' => $refund_total, // default 0 if not refunded
+                'sub_total' => $sub_total, // default 0 if not refunded
+            ];
+        }
+
+        $refundPatientRoomBaseCollection =self::refundPatientRoomBaseCollection($domain,$request);
+        $refundTotalAmount =self::refundTotalAmount($domain,$request);
+
+        $invoiceModes =self::invoiceModeCollection($domain,$request);
+        $refundInvoiceModes =self::refundInvoiceModeCollection($domain,$request);
+
+        $invoiceModeMap = [];
+        foreach ($invoiceModes as $invoiceMode) {
+            $modeName = $invoiceMode['name'];          // string
+            $invoiceModeMap[$modeName] = $invoiceMode['total']; // correct
+        }
+
+        $refundInvoiceModeMap = [];
+        foreach ($refundInvoiceModes as $service) {
+            $mode = $service['name'];
+            $refundInvoiceModeMap[$mode] = $service['total'];
+        }
+
+        $invoiceMerged = [];
+        foreach ($particularInvoiceModes as $mode) {
+            $mode_id = $mode->name;
+            $total  = $invoiceModeMap[$mode_id] ?? 0;
+            $refund_total  = $refundInvoiceModeMap[$mode_id] ?? 0;
+            $sub_total = ($total - $refund_total);
+            $invoiceMerged[] = [
+                'name' => $mode_id,
+                'total' => $total,
+                'refund' => $refund_total, // default 0 if not refunded
+                'sub_total' => $sub_total, // default 0 if not refunded
+            ];
+        }
+
+
+
+
+        $financialServicesModes = ParticularModeModel::getParticularModuleDropdown('financial-service');
+        $refundMap = [];
+        foreach ($refundServiceGroups as $refund) {
+            $mode_id = $refund['mode_id'];
+            $refundMap[$mode_id] = $refund['refund_amount'];
+        }
+
+        $serviceMap = [];
+        foreach ($financialServices as $service) {
+            $mode_id = $service['mode_id'];
+            $serviceMap[$mode_id] = $service['total'];
+        }
+        $financialServicesMerged = [];
+        foreach ($financialServicesModes as $mode) {
+            $mode_id = $mode->id;
+            $total  = $serviceMap[$mode_id] ?? 0;
+            $refund_total  = $refundMap[$mode_id] ?? 0;
+            $sub_total = ($total - $refund_total);
+            $financialServicesMerged[] = [
+                'id' => $mode_id,
+                'name' => $mode->name,
+                'name_bn' => $mode->name_bn,
+                'total' => $total,
+                'refund' => $refund_total, // default 0 if not refunded
+                'sub_total' => $sub_total,
+            ];
+        }
+
+        $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
+        $records =[
+            'filter' => $filter,
+            'summary' => $summary,
+            'refundTotal' => $refundTotalAmount,
+            'invoiceMode' => $invoiceMerged,
+            'userBase' => $userBase,
+            'patientMode' => $patientMode,
+            'patientServiceMode' => $patientServiceMode,
+            'serviceGroups' => $serviceGroups,
+            'services' => $investigationMerged,
+            'financialServices' => $financialServicesMerged,
+            'financialServicesModes' => $financialServicesMerged,
+            'invoiceMerged' => $invoiceMerged,
+
+        ];
+        return $records;
+    }
+
     public static function getInvoiceSummary($domain,$request){
 
         $summary =self::summaryCollection($domain,$request);
@@ -736,6 +865,43 @@ class ReportModel extends Model
         }
         $entities = $entities->orderBy('hms_invoice_transaction.updated_at','DESC')
             ->get();
+        return $entities;
+    }
+
+    public static function patientOverview($domain,$request)
+    {
+
+        $entities = InvoiceModel::where([['hms_invoice.config_id',$domain['hms_config']]])
+            ->whereIn('mode',['opd','emergency','ipd'])
+            ->select([
+                'hms_invoice.id',
+                'hms_invoice.uid',
+                'hms_invoice.parent_id as parent_id',
+                'hms_invoice.invoice as invoice',
+                'hms_invoice.barcode  as barcode',
+                'customer.customer_id as patient_id',
+
+            ]);
+
+        if (isset($request['start_date']) && !empty($request['start_date'])){
+            $start_date = new \DateTime($request['start_date']);
+            $end_date = new \DateTime($request['end_date']);
+            $start_date = $start_date->format('Y-m-d 00:00:00');
+            $end_date = $end_date->format('Y-m-d 23:59:59');
+            $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
+        }else{
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date = $date->format('Y-m-d 23:59:59');
+            $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
+        }
+
+
+
+        if (isset($request['patient_mode']) && !empty($request['patient_mode']) && $request['patient_mode'] != 'all'){
+            $entities = $entities->where('hms_invoice_particular.report_mode',$request['patient_mode']);
+        }
+        $entities = $entities->orderBy('hms_invoice.created_at','ASC')->orderBy('hms_invoice_particular.report_mode','ASC')->get();
         return $entities;
     }
 

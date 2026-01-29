@@ -49,6 +49,17 @@ class ReportsController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function dashboardOverview(Request $request){
+
+        $data = ReportModel::getDashboardOverview($this->domain,$request);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse($data);
+        return $data;
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
     public function dailySummary(Request $request){
 
         $data = ReportModel::getInvoiceSummary($this->domain,$request);

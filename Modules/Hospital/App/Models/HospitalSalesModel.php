@@ -139,7 +139,7 @@ class HospitalSalesModel extends Model
                 $sales = self::create($insertData);
                 $insertData = collect($medicines)
                     ->map(function ($medicine) use ($sales, $date) {
-                        if($medicine->stock_item_id && $medicine->opd_quantity > 0 && $medicine->opd_status == 1){
+                        if($medicine->stock_item_id && $medicine->opd_quantity > 0 && ($medicine->opd_status == 1 || $medicine->admin_status == 1)){
                             return [
                                 'sale_id' => $sales->id,
                                 'name' => $medicine->generic ?? null, // notice key: medicine_name not medicineName
@@ -164,7 +164,7 @@ class HospitalSalesModel extends Model
                 SalesItemModel::where('sale_id', $prescription->sale_id)->forceDelete();
                 $sales = self::find($prescription->sale_id);
                 collect($medicines)->map(function ($medicine) use ($sales, $date) {
-                    if($medicine->stock_item_id && $medicine->opd_quantity > 0 && $medicine->opd_status == 1){
+                    if($medicine->stock_item_id && $medicine->opd_quantity > 0 && ($medicine->opd_status == 1 || $medicine->admin_status == 1)){
                         SalesItemModel::updateOrCreate(
                             [
                                 'sale_id' => $sales->id,
