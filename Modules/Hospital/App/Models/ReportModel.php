@@ -568,7 +568,18 @@ class ReportModel extends Model
 
         $summary =self::summaryCollection($domain,$request);
         $patientOverview =self::patientOverview($domain,$request);
-        dd($summary);
+        $patientMonthlyOpd = self::monthlyPatientMode($domain,'opd','','created_at',$request);
+        $patientMonthlyEmergency = self::monthlyPatientMode($domain,'emergency','','created_at',$request);
+        $patientMonthlyIpd = self::monthlyPatientMode($domain,'ipd','','admission_date',$request);
+        $patientMonthlyDischarged = self::monthlyPatientMode($domain,'ipd','discharged','release_date',$request);
+
+        $monthlyOverview = [
+            'monthlyOpd' => $patientMonthlyOpd,
+            'monthlyEmergency' => $patientMonthlyEmergency,
+            'monthlyIpd' => $patientMonthlyIpd,
+            'monthlyDischarged' => $patientMonthlyDischarged,
+        ];
+
         $patientMode =self::patientModeBaseCollection($domain,$request);
         $patientServiceMode =self::patientServiceModeBaseCollection($domain,$request);
         $userBase =self::userBaseCollection($domain,$request);
@@ -579,7 +590,6 @@ class ReportModel extends Model
         $refundServiceGroups =self::refundFinancialServiceGroupInvestigation($domain,$request);
 
         $particularInvoiceModes = InvoiceParticularModel::getParticularInvoiceModes();
-
 
         $services =self::serviceBaseInvestigation($domain,$request);
         $refundInvestigations =self::refundServiceBaseInvestigation($domain,$request);
@@ -644,8 +654,6 @@ class ReportModel extends Model
         }
 
 
-
-
         $financialServicesModes = ParticularModeModel::getParticularModuleDropdown('financial-service');
         $refundMap = [];
         foreach ($refundServiceGroups as $refund) {
@@ -680,15 +688,14 @@ class ReportModel extends Model
             'summary' => $summary,
             'refundTotal' => $refundTotalAmount,
             'invoiceMode' => $invoiceMerged,
-            'userBase' => $userBase,
             'patientMode' => $patientMode,
             'patientServiceMode' => $patientServiceMode,
             'serviceGroups' => $serviceGroups,
-            'services' => $investigationMerged,
             'financialServices' => $financialServicesMerged,
             'financialServicesModes' => $financialServicesMerged,
             'invoiceMerged' => $invoiceMerged,
-
+            'patientOverview' => $patientOverview,
+            'monthlyOverview' => $monthlyOverview,
         ];
         return $records;
     }
@@ -871,38 +878,57 @@ class ReportModel extends Model
     public static function patientOverview($domain,$request)
     {
 
-        $entities = InvoiceModel::where([['hms_invoice.config_id',$domain['hms_config']]])
-            ->whereIn('mode',['opd','emergency','ipd'])
-            ->select([
-                'hms_invoice.id',
-                'hms_invoice.uid',
-                'hms_invoice.parent_id as parent_id',
-                'hms_invoice.invoice as invoice',
-                'hms_invoice.barcode  as barcode',
-                'customer.customer_id as patient_id',
-
-            ]);
-
-        if (isset($request['start_date']) && !empty($request['start_date'])){
-            $start_date = new \DateTime($request['start_date']);
-            $end_date = new \DateTime($request['end_date']);
-            $start_date = $start_date->format('Y-m-d 00:00:00');
-            $end_date = $end_date->format('Y-m-d 23:59:59');
-            $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
-        }else{
+        if (!empty($request['start_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
             $date = new \DateTime();
             $start_date = $date->format('Y-m-d 00:00:00');
-            $end_date = $date->format('Y-m-d 23:59:59');
-            $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
+            $end_date   = $date->format('Y-m-d 23:59:59');
         }
 
+        $discharged = InvoiceModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->where('invoice_mode', 'ipd')
+            ->where('process', 'discharged')
+            ->whereBetween('release_date', [$start_date, $end_date])
+            ->count();
 
+        $admission = InvoiceModel::where('config_id', $domain['hms_config'])
+            ->where('invoice_mode', 'ipd')
+            ->where('process', 'admitted')
+            ->whereBetween('admission_date', [$start_date, $end_date])
+            ->count();
 
-        if (isset($request['patient_mode']) && !empty($request['patient_mode']) && $request['patient_mode'] != 'all'){
-            $entities = $entities->where('hms_invoice_particular.report_mode',$request['patient_mode']);
+        $currentPatient = ParticularModel::where('config_id', $domain['hms_config'])
+            ->where('is_booked', 1)
+            ->whereNotNull('admission_id')
+            ->count();
+
+        $data = ['patient_admission' => $admission,'patient_discharged' => $discharged, 'patient_total' => $currentPatient];
+        return $data;
+    }
+
+    public static function monthlyPatientMode($domain,$mode, $process = '',$field,$request)
+    {
+
+        if (!empty($request['start_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-t 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-01 00:00:00');
+            $end_date   = $date->format('Y-m-t 23:59:59');
         }
-        $entities = $entities->orderBy('hms_invoice.created_at','ASC')->orderBy('hms_invoice_particular.report_mode','ASC')->get();
-        return $entities;
+        return InvoiceModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->where('invoice_mode', $mode)
+            ->when(!empty($process), function ($q) use ($process) {
+                $q->where('process', $process);
+            }) // ✅ now used
+            ->whereBetween($field, [$start_date, $end_date])
+            ->selectRaw('DATE('.$field.') as date, COUNT(id) as total')
+            ->groupBy(DB::raw('DATE('.$field.')'))
+            ->orderBy('date')
+            ->get();
     }
 
     public static function getPatientTickets($domain,$request)
