@@ -255,7 +255,7 @@ class HospitalSalesModel extends Model
     public static function getMedicineSummeryDetails($params, $domain)
     {
         $page    = isset($params['page']) && $params['page'] > 0 ? ($params['page'] - 1) : 0;
-        $perPage = isset($params['offset']) && $params['offset'] != '' ? (int)$params['offset'] : 0;
+        $perPage = isset($params['offset']) && $params['offset'] !== '' ? (int)$params['offset'] : 0;
         $skip    = $page * $perPage;
 
         $warehouseId = $params['warehouse_id'] ?? null;
@@ -265,75 +265,87 @@ class HospitalSalesModel extends Model
         $startDate = $rawStart ? Carbon::parse($rawStart)->startOfDay() : null;
         $endDate   = $rawEnd   ? Carbon::parse($rawEnd)->endOfDay() : null;
 
-        $query = DB::table('inv_stock_item_history')
-            ->leftJoin('cor_warehouses', 'inv_stock_item_history.warehouse_id', '=', 'cor_warehouses.id')
-            ->where('inv_stock_item_history.config_id', $domain['config_id'])
-            ->when($warehouseId, fn ($q) =>
-                $q->where('inv_stock_item_history.warehouse_id', $warehouseId)
-            )
-            ->when($startDate && $endDate, fn ($q) =>
-                $q->whereBetween('inv_stock_item_history.created_at', [$startDate, $endDate])
-            )
-            ->selectRaw("
-            warehouse_id,
-            stock_item_id,
-            item_name as name,
-            cor_warehouses.name AS warehouse_name,
+        $query = DB::table('inv_stock_item_history as h')
+            ->leftJoin('cor_warehouses as w', 'h.warehouse_id', '=', 'w.id')
+            ->where('h.config_id', $domain['config_id'])
+            ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
 
-            /* Opening Quantity: previous closing before start date */
-            (
+            /*
+             |--------------------------------------------------------------------------
+             | IMPORTANT: ❌ NO DATE FILTER HERE
+             |--------------------------------------------------------------------------
+             */
+
+            ->selectRaw("
+            h.warehouse_id,
+            h.stock_item_id,
+            h.item_name AS name,
+            w.name AS warehouse_name,
+
+            /* Opening Quantity */
+            COALESCE((
                 SELECT ih_open.closing_quantity
-                FROM inv_stock_item_history AS ih_open
-                WHERE ih_open.stock_item_id = inv_stock_item_history.stock_item_id
-                  AND ih_open.warehouse_id = inv_stock_item_history.warehouse_id
+                FROM inv_stock_item_history ih_open
+                WHERE ih_open.stock_item_id = h.stock_item_id
+                  AND ih_open.warehouse_id = h.warehouse_id
                   AND ih_open.created_at < ?
                 ORDER BY ih_open.id DESC
                 LIMIT 1
-            ) AS opening_quantity,
+            ), 0) AS opening_quantity,
 
-            /* Total IN */
-            SUM(
+            /* Total IN (date-wise) */
+            COALESCE(SUM(
                 CASE
-                    WHEN quantity > 0 THEN quantity
+                    WHEN h.created_at BETWEEN ? AND ?
+                     AND h.quantity > 0
+                    THEN h.quantity
                     ELSE 0
                 END
-            ) AS total_in_quantity,
+            ), 0) AS total_in_quantity,
 
-            /* Total OUT */
-            ABS(SUM(
+            /* Total OUT (date-wise) */
+            COALESCE(ABS(SUM(
                 CASE
-                    WHEN quantity < 0 THEN quantity
+                    WHEN h.created_at BETWEEN ? AND ?
+                     AND h.quantity < 0
+                    THEN h.quantity
                     ELSE 0
                 END
-            )) AS total_out_quantity,
+            )), 0) AS total_out_quantity,
 
-            /* Closing Quantity: last row in date range */
-            (
+            /* Closing Quantity */
+            COALESCE((
                 SELECT ih_close.closing_quantity
-                FROM inv_stock_item_history AS ih_close
-                WHERE ih_close.stock_item_id = inv_stock_item_history.stock_item_id
-                  AND ih_close.warehouse_id = inv_stock_item_history.warehouse_id
-                  AND ih_close.created_at BETWEEN ? AND ?
+                FROM inv_stock_item_history ih_close
+                WHERE ih_close.stock_item_id = h.stock_item_id
+                  AND ih_close.warehouse_id = h.warehouse_id
+                  AND ih_close.created_at <= ?
                 ORDER BY ih_close.id DESC
                 LIMIT 1
-            ) AS closing_quantity
+            ), 0) AS closing_quantity
         ", [
-                $startDate,           // opening_quantity
-                $startDate, $endDate  // closing_quantity
+                $startDate,                 // opening
+                $startDate, $endDate,       // IN
+                $startDate, $endDate,       // OUT
+                $endDate                   // closing
             ])
+
             ->groupBy(
-                'warehouse_id',
-                'stock_item_id',
-                'item_name'
+                'h.warehouse_id',
+                'h.stock_item_id',
+                'h.item_name',
+                'w.name'
             )
-            ->orderBy('warehouse_id')
-            ->orderBy('item_name')
-            ->orderBy('stock_item_id');
+
+            ->orderBy('h.warehouse_id')
+            ->orderBy('h.item_name')
+            ->orderBy('h.stock_item_id');
 
         /** Pagination */
         if (!empty($params['page']) && !empty($params['offset'])) {
             $total = (clone $query)->count();
             $items = $query->skip($skip)->take($perPage)->get();
+
             return [
                 'count' => $total,
                 'items' => $items,
@@ -342,5 +354,6 @@ class HospitalSalesModel extends Model
 
         return $query->get();
     }
+
 
 }
