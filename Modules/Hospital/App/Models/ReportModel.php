@@ -697,7 +697,7 @@ class ReportModel extends Model
             'financialServices' => $financialServicesMerged,
             'financialServicesModes' => $financialServicesMerged,
             'invoiceMerged' => $invoiceMerged,
-            'patientOverview' => $patientOverview,
+            'patientStatus' => $patientOverview,
             'monthlyOverview' => $monthlyOverview,
         ];
         return $records;
@@ -713,27 +713,38 @@ class ReportModel extends Model
             ->where('hms_particular.status', 1)
             ->where('hms_particular.is_delete', 0)
             ->selectRaw('
-        pmt.slug as type,
-        COUNT(CASE 
-            WHEN hms_particular.is_booked = 1 
-             AND hms_particular.admission_id IS NOT NULL 
-            THEN hms_particular.id 
-        END) AS occupied_count,
-        COUNT(CASE 
-            WHEN hms_particular.is_booked = 0 
-             AND hms_particular.admission_id IS NULL 
-            THEN hms_particular.id 
-        END) AS empty_count
-    ')
+                pmt.slug as type,
+                COUNT(hms_particular.id) AS total_count,
+                COUNT(CASE 
+                    WHEN hms_particular.is_booked = 1 
+                     AND hms_particular.admission_id IS NOT NULL 
+                    THEN hms_particular.id 
+                END) AS occupied_count,
+                COUNT(CASE 
+                    WHEN hms_particular.is_booked = 0 
+                     AND hms_particular.admission_id IS NULL 
+                    THEN hms_particular.id 
+                END) AS empty_count
+            ')
             ->groupBy('pmt.slug')
             ->get();
 
+        $stats = $stats->map(function ($row) {
+            return [
+                'type'           => $row->type,
+                'total_count'    => (int) $row->total_count,
+                'occupied_count' => (int) $row->occupied_count,
+                'empty_count'    => (int) $row->empty_count,
+            ];
+        });
+        $patientOverview =self::patientOverview($domain,$request);
         $beds = self::genderBedsOverview($domain);
         $cabins = self::genderRoomsOverview($domain);
         $bedCabins = ['bed' => $beds,'cabin' => $cabins];
         $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
         $records =[
             'filter' => $filter,
+            'patientStatus' => $patientOverview,
             'stats' => $stats,
             'bedCabin' => $bedCabins,
 
@@ -1002,17 +1013,28 @@ class ReportModel extends Model
             ->join('hms_particular_mode as p', 'p.id', '=', 'd.payment_mode_id')
             ->join('hms_particular_mode as pm', 'pm.id', '=', 'd.patient_mode_id')
             ->where('pmt.slug', 'bed')
-            ->where('hms_particular.is_booked', 0)
+            ->where('hms_particular.status', 1)
+            ->where('hms_particular.is_delete', 0)
             ->selectRaw('
                 m.name  as gender,
                 p.name  as payment,
                 pm.name as patient,
-                COUNT(hms_particular.id) as total
+                COUNT(hms_particular.id) AS total_count,
+                COUNT(CASE 
+                    WHEN hms_particular.is_booked = 1 
+                     AND hms_particular.admission_id IS NOT NULL 
+                    THEN hms_particular.id 
+                END) AS occupied_count,
+                COUNT(CASE 
+                    WHEN hms_particular.is_booked = 0 
+                     AND hms_particular.admission_id IS NULL 
+                    THEN hms_particular.id 
+                END) AS empty_count
             ')
             ->groupBy('m.name', 'p.name', 'pm.name')
             ->orderBy('m.name')
-            ->orderBy('pm.name')
             ->orderBy('p.name')
+            ->orderBy('pm.name')
             ->get();
         return $genderRooms;
 
@@ -1028,11 +1050,22 @@ class ReportModel extends Model
             ->join('hms_particular_mode as m', 'm.id', '=', 'd.gender_mode_id')
             ->join('hms_particular_mode as p', 'p.id', '=', 'd.payment_mode_id')
             ->where('pmt.slug', 'cabin')
-            ->where('hms_particular.is_booked', 0)
+            ->where('hms_particular.status', 1)
+            ->where('hms_particular.is_delete', 0)
             ->selectRaw('
                 m.name  as gender,
                 p.name  as payment,
-                COUNT(hms_particular.id) as total
+                COUNT(hms_particular.id) AS total_count,
+                COUNT(CASE 
+                    WHEN hms_particular.is_booked = 1 
+                     AND hms_particular.admission_id IS NOT NULL 
+                    THEN hms_particular.id 
+                END) AS occupied_count,
+                COUNT(CASE 
+                    WHEN hms_particular.is_booked = 0 
+                     AND hms_particular.admission_id IS NULL 
+                    THEN hms_particular.id 
+                END) AS empty_count
             ')
             ->groupBy('m.name', 'p.name')
             ->orderBy('m.name')

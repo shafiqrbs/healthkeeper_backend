@@ -51,8 +51,6 @@ class ReportsController extends Controller
      */
     public function dashboardOverview(Request $request){
 
-        $request['start_date'] = '2026-01-01';
-        $request['end_date'] = '2026-01-31';
         $data = ReportModel::getDashboardOverview($this->domain,$request);
         $service = new JsonRequestResponse();
         $data = $service->returnJosnResponse($data);
