@@ -106,6 +106,12 @@ class InvoiceTransactionRefund
      */
      private $code;
 
+    /**
+     * @var \DateTime
+     * @ORM\Column(type="datetime",  nullable=true)
+     */
+    private $approveDate;
+
 
     /**
      * @var \DateTime

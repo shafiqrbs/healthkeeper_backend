@@ -568,6 +568,8 @@ class ReportModel extends Model
 
         $summary =self::summaryCollection($domain,$request);
         $patientOverview =self::patientOverview($domain,$request);
+        $waiver =self::patientWaiverOverview($domain,$request);
+
         $patientMonthlyOpd = self::monthlyPatientMode($domain,'opd','','created_at',$request);
         $patientMonthlyEmergency = self::monthlyPatientMode($domain,'emergency','','created_at',$request);
         $patientMonthlyIpd = self::monthlyPatientMode($domain,'ipd','','admission_date',$request);
@@ -686,6 +688,7 @@ class ReportModel extends Model
         $records =[
             'filter' => $filter,
             'summary' => $summary,
+            'waiver_amount' => $waiver,
             'refundTotal' => $refundTotalAmount,
             'invoiceMode' => $invoiceMerged,
             'patientMode' => $patientMode,
@@ -944,6 +947,48 @@ class ReportModel extends Model
 
         $data = ['patient_admission' => $admission,'patient_discharged' => $discharged, 'patient_total' => $currentPatient];
         return $data;
+    }
+
+    public static function patientWaiverOverview($domain,$request)
+    {
+
+        if (!empty($request['start_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+        $amount = InvoiceParticularModel::where('i.config_id', $domain['hms_config'])
+            ->join('hms_invoice as i', 'i.id', '=', 'hms_invoice_particular.hms_invoice_id')
+            ->join('hms_patient_waiver as pmt', 'pmt.id', '=', 'hms_invoice_particular.patient_waiver_id')
+            ->whereNotNull('pmt.checked_by_id')
+            ->whereBetween('pmt.checked_date', [$start_date, $end_date])
+            ->selectRaw('
+        SUM(hms_invoice_particular.estimate_price * hms_invoice_particular.quantity) as total_amount
+        ')->value('total_amount');
+        return (float) $amount;
+    }
+
+    public static function patientRefundOverview($domain,$request)
+    {
+
+        if (!empty($request['start_date'])) {
+            $start_date = (new \DateTime($request['start_date']))->format('Y-m-d 00:00:00');
+            $end_date   = (new \DateTime($request['end_date']))->format('Y-m-d 23:59:59');
+        } else {
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date   = $date->format('Y-m-d 23:59:59');
+        }
+        $amount = RefundModel::where('i.config_id', $domain['hms_config'])
+            ->join('hms_invoice as i', 'i.id', '=', 'hms_invoice_transaction_refund.hms_invoice_id')
+            ->where('hms_invoice_transaction_refund.process','Done')
+            ->whereBetween('hms_invoice_transaction_refund.updated_at', [$start_date, $end_date])
+            ->selectRaw('SUM(hms_invoice_transaction_refund.amount) as total_amount')->value('total_amount');
+        return (float) $amount;
+
     }
 
     public static function genderBedsOverview($domain)
@@ -1432,21 +1477,21 @@ class ReportModel extends Model
             ->whereIn('hms_invoice_particular.mode',['investigation','room'])
             ->where('hms_invoice_particular.is_refund',1)
             ->where('hms_invoice_transaction.process',"Done")
-            ->leftjoin('hms_invoice_transaction_refund as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_refund_id')
-            ->leftjoin('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
-            ->leftjoin('hms_particular as hms_particular','hms_particular.id','=','hms_invoice_particular.particular_id')
+            ->join('hms_invoice_transaction_refund as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_refund_id')
+            ->join('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
+            ->join('hms_particular as hms_particular','hms_particular.id','=','hms_invoice_particular.particular_id')
             ->select([DB::raw('SUM(hms_invoice_particular.refund_amount) as refund')]);
         if (isset($request['start_date']) && isset($request['end_date'])){
             $start_date = new \DateTime($request['start_date']);
             $end_date = new \DateTime($request['end_date']);
             $start_date = $start_date->format('Y-m-d 00:00:00');
             $end_date = $end_date->format('Y-m-d 23:59:59');
-            $entities = $entities->whereBetween('hms_invoice_transaction.created_at',[$start_date, $end_date]);
+            $entities = $entities->whereBetween('hms_invoice_transaction.updated_at',[$start_date, $end_date]);
         }else{
             $date = new \DateTime();
             $start_date = $date->format('Y-m-d 00:00:00');
             $end_date = $date->format('Y-m-d 23:59:59');
-            $entities = $entities->whereBetween('hms_invoice_transaction.created_at',[$start_date, $end_date]);
+            $entities = $entities->whereBetween('hms_invoice_transaction.updated_at',[$start_date, $end_date]);
         }
         $entities = $entities->get()->first();
         return $entities;
