@@ -207,7 +207,7 @@ class BillingController extends Controller
         $entity = InvoiceModel::findByIdOrUid($id);
         $service = new JsonRequestResponse();
         InvoiceTransactionModel::updateInvoiceTransaction($entity);
-        if(in_array($entity->process,['admitted','paid'])){
+        if(in_array($entity->process,['admitted','paid','refund']) and ){
             $entity->update([
                 'admission_day' => 0,
                 'payment_day'   => 0,

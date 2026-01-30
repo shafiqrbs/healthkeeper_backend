@@ -84,6 +84,7 @@ class RefundHistoryController extends Controller
     public function print($id)
     {
         $service = new JsonRequestResponse();
+        InvoiceModel::findByIdOrUid($id);
         $entity = RefundModel::showInvoiceData($id);
         $entity['refundRoom'] = InvoiceParticularModel::where(['mode'=>'room','invoice_transaction_refund_id' => $id,'is_refund'=>1])->select('refund_amount','refund_quantity')->first();
         return $service->returnJosnResponse($entity);

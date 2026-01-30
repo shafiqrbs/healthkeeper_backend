@@ -121,6 +121,7 @@ class BillingModel extends Model
         if (isset($request['patient_mode']) && !empty($request['patient_mode'])) {
             if ($request['patient_mode'] == 'ipd') {
                 $entities = $entities->where('patient_mode.slug', 'ipd');
+                $entities = $entities->where('hms_invoice.is_free_bed', 0);
                 $entities = $entities->whereIn('hms_invoice.process', ['paid','admitted','refund']);
             }elseif (is_array($request['patient_mode'])) {
                 $entities = $entities->whereIn('patient_mode.slug', $request['patient_mode']);
@@ -199,6 +200,7 @@ class BillingModel extends Model
         }
 
         $entities = $entities->whereIn('hms_invoice.process', ['admitted','paid','refund']);
+        $entities = $entities->where('hms_invoice.is_free_bed',0);
 
         //  $entities = $entities->whereIn('hms_invoice.release_mode', ['discharge','death','referred']);
 

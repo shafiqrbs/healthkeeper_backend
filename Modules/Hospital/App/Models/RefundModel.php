@@ -173,6 +173,8 @@ class RefundModel extends Model
                 'hms_invoice.admission_day as admission_day',
                 'hms_invoice.consume_day as consume_day',
                 'hms_invoice.remaining_day as remaining_day',
+                'hms_invoice.refund_day as refund_day',
+                'hms_invoice.refund_amount as refund_amount',
             ]);
 
         if (isset($request['term']) && !empty($request['term'])){

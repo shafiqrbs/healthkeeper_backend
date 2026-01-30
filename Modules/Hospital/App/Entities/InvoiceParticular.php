@@ -70,7 +70,7 @@ class InvoiceParticular
 
     /**
      * @ORM\ManyToOne(targetEntity="InvoiceTransactionRefund")
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $invoiceTransactionRefund;
 
