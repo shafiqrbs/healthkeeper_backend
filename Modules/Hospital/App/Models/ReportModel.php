@@ -700,6 +700,44 @@ class ReportModel extends Model
         return $records;
     }
 
+    public static function getBedRoomOverview($domain,$request){
+
+
+        $stats = ParticularModel::where('hms_particular.config_id', $domain['hms_config'])
+            ->join('hms_particular_type as pt', 'pt.id', '=', 'hms_particular.particular_type_id')
+            ->join('hms_particular_master_type as pmt', 'pmt.id', '=', 'pt.particular_master_type_id')
+            ->whereIn('pmt.slug', ['bed', 'cabin'])
+            ->where('hms_particular.status', 1)
+            ->where('hms_particular.is_delete', 0)
+            ->selectRaw('
+        pmt.slug as type,
+        COUNT(CASE 
+            WHEN hms_particular.is_booked = 1 
+             AND hms_particular.admission_id IS NOT NULL 
+            THEN hms_particular.id 
+        END) AS occupied_count,
+        COUNT(CASE 
+            WHEN hms_particular.is_booked = 0 
+             AND hms_particular.admission_id IS NULL 
+            THEN hms_particular.id 
+        END) AS empty_count
+    ')
+            ->groupBy('pmt.slug')
+            ->get();
+
+        $beds = self::genderBedsOverview($domain);
+        $cabins = self::genderRoomsOverview($domain);
+        $bedCabins = ['bed' => $beds,'cabin' => $cabins];
+        $filter = ['start_date'=>$request['start_date'],'end_date'=>$request['end_date']];
+        $records =[
+            'filter' => $filter,
+            'stats' => $stats,
+            'bedCabin' => $bedCabins,
+
+        ];
+        return $records;
+    }
+
     public static function getInvoiceSummary($domain,$request){
 
         $summary =self::summaryCollection($domain,$request);
@@ -906,6 +944,57 @@ class ReportModel extends Model
 
         $data = ['patient_admission' => $admission,'patient_discharged' => $discharged, 'patient_total' => $currentPatient];
         return $data;
+    }
+
+    public static function genderBedsOverview($domain)
+    {
+
+        $genderRooms = ParticularModel::where('hms_particular.config_id', $domain['hms_config'])
+            ->join('hms_particular_type as pt', 'pt.id', '=', 'hms_particular.particular_type_id')
+            ->join('hms_particular_master_type as pmt', 'pmt.id', '=', 'pt.particular_master_type_id')
+            ->join('hms_particular_details as d', 'd.particular_id', '=', 'hms_particular.id')
+            ->join('hms_particular_mode as m', 'm.id', '=', 'd.gender_mode_id')
+            ->join('hms_particular_mode as p', 'p.id', '=', 'd.payment_mode_id')
+            ->join('hms_particular_mode as pm', 'pm.id', '=', 'd.patient_mode_id')
+            ->where('pmt.slug', 'bed')
+            ->where('hms_particular.is_booked', 0)
+            ->selectRaw('
+                m.name  as gender,
+                p.name  as payment,
+                pm.name as patient,
+                COUNT(hms_particular.id) as total
+            ')
+            ->groupBy('m.name', 'p.name', 'pm.name')
+            ->orderBy('m.name')
+            ->orderBy('pm.name')
+            ->orderBy('p.name')
+            ->get();
+        return $genderRooms;
+
+    }
+
+    public static function genderRoomsOverview($domain)
+    {
+
+        $genderRooms = ParticularModel::where('hms_particular.config_id', $domain['hms_config'])
+            ->join('hms_particular_type as pt', 'pt.id', '=', 'hms_particular.particular_type_id')
+            ->join('hms_particular_master_type as pmt', 'pmt.id', '=', 'pt.particular_master_type_id')
+            ->join('hms_particular_details as d', 'd.particular_id', '=', 'hms_particular.id')
+            ->join('hms_particular_mode as m', 'm.id', '=', 'd.gender_mode_id')
+            ->join('hms_particular_mode as p', 'p.id', '=', 'd.payment_mode_id')
+            ->where('pmt.slug', 'cabin')
+            ->where('hms_particular.is_booked', 0)
+            ->selectRaw('
+                m.name  as gender,
+                p.name  as payment,
+                COUNT(hms_particular.id) as total
+            ')
+            ->groupBy('m.name', 'p.name')
+            ->orderBy('m.name')
+            ->orderBy('p.name')
+            ->get();
+        return $genderRooms;
+
     }
 
     public static function monthlyPatientMode($domain,$mode, $process = '',$field,$request)

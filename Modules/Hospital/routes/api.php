@@ -285,6 +285,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
 
     Route::prefix('reports')->middleware([HeaderAuthenticationMiddleware::class])->group(function() {
         Route::get('/dashboard-overview', [ReportsController::class,'dashboardOverview'])->name('dashboard_daily_summary');
+        Route::get('/dashboard-bedroom', [ReportsController::class,'bedRoomOverview'])->name('dashboard_daily_summary');
         Route::get('/dashboard-daily-summary', [ReportsController::class,'dailySummary'])->name('dashboard_daily_summary');
         Route::get('/user-daily-invoice-summary', [ReportsController::class,'userDailyInvoiceSummary'])->name('dashboard_daily_summary');
         Route::get('/daily-collection-service-report', [ReportsController::class,'dailyCollectionServiceReport'])->name('daily_collection_service_report');
