@@ -209,6 +209,8 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::get('/ipd/transaction/{id}', [IpdController::class,'transaction'])->name('ipd_data_transaction');
     Route::get('/ipd/release/{id}/{mode}', [IpdController::class,'release'])->name('ipd_data_transaction');
     Route::get('/ipd/admission/confirm', [IpdController::class, 'ipdConfirm'])->name('ipd_confirm');
+    Route::get('/ipd/dorb-process/{id}', [IpdController::class, 'processDorb'])->name('ipd_confirm');
+    Route::get('/ipd/dorb-confirm/{id}', [IpdController::class, 'processApproveDorb'])->name('ipd_confirm');
 
     Route::apiResource('epharma',
         EpharamaController::class)

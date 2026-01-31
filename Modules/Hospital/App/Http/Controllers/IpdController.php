@@ -361,16 +361,9 @@ class IpdController extends Controller
         $user = $this->domain['user_id'];
         $date = new \DateTime();
         $entity = InvoiceModel::findByIdOrUid($id);
-        ParticularModel::where([
-            'is_booked' => 1,
-            'admission_id' => $entity->id
-        ])->update([
-            'is_booked' => 0,
-            'admission_id' => null,
-        ]);
         $entity->update([
             'release_mode' => 'DORB',
-            'process' => 'discharged',
+            'process' => 'DORB',
             'dorb_created_by_id' => $user,
             'release_date' => $date,
             'is_prescription' => 1,
@@ -387,8 +380,15 @@ class IpdController extends Controller
     {
         $user = $this->domain['user_id'];
         $entity = InvoiceModel::findByIdOrUid($id);
+        ParticularModel::where([
+            'is_booked' => 1,
+            'admission_id' => $entity->id
+        ])->update([
+            'is_booked' => 0,
+            'admission_id' => null,
+        ]);
         $entity->update([
-            'process' => 'cancel',
+            'process' => 'discharged',
             'dorb_approved_by_id' => $user,
         ]);
         $service = new JsonRequestResponse();

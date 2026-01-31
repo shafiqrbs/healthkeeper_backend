@@ -440,15 +440,16 @@ class IpdModel extends Model
         if (isset($request['process']) && !empty($request['process'])){
             if ($request['process'] == 'paid') {
                 $entities = $entities->whereIn('hms_invoice.process', ['paid','refund']);
+            } elseif ($request['process'] == 'DORB' && $request['release_mode'] == 'DORB') {
+                $entities = $entities->where('hms_invoice.process','DORB');
+                $entities = $entities->where('hms_invoice.release_mode', 'DORB');
             } elseif ($request['process'] == 'discharged' && $request['release_mode'] == 'DORB') {
-                $entities = $entities->whereIn('hms_invoice.process', ['discharged']);
-                $entities = $entities->whereIn('hms_invoice.release_mode', ['DORB']);
+                $entities = $entities->where('hms_invoice.process', 'discharged');
+                $entities = $entities->where('hms_invoice.release_mode', 'DORB');
             } else {
                 $entities = $entities->where('hms_invoice.process', $request['process']);
             }
-
         }
-
         if (isset($request['room_id']) && !empty($request['room_id'])){
             $entities = $entities->where('hms_invoice.room_id',$request['room_id']);
         }

@@ -101,8 +101,9 @@ class MedicineStockController extends Controller
         $medicineStock['medicine_dosage_id'] = $input['medicine_dosage_id'] ?? null;
         $medicineStock['medicine_bymeal_id'] = $input['medicine_bymeal_id'] ?? null;
         $medicineStock['duration_mode_id'] = $input['duration_mode_id'] ?? null;
-        $medicineStock['opd_status'] = true;
-        $medicineStock['ipd_status'] = true;
+        $medicineStock['opd_status'] = false;
+        $medicineStock['ipd_status'] = false;
+        $medicineStock['admin_status'] = false;
         $medicineStock = MedicineStockModel::create($medicineStock);
         $data = $service->returnJosnResponse($medicineStock);
         return $data;
