@@ -90,6 +90,8 @@ class MedicineStockController extends Controller
 
         $stock['config_id'] = $this->domain['config_id'];
         $stock['product_id'] = $entity->id;
+        $stock['name'] = $entity->name;
+        $stock['display_name'] = $entity->name;
         $itemStock = StockItemModel::create($stock);
 
         $medicineStock['config_id'] = $this->domain['hms_config'];

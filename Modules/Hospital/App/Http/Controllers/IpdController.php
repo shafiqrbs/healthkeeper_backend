@@ -243,7 +243,6 @@ class IpdController extends Controller
                 $entity->update(['process' => 'confirmed']);
             }
 
-
         }elseif ($admission->change_mode == 'change_day') {
 
             IpdModel::changeUpdateInvoiceParticular(
@@ -353,11 +352,57 @@ class IpdController extends Controller
         return $data;
     }
 
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function processDorb($id)
+    {
+        $user = $this->domain['user_id'];
+        $date = new \DateTime();
+        $entity = InvoiceModel::findByIdOrUid($id);
+        ParticularModel::where([
+            'is_booked' => 1,
+            'admission_id' => $entity->id
+        ])->update([
+            'is_booked' => 0,
+            'admission_id' => null,
+        ]);
+        $entity->update([
+            'release_mode' => 'DORB',
+            'process' => 'discharged',
+            'dorb_created_by_id' => $user,
+            'release_date' => $date,
+            'is_prescription' => 1,
+        ]);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse();
+        return $data;
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function processApproveDorb($id)
+    {
+        $user = $this->domain['user_id'];
+        $entity = InvoiceModel::findByIdOrUid($id);
+        $entity->update([
+            'process' => 'cancel',
+            'dorb_approved_by_id' => $user,
+        ]);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse();
+        return $data;
+    }
+
+
     /**
      * Show the form for editing the specified resource.
      */
     public function processCancel($id)
     {
+        $user = $this->domain['user_id'];
         $entity = InvoiceModel::findByIdOrUid($id);
         ParticularModel::where([
             'is_booked' => 1,
@@ -368,6 +413,7 @@ class IpdController extends Controller
         ]);
         $entity->update([
             'process' => 'cancel',
+            'deleted_by_id' => $user,
         ]);
         $service = new JsonRequestResponse();
         $data = $service->returnJosnResponse();

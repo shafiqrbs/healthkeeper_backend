@@ -302,6 +302,8 @@ class IpdModel extends Model
             ->leftjoin('users as doctor','doctor.id','=','prescription.created_by_id')
             ->leftjoin('hms_particular as vr','vr.id','=','hms_invoice.room_id')
             ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
+            ->leftjoin('users as dorbCreatedBy','dorbCreatedBy.id','=','hms_invoice.dorb_created_by_id')
+            ->leftjoin('users as dorbApprovedBy','dorbApprovedBy.id','=','hms_invoice.dorb_approved_by_id')
             ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
             ->join('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
             ->join('hms_particular_mode as patient_payment_mode','patient_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
@@ -314,6 +316,10 @@ class IpdModel extends Model
                 'prescription.created_by_id as prescription_created_by_id',
                 'hms_invoice.invoice as invoice',
                 'hms_invoice.barcode  as barcode',
+                'hms_invoice.dorb_created_by_id  as dorb_created_by_id',
+                'dorbCreatedBy.name  as dorb_created_name',
+                'hms_invoice.dorb_approved_by_id  as dorb_approved_by_id',
+                'dorbApprovedBy.name  as dorb_approved_name',
                 'customer.customer_id as patient_id',
                 'customer.health_id',
                 'doctor.name as doctor_name',
@@ -434,9 +440,13 @@ class IpdModel extends Model
         if (isset($request['process']) && !empty($request['process'])){
             if ($request['process'] == 'paid') {
                 $entities = $entities->whereIn('hms_invoice.process', ['paid','refund']);
+            } elseif ($request['process'] == 'discharged' && $request['release_mode'] == 'DORB') {
+                $entities = $entities->whereIn('hms_invoice.process', ['discharged']);
+                $entities = $entities->whereIn('hms_invoice.release_mode', ['DORB']);
             } else {
                 $entities = $entities->where('hms_invoice.process', $request['process']);
             }
+
         }
 
         if (isset($request['room_id']) && !empty($request['room_id'])){

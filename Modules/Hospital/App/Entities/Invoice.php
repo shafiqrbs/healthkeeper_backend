@@ -187,6 +187,18 @@ class Invoice
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
+     * @ORM\JoinColumn(name="dorb_created_by_id", referencedColumnName="id", nullable=true)
+     **/
+    private  $dorbCreatedBy;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
+     * @ORM\JoinColumn(name="dorb_approved_by_id", referencedColumnName="id", nullable=true)
+     **/
+    private  $dorbApprovedBy;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
      * @ORM\JoinColumn(name="admitted_by_id", referencedColumnName="id", nullable=true)
      **/
     private  $admittedBy;
