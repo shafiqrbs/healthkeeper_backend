@@ -142,6 +142,7 @@ class HospitalSalesModel extends Model
                         if($medicine->stock_item_id && $medicine->opd_quantity > 0 && ($medicine->opd_status == 1 || $medicine->admin_status == 1)){
                             return [
                                 'sale_id' => $sales->id,
+                                'warehouse_id' => $sales->warehouse_id,
                                 'name' => $medicine->generic ?? null, // notice key: medicine_name not medicineName
                                 'stock_item_id' => $medicine->stock_item_id ?? null,
                                 'quantity' => $medicine->opd_quantity ?? 0,
@@ -172,6 +173,7 @@ class HospitalSalesModel extends Model
                                 // unique keys
                             ],
                             [
+                                'warehouse_id' => $sales->warehouse_id,
                                 'name' => $medicine->generic ?? null,
                                 'quantity' => $medicine->quantity ?? 0,
                                 'updated_at' => $date,
