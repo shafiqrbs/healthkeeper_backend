@@ -286,16 +286,23 @@ class StockTransferModel extends Model
                         'inv_stock_transfer_item.uom',
                     ])->with([
                         'purchaseItems' => function ($subQuery) {
-                            $subQuery->whereNotNull('expired_date')
-                                ->where('expired_date', '>', now()) // only not expired
-                                ->whereRaw('quantity > COALESCE(sales_quantity,0)')
+                            $subQuery->whereNotNull('inv_purchase_item.expired_date')
+                                ->where('inv_purchase_item.expired_date', '>', now())
+                                ->where('inv_purchase_item.mode', 'purchase')
+                                ->join(
+                                    'inv_stock_transfer',
+                                    'inv_stock_transfer.from_warehouse_id',
+                                    '=',
+                                    'inv_purchase_item.warehouse_id'
+                                )
+                                ->whereRaw('inv_purchase_item.quantity > COALESCE(inv_purchase_item.sales_quantity,0)')
                                 ->select([
-                                    'id',
-                                    'stock_item_id',
-                                    'warehouse_id',
-                                    'quantity',
-                                    'sales_quantity',
-                                    'expired_date'
+                                    'inv_purchase_item.id',
+                                    'inv_purchase_item.stock_item_id',
+                                    'inv_purchase_item.warehouse_id',
+                                    'inv_purchase_item.quantity',
+                                    'inv_purchase_item.sales_quantity',
+                                    'inv_purchase_item.expired_date'
                                 ]);
                         }
                     ]);
