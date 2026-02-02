@@ -84,10 +84,16 @@ class InvoiceTransactionModel extends Model
         foreach ($investigations as $investigation):
             $news[] = $investigation->id;
         endforeach;
-        InvoiceParticularModel::where([
+
+        $query = InvoiceParticularModel::where([
             'prescription_id' => $id,
             'mode' => 'investigation'
-        ])->whereNotIn('particular_id', $news)->delete();
+        ])->whereNull('invoice_transaction_id');
+        if (!empty($news)) {
+            $query->whereNotIn('particular_id', $news);
+        }
+        $query->delete();
+
         if (!empty($investigations) && is_array($investigations)) {
             collect($investigations)->map(function ($investigation) use ($prescription,$uniqueId,$date,$reportMode) {
                 $particular = ParticularModel::find($investigation->id);

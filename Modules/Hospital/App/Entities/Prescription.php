@@ -73,6 +73,13 @@ class Prescription
      */
     private $followUpId;
 
+     /**
+     * @var text
+     *
+     * @ORM\Column( type="text",nullable = true)
+     */
+    private $diseaseProfile;
+
     /**
      * @var string
      *

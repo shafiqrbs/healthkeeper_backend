@@ -45,25 +45,25 @@ class InvoiceParticular
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\Category")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $category;
 
     /**
      * @ORM\ManyToOne(targetEntity="Invoice")
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $hmsInvoice;
 
-
     /**
      * @ORM\ManyToOne(targetEntity="Prescription")
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $prescription;
 
     /**
      * @ORM\ManyToOne(targetEntity="InvoiceTransaction")
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $invoiceTransaction;
 
@@ -77,7 +77,7 @@ class InvoiceParticular
 
     /**
      * @ORM\ManyToOne(targetEntity="PatientWaiver")
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $patientWaiver;
 
@@ -90,37 +90,41 @@ class InvoiceParticular
 
      /**
      * @ORM\ManyToOne(targetEntity="AdmissionPatient")
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $admissionPatientParticular;
 
 
     /**
      * @ORM\ManyToOne(targetEntity="Particular", inversedBy="invoiceParticular")
-     * @ORM\JoinColumn(name="particular_id", referencedColumnName="id", nullable=true, onDelete="cascade")
+     * @ORM\JoinColumn(name="particular_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      **/
     private $particular;
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $assignDoctor;
 
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private $assignLabuser;
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
      * @ORM\JoinColumn(name="report_delivered_by_id", referencedColumnName="id", nullable=true)
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private  $reportDeliveredBy;
 
      /**
      * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
      * @ORM\JoinColumn(name="sample_collected_by_id", referencedColumnName="id", nullable=true)
+     * @ORM\JoinColumn(onDelete="SET NULL")
      **/
     private  $sampleCollectedBy;
 

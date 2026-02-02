@@ -203,15 +203,16 @@ class IpdPrescriptionController extends Controller
         $data['json_content'] = json_encode($data);
         $data['prescribe_doctor_id'] = $domain['user_id'];
         $data['follow_up_id'] = (isset($data['follow_up_date']) and $data['follow_up_date']) ? $data['follow_up_date'] :'';
+        $data['disease_profile'] = (isset($data['disease_details']) and $data['disease_details']) ? $data['disease_details'] :'';
         $data['process'] = 'done';
         $entity->update($data);
         $weight = $data['weight'] ?? null;
-        InvoiceModel::invoicePrescriptionProcess($entity->invoice);
+     // InvoiceModel::invoicePrescriptionProcess($entity->invoice);
         $entity->invoice->invoice_mode;
         if($entity->invoice->invoice_mode == "ipd"){
             $entity->invoice->update(['is_prescription' => 1,'weight' => $weight]);
         }
-        InvoiceTransactionModel::insertInvestigations($domain,$entity->id);
+     // InvoiceTransactionModel::insertInvestigations($domain,$entity->id);
         HospitalSalesModel::insertMedicineIssue($domain,$entity->id);
         InvoiceContentDetailsModel::insertContentDetails($domain,$entity->id);
         AdmissionPatientModel::insertDeathCertificate($domain,$entity->invoice->id,$data);
