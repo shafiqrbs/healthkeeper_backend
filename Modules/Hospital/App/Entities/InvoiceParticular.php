@@ -193,6 +193,13 @@ class InvoiceParticular
      */
     private $customPrice = false;
 
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(type="boolean",nullable=true, options={"default"=0})
+     */
+    private $isFree;
+
 
     /**
      * @var float

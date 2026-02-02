@@ -407,5 +407,59 @@ class LabInvestigationModel extends Model
 
     }
 
+    public static function getResetFreeInvestigation($domain)
+    {
+
+        InvoiceParticularModel::join(
+            'hms_particular as hp',
+            'hp.id',
+            '=',
+            'hms_invoice_particular.particular_id'
+        )
+            ->where('hp.is_free', 1)              // or hms_invoice_particular.is_free
+            ->where('hp.is_available', 1)
+            ->where('hms_invoice_particular.mode', 'investigation')
+            ->where('hms_invoice_particular.status', 0)
+            ->select('hms_invoice_particular.hms_invoice_id')
+            ->groupBy('hms_invoice_particular.hms_invoice_id')
+            ->chunk(10, function ($entities) use ($domain) {
+                foreach ($entities as $entity) {
+                    self::insertFreeTransactionInvoice($domain, $entity);
+                }
+
+            });
+    }
+
+    public static function insertFreeTransactionInvoice($domain,$invoice){
+
+        $date =  new \DateTime("now");
+        $invoiceTransaction = InvoiceTransactionModel::updateOrCreate(
+            [
+                'hms_invoice_id'       => $invoice->hms_invoice_id,
+                'is_free'              => 1,
+            ],
+            [
+                'mode' => 'investigation',
+                'process' => 'Done',
+                'created_by_id'    => $domain['user_id'],
+                'updated_at'    => $date,
+                'created_at'    => $date,
+            ]
+         );
+
+        InvoiceParticularModel::join('hms_particular as hms_particular', 'hms_particular.id', '=', 'hms_invoice_particular.particular_id')
+            ->where('hms_invoice_particular.hms_invoice_id', $invoice->hms_invoice_id)
+            ->where('hms_particular.is_free',1)
+            ->where('hms_particular.price', 0)
+             ->where('hms_particular.is_available',1)
+             ->where('hms_invoice_particular.mode', 'investigation')
+             ->where('hms_invoice_particular.status', 0)
+             ->update([
+                 'invoice_transaction_id' => $invoiceTransaction->id,
+                 'hms_invoice_particular.status' => 1,
+                 'is_invoice' => 1,
+             ]);
+    }
+
 
 }

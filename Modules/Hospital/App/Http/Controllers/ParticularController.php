@@ -167,6 +167,10 @@ class ParticularController extends Controller
             $findParticular->is_available = (($input['is_available'] == true) || ($input['is_available'] == 1))  ? 1:0;
         }
 
+        if (array_key_exists('is_free', $input)) {
+            $findParticular->is_available = (($input['is_free'] == true) || ($input['is_free'] == 1))  ? 1:0;
+        }
+
         if (array_key_exists('diagnostic_department_id', $input)) {
             $findParticular->diagnostic_department_id = $input['diagnostic_department_id'];
         }

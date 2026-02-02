@@ -88,6 +88,25 @@ class LabInvestigationController extends Controller
     }
 
 
+      /**
+     * Display a listing of the resource.
+     */
+    public function resetFreeInvestigation(Request $request){
+
+        $domain = $this->domain;
+        $data  = LabInvestigationModel::getResetFreeInvestigation($domain);
+        $response = new Response();
+        $response->headers->set('Content-Type','application/json');
+        $response->setContent(json_encode([
+            'message' => 'success',
+            'data' => $data,
+            'status' => Response::HTTP_OK,
+        ]));
+        $response->setStatusCode(Response::HTTP_OK);
+        return $response;
+    }
+
+
     /**
      * Display a listing of the resource.
      */
