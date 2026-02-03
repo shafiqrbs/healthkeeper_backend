@@ -272,43 +272,42 @@ class StockTransferModel extends Model
                 DB::raw('DATE_FORMAT(inv_stock_transfer.created_at, "%d-%m-%Y") as created'),
                 DB::raw('DATE_FORMAT(inv_stock_transfer.updated_at, "%d-%m-%Y") as invoice_date'),
             ])
-            ->with([
-                'stockTransferItems' => function ($query) {
-                    $query->select([
-                        'inv_stock_transfer_item.id',
-                        'inv_stock_transfer_item.stock_transfer_id',
-                        'inv_stock_transfer_item.stock_item_id',
-                        'inv_stock_transfer_item.purchase_item_id',
-                        'inv_stock_transfer_item.stock_quantity',
-                        'inv_stock_transfer_item.request_quantity',
-                        'inv_stock_transfer_item.quantity',
-                        'inv_stock_transfer_item.name',
-                        'inv_stock_transfer_item.uom',
-                    ])->with([
-                        'purchaseItems' => function ($subQuery) {
-                            $subQuery->whereNotNull('inv_purchase_item.expired_date')
-                                ->where('inv_purchase_item.expired_date', '>', now())
-                                ->where('inv_purchase_item.mode', 'purchase')
-                                ->join(
-                                    'inv_stock_transfer',
-                                    'inv_stock_transfer.from_warehouse_id',
-                                    '=',
-                                    'inv_purchase_item.warehouse_id'
-                                )
-                                ->whereRaw('inv_purchase_item.quantity > COALESCE(inv_purchase_item.sales_quantity,0)')
-                                ->select([
-                                    'inv_purchase_item.id',
-                                    'inv_purchase_item.stock_item_id',
-                                    'inv_purchase_item.warehouse_id',
-                                    'inv_purchase_item.quantity',
-                                    'inv_purchase_item.sales_quantity',
-                                    'inv_purchase_item.expired_date'
-                                ]);
-                        }
-                    ]);
-                }
-            ])
             ->first();
+
+        $fromWarehouseId = $entity->from_warehouse_id;
+
+        $entity->load([
+            'stockTransferItems' => function ($query) use ($fromWarehouseId) {
+                $query->select([
+                    'inv_stock_transfer_item.id',
+                    'inv_stock_transfer_item.stock_transfer_id',
+                    'inv_stock_transfer_item.stock_item_id',
+                    'inv_stock_transfer_item.purchase_item_id',
+                    'inv_stock_transfer_item.stock_quantity',
+                    'inv_stock_transfer_item.request_quantity',
+                    'inv_stock_transfer_item.quantity',
+                    'inv_stock_transfer_item.name',
+                    'inv_stock_transfer_item.uom',
+                ])->with([
+                    'purchaseItems' => function ($subQuery) use ($fromWarehouseId) {
+                        $subQuery
+                            ->where('inv_purchase_item.warehouse_id', $fromWarehouseId)
+                            ->where('inv_purchase_item.mode', 'purchase')
+                            ->whereNotNull('inv_purchase_item.expired_date')
+                            ->where('inv_purchase_item.expired_date', '>', now())
+                            ->whereRaw('inv_purchase_item.quantity > COALESCE(inv_purchase_item.sales_quantity,0)')
+                            ->select([
+                                'inv_purchase_item.id',
+                                'inv_purchase_item.stock_item_id',
+                                'inv_purchase_item.warehouse_id',
+                                'inv_purchase_item.quantity',
+                                'inv_purchase_item.sales_quantity',
+                                'inv_purchase_item.expired_date'
+                            ]);
+                    }
+                ]);
+            }
+        ]);
 
         // 🔹 Map and rename to stock_transfer_items
         if ($entity) {
