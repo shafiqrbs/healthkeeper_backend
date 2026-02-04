@@ -73,6 +73,8 @@ Route::prefix('/pharmacy')->middleware([HeaderAuthenticationMiddleware::class,Lo
     Route::get('/patient-medicine-issue-report', [MedicineStockController::class,'patientMedicineIssueReport'])->name('patient_medicine_issue_report');
     Route::get('/medicine-issue-report', [MedicineStockController::class,'medicineIssueReport'])->name('medicine_issue_report');
     Route::get('/medicine-summery-report', [MedicineStockController::class,'medicineSummeryReport'])->name('medicine_summery_report');
+    Route::get('/batch-wise-stock-report', [StockTransferController::class,'batchWiseStockReport']);
+    Route::get('/batch-wise-stock-ledger-report', [StockTransferController::class,'batchWiseStockLedgerReport']);
     Route::apiResource('stock',
         MedicineStockController::class)
         ->middleware([HeaderAuthenticationMiddleware::class])

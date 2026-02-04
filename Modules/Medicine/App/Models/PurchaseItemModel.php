@@ -2,6 +2,7 @@
 
 namespace Modules\Medicine\App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -96,6 +97,58 @@ class PurchaseItemModel extends Model
 
         return (int) $remainingQuantity;
     }
+    public static function getBatchWiseStockReport($params, $domain)
+    {
+        $page     = max(1, (int)($params['page'] ?? 1));
+        $perPage  = (int)($params['offset'] ?? 50);
+        $skip     = ($page - 1) * $perPage;
+
+        $stockItemId = $params['stock_item_id'] ?? null;
+
+        $startDate = !empty($params['start_date'])
+            ? Carbon::parse($params['start_date'])->startOfDay()
+            : null;
+
+        $endDate = !empty($params['end_date'])
+            ? Carbon::parse($params['end_date'])->endOfDay()
+            : ($startDate ? $startDate->copy()->endOfDay() : null);
+
+        $query = self::where('inv_purchase_item.config_id', $domain['inv_config'])
+            ->select([
+                'inv_purchase_item.id',
+                'inv_purchase_item.stock_item_id',
+                'inv_purchase_item.quantity as purchase_quantity',
+                'inv_purchase_item.warehouse_transfer_quantity as indent_quantity',
+                'inv_purchase_item.mode',
+                'inv_purchase_item.name',
+                DB::raw('DATE_FORMAT(inv_purchase_item.production_date, "%d-%M-%Y") as production_date'),
+                DB::raw('DATE_FORMAT(inv_purchase_item.expired_date, "%d-%M-%Y") as expired_date'),
+                DB::raw('DATE_FORMAT(inv_purchase_item.created_at, "%d-%M-%Y") as created_at'),
+            ]);
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('inv_purchase_item.created_at', [$startDate, $endDate]);
+        }
+
+        if ($stockItemId) {
+            $query->where('inv_purchase_item.stock_item_id', $stockItemId);
+        }
+
+        // Clone query for count safety
+        $total = (clone $query)->count();
+
+        $data = $query
+            ->orderByDesc('inv_purchase_item.id')
+            ->skip($skip)
+            ->take($perPage)
+            ->get();
+
+        return [
+            'count'    => $total,
+            'items' => $data->toArray(),
+        ];
+    }
+
 
 
 }

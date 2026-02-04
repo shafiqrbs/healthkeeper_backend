@@ -418,5 +418,50 @@ class StockTransferController extends Controller
         ], ResponseAlias::HTTP_OK);
     }
 
+    public function batchWiseStockReport(Request $request)
+    {
+        $input = $request->only(['start_date', 'end_date', 'stock_item_id','page','offset']);
+        $batchWiseStock = PurchaseItemModel::getBatchWiseStockReport($input, $this->domain);
+        return response([
+            'result' => true,
+            'message' => 'Batch wise stock item.',
+            'status' => ResponseAlias::HTTP_OK,
+            'total' => $batchWiseStock['count'],
+            'data' => $batchWiseStock['items']
+        ]);
+
+    }
+
+    public function batchWiseStockLedgerReport(Request $request)
+    {
+        $input = $request->only(['start_date', 'end_date', 'stock_item_id','purchase_item_id','page','offset']);
+
+        if (!$input['stock_item_id']) {
+            return response([
+                'result' => false,
+                'message' => 'Item missing.',
+                'status' => ResponseAlias::HTTP_BAD_REQUEST
+            ]);
+        }
+        if (!$input['purchase_item_id']) {
+            return response([
+                'result' => false,
+                'message' => 'Purchase batch missing.',
+                'status' => ResponseAlias::HTTP_BAD_REQUEST
+            ]);
+        }
+//        dump($input);
+        $batchWiseStock = StockTransferItemModel::getBatchWiseStockLedgerReport($input, $this->domain);
+//        dump($batchWiseStock);
+        return response([
+            'result' => true,
+            'message' => 'Batch wise stock item.',
+            'status' => ResponseAlias::HTTP_OK,
+            'total' => $batchWiseStock['count'],
+            'data' => $batchWiseStock['items']
+        ]);
+
+    }
+
 
 }
