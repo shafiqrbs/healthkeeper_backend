@@ -419,6 +419,7 @@ class LabInvestigationModel extends Model
             ->where('hp.is_free', 1)              // or hms_invoice_particular.is_free
             ->where('hp.is_available', 1)
             ->where('hms_invoice_particular.mode', 'investigation')
+            ->whereNull('hms_invoice_particular.invoice_transaction_id')
             ->where('hms_invoice_particular.status', 0)
             ->select('hms_invoice_particular.hms_invoice_id')
             ->groupBy('hms_invoice_particular.hms_invoice_id')
@@ -426,7 +427,6 @@ class LabInvestigationModel extends Model
                 foreach ($entities as $entity) {
                     self::insertFreeTransactionInvoice($domain, $entity);
                 }
-
             });
     }
 
