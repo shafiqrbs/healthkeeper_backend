@@ -159,7 +159,7 @@ class IpdController extends Controller
         }
         $amount = InvoiceTransactionModel::where('hms_invoice_id', $entity->id)->where('process','Done')->sum('amount');
         $total = InvoiceParticularModel::where('hms_invoice_id', $entity->id)->where('status',true)->sum('sub_total');
-        InvoiceParticularModel::getCountBedRoom($entity->id);
+        InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
 
         $entity->update(['sub_total'=> $total ,'total' => $total,'amount' => $amount]);
         $service = new JsonRequestResponse();
@@ -180,7 +180,7 @@ class IpdController extends Controller
         }
         $amount = InvoiceTransactionModel::where('hms_invoice_id', $invoice->id)->where('process','Done')->sum('amount');
         $total = InvoiceParticularModel::where('hms_invoice_id', $invoice->id)->where('status',1)->sum('sub_total');
-        InvoiceParticularModel::getCountBedRoom($invoice->id);
+        InvoiceParticularModel::getPatientSingleCountBedRoom($invoice);
         $invoice->update(['sub_total'=> $total ,'total' => $total,'amount' => $amount]);
         $entity = IpdModel::getIpdAdmissionShow($invoice->id);
         $service = new JsonRequestResponse();
