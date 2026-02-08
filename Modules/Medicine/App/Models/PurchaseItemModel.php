@@ -105,6 +105,12 @@ class PurchaseItemModel extends Model
 
         $stockItemId = $params['stock_item_id'] ?? null;
         $warehouseId = $params['warehouse_id'] ?? null;
+        if (empty($stockItemId) && empty($warehouseId)) {
+            return [
+                'count'    => 0,
+                'items' => [],
+            ];
+        }
 
         $startDate = !empty($params['start_date'])
             ? Carbon::parse($params['start_date'])->startOfDay()
