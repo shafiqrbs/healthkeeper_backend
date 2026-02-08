@@ -163,5 +163,39 @@ class PurchaseItemModel extends Model
     }
 
 
+    public static function getCenterWarehouseStockDropdown($domain, $term = null)
+    {
+        return self::query()
+            ->where('inv_purchase_item.config_id', $domain['config_id'])
+            ->where('inv_stock.config_id', $domain['config_id'])
+            ->where('inv_stock.is_delete', 0)
+            ->where('cor_warehouses.name', 'Central')
+            ->join(
+                'cor_warehouses',
+                'cor_warehouses.id',
+                '=',
+                'inv_purchase_item.warehouse_id'
+            )
+            ->join(
+                'inv_stock',
+                'inv_stock.id',
+                '=',
+                'inv_purchase_item.stock_item_id'
+            )
+            ->when($term, function ($q) use ($term) {
+                $q->where('inv_stock.name', 'LIKE', "%{$term}%");
+            })
+            ->select([
+                'inv_purchase_item.stock_item_id as id',
+                'inv_stock.name',
+                'cor_warehouses.name as warehouse_name',
+                'cor_warehouses.id as warehouse_id',
+            ])
+            ->distinct()
+            ->orderBy('inv_stock.name')
+            ->get();
+    }
+
+
 
 }

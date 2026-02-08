@@ -27,6 +27,7 @@ use Modules\Medicine\App\Http\Controllers\StockTransferController;
 
 Route::prefix('/medicine/select')->middleware([HeaderAuthenticationMiddleware::class,'auth:api'])->group(function() {
     Route::get('/stock', [MedicineStockController::class,'stockDropdown'])->name('meal_dropdown');
+    Route::get('/purchase-wise/center-warehouse/stock', [PurchaseController::class,'purchaseWiseCenterStockDropdown']);
     Route::get('/warehouse', [MedicineStockController::class,'warehouse'])->name('warehouse');
     Route::get('/bymeal', [MedicineController::class,'medicineBymealDropdown'])->name('meal_dropdown');
     Route::get('/dosage', [MedicineController::class,'medicineDosageDropdown'])->name('dosage_dropdown');

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Services\DailyStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Modules\AppsApi\App\Services\JsonRequestResponse;
 use Modules\Core\App\Models\UserModel;
 use Modules\Inventory\App\Models\StockItemHistoryModel;
 use Modules\Medicine\App\Http\Requests\PurchaseRequest;
+use Modules\Medicine\App\Models\MedicineStockModel;
 use Modules\Medicine\App\Models\PurchaseItemModel;
 use Modules\Medicine\App\Models\PurchaseModel;
 use Symfony\Component\HttpFoundation\Response;
@@ -293,5 +295,13 @@ class PurchaseController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    public function purchaseWiseCenterStockDropdown(Request $request)
+    {
+        $term = $request->get('term');
+        $dropdown = PurchaseItemModel::getCenterWarehouseStockDropdown($this->domain,$term);
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($dropdown);
     }
 }
