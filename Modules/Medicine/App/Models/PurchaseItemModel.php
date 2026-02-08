@@ -104,6 +104,7 @@ class PurchaseItemModel extends Model
         $skip     = ($page - 1) * $perPage;
 
         $stockItemId = $params['stock_item_id'] ?? null;
+        $warehouseId = $params['warehouse_id'] ?? null;
 
         $startDate = !empty($params['start_date'])
             ? Carbon::parse($params['start_date'])->startOfDay()
@@ -114,6 +115,7 @@ class PurchaseItemModel extends Model
             : ($startDate ? $startDate->copy()->endOfDay() : null);
 
         $query = self::where('inv_purchase_item.config_id', $domain['inv_config'])
+            ->join('cor_warehouses','cor_warehouses.id','=','inv_purchase_item.warehouse_id')
             ->select([
                 'inv_purchase_item.id',
                 'inv_purchase_item.stock_item_id',
@@ -121,6 +123,7 @@ class PurchaseItemModel extends Model
                 'inv_purchase_item.warehouse_transfer_quantity as indent_quantity',
                 'inv_purchase_item.mode',
                 'inv_purchase_item.name',
+                'cor_warehouses.name as warehouse_name',
                 DB::raw('DATE_FORMAT(inv_purchase_item.production_date, "%d-%M-%Y") as production_date'),
                 DB::raw('DATE_FORMAT(inv_purchase_item.expired_date, "%d-%M-%Y") as expired_date'),
                 DB::raw('DATE_FORMAT(inv_purchase_item.created_at, "%d-%M-%Y") as created_at'),
@@ -132,6 +135,10 @@ class PurchaseItemModel extends Model
 
         if ($stockItemId) {
             $query->where('inv_purchase_item.stock_item_id', $stockItemId);
+        }
+
+        if ($warehouseId) {
+            $query->where('inv_purchase_item.warehouse_id', $warehouseId);
         }
 
         // Clone query for count safety

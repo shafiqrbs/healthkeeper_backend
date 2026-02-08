@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\App\Http\Requests\UserLoginRequest;
+use Modules\Core\App\Models\UserModel;
 use Modules\Core\App\Models\UserWarehouseModel;
 use Modules\Domain\App\Models\DomainModel;
 use Modules\Inventory\App\Models\StockItemHistoryModel;
@@ -67,7 +68,7 @@ final class AuthController extends Controller
         $token = JWTAuth::fromUser($user);
 
         // Fetch additional data
-        $warehouse = UserWarehouseModel::getUserActiveWarehouse($user->id);
+        $warehouse = UserWarehouseModel::getUserActiveWarehouse($user->id,$user->domain_id);
         $configData = DomainModel::domainHospitalConfig($user->id);
 
         $payload = [

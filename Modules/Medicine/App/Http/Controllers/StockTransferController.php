@@ -420,7 +420,7 @@ class StockTransferController extends Controller
 
     public function batchWiseStockReport(Request $request)
     {
-        $input = $request->only(['start_date', 'end_date', 'stock_item_id','page','offset']);
+        $input = $request->only(['start_date', 'end_date', 'stock_item_id','page','offset','warehouse_id']);
         $batchWiseStock = PurchaseItemModel::getBatchWiseStockReport($input, $this->domain);
         return response([
             'result' => true,

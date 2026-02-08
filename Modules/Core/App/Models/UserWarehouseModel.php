@@ -95,11 +95,11 @@ class UserWarehouseModel extends Model
         return $data;
     }
 
-    public static function getUserActiveWarehouse($userId)
+    public static function getUserActiveWarehouse($userId, $domain)
     {
-
         $data = self::where('cor_user_warehouse.user_id',$userId)
             ->where('cor_user_warehouse.is_status',true)
+            ->where('cor_warehouses.domain_id',$domain)
             ->join('cor_warehouses','cor_warehouses.id','=','cor_user_warehouse.warehouse_id')
             ->select([
                 'cor_user_warehouse.warehouse_id as id',
@@ -110,6 +110,7 @@ class UserWarehouseModel extends Model
                 'cor_warehouses.contract_person',
                 'cor_warehouses.mobile as warehouse_mobile',
             ])
+            ->orderBy('cor_warehouses.name','ASC')
             ->get()->toArray();
         return $data;
     }
