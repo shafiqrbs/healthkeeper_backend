@@ -322,6 +322,7 @@ class PatientWaiverModel extends Model
                 'customer.name',
                 'customer.mobile',
                 'customer.address',
+                'hms_invoice.year',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.updated_at, "%d-%m-%Y") as created_at'),
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%m-%Y %H:%i %p") as admission_date'),
@@ -395,6 +396,7 @@ class PatientWaiverModel extends Model
             ->where('hms_invoice.config_id', $domain['hms_config'])
             ->select([
                 'hms_invoice.id as hms_invoice_id',
+                'hms_invoice.invoice as invoice',
                 'hms_invoice.id',
                 'hms_invoice.uid',
                 'customer.customer_id as patient_id',
@@ -402,6 +404,7 @@ class PatientWaiverModel extends Model
                 'customer.name',
                 'customer.mobile',
                 'customer.address',
+                'hms_invoice.year',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d-%m-%Y") as created_at'),
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%m-%Y %H:%i %p") as admission_date'),
