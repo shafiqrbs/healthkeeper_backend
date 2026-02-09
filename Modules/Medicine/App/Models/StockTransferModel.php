@@ -278,7 +278,8 @@ class StockTransferModel extends Model
 
         $entity->load([
             'stockTransferItems' => function ($query) use ($fromWarehouseId) {
-                $query->select([
+            $query->leftJoin('inv_purchase_item as ipi', 'ipi.id', '=', 'inv_stock_transfer_item.purchase_item_id');
+            $query->select([
                     'inv_stock_transfer_item.id',
                     'inv_stock_transfer_item.stock_transfer_id',
                     'inv_stock_transfer_item.stock_item_id',
@@ -288,6 +289,7 @@ class StockTransferModel extends Model
                     'inv_stock_transfer_item.quantity',
                     'inv_stock_transfer_item.name',
                     'inv_stock_transfer_item.uom',
+                    DB::raw('DATE_FORMAT(ipi.expired_date, "%d-%m-%Y") as item_expired_date'),
                 ])->with([
                     'purchaseItems' => function ($subQuery) use ($fromWarehouseId) {
                         $subQuery
@@ -335,6 +337,7 @@ class StockTransferModel extends Model
                     'stock_quantity'  => $item->stock_quantity,
                     'request_quantity'  => $item->request_quantity,
                     'purchase_item_id'  => $item->purchase_item_id,
+                    'item_expired_date'  => $item->item_expired_date,
                     'purchase_items'  => $item->purchaseItems,
                 ];
             });
