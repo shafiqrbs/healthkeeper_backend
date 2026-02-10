@@ -121,6 +121,8 @@ class RefundHistoryController extends Controller
         $refundParticular = InvoiceParticularModel::where(['mode'=>'room','invoice_transaction_refund_id' => $id,'is_refund'=>1])->select('refund_amount','refund_quantity')->first();
         if($refundParticular && $invoice->invoice_mode == 'ipd' && $invoice->process == 'refund'){
             $invoice->update(['process'=>'paid','release_date'=> $date ,'refund_amount' => $entity->amount,'refund_day' => $refundParticular->refund_quantity]);
+        }elseif($refundParticular && $invoice->invoice_mode == 'ipd' && $invoice->process == 'discharged' && $entity->process == 'Done'){
+            $invoice->update(['refund_amount' => $entity->amount,'refund_day' => $refundParticular->refund_quantity]);
         }
         $success = ['message' => 'success'];
         $data = $service->returnJosnResponse($success);

@@ -163,7 +163,7 @@ class RefundModel extends Model
                 'patient_mode.slug as patient_mode_slug',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d-%m-%Y") as created_at'),
-                DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%m-%Y") as admission_date'),
+                DB::raw('hms_invoice_transaction_refund.created_at as refund_date'),
                 'hms_invoice_transaction_refund.process as process',
                 'hms_invoice_transaction_refund.mode as mode',
                 'createdBy.name as created_by',
@@ -173,6 +173,7 @@ class RefundModel extends Model
                 'hms_invoice.admission_day as admission_day',
                 'hms_invoice.consume_day as consume_day',
                 'hms_invoice.remaining_day as remaining_day',
+                'room.price as room_rate',
                 'hms_invoice.refund_day as refund_day',
                 'hms_invoice.refund_amount as refund_amount',
             ]);

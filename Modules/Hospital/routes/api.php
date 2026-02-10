@@ -200,6 +200,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::patch('/ipd/change/{id}', [IpdController::class, 'admissionChange'])->name('find_bill');
     Route::get('/ipd/internal-transfer/{id}', [IpdController::class, 'internalTransfer'])->name('find_bill');
     Route::get('/ipd/free-discharge/{id}', [IpdController::class, 'freeDischarge'])->name('find_bill');
+    Route::get('/ipd/patient-absconded/{id}', [IpdController::class, 'patientAbsconded'])->name('find_bill');
     Route::get('/ipd/discharge-process/{id}', [IpdController::class, 'processDischarge'])->name('find_bill');
     Route::get('/ipd/room-cancel/{id}', [IpdController::class, 'processCancel'])->name('find_bill');
     Route::patch('/ipd/internal-transfer-process/{id}', [IpdController::class, 'internalTransferProcess'])->name('find_bill');

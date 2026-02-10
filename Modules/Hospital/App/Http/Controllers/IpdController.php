@@ -427,9 +427,36 @@ class IpdController extends Controller
     {
         $date = new \DateTime();
         $entity = InvoiceModel::findByIdOrUid($id);
-        InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
+     //   InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
         $entity->update([
             'process' => 'paid',
+            'release_date' => $date,
+            'consume_day' => $entity->admission_day,
+            'remaining_day' => $entity->admission_day,
+            'payment_day' => $entity->admission_day]);
+        $service = new JsonRequestResponse();
+        $status = ['status'=>'success'];
+        $data = $service->returnJosnResponse($status);
+        return $data;
+    }
+
+     /**
+     * Show the form for editing the specified resource.
+     */
+    public function patientAbsconded($id)
+    {
+        $date = new \DateTime();
+        $entity = InvoiceModel::findByIdOrUid($id);
+       // InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
+        if ($entity->room) {
+            $entity->room->update([
+                'is_booked'   => false,
+                'admission_id'=> null,
+            ]);
+        }
+        $entity->update([
+            'process' => 'discharged',
+            'release_mode' => 'absconded',
             'release_date' => $date,
             'consume_day' => $entity->admission_day,
             'remaining_day' => $entity->admission_day,

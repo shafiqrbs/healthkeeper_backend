@@ -207,12 +207,10 @@ class IpdPrescriptionController extends Controller
         $data['process'] = 'done';
         $entity->update($data);
         $weight = $data['weight'] ?? null;
-     // InvoiceModel::invoicePrescriptionProcess($entity->invoice);
         $entity->invoice->invoice_mode;
         if($entity->invoice->invoice_mode == "ipd"){
             $entity->invoice->update(['is_prescription' => 1,'weight' => $weight]);
         }
-     // InvoiceTransactionModel::insertInvestigations($domain,$entity->id);
         HospitalSalesModel::insertMedicineIssue($domain,$entity->id);
         InvoiceContentDetailsModel::insertContentDetails($domain,$entity->id);
         AdmissionPatientModel::insertDeathCertificate($domain,$entity->invoice->id,$data);

@@ -318,11 +318,9 @@ class OpdController extends Controller
     {
         $service = new JsonRequestResponse();
         $entity = OPDModel::find($id);
-
         if (!$entity){
             $entity = 'Data not found';
         }
-
         $data = $service->returnJosnResponse($entity);
         return $data;
     }
