@@ -258,6 +258,7 @@ class StockTransferModel extends Model
             ->select([
                 'inv_stock_transfer.id',
                 'inv_stock_transfer.uid',
+                'inv_stock_transfer.invoice',
                 'inv_stock_transfer.config_id',
                 'inv_stock_transfer.from_warehouse_id',
                 'fw.name as from_warehouse',
@@ -279,6 +280,9 @@ class StockTransferModel extends Model
         $entity->load([
             'stockTransferItems' => function ($query) use ($fromWarehouseId) {
             $query->leftJoin('inv_purchase_item as ipi', 'ipi.id', '=', 'inv_stock_transfer_item.purchase_item_id');
+            $query->leftJoin('inv_stock as inv_stock', 'inv_stock.id', '=', 'inv_stock_transfer_item.stock_item_id');
+            $query->leftJoin('inv_product as inv_product', 'inv_product.id', '=', 'inv_stock.product_id');
+            $query->leftJoin('inv_category as inv_category', 'inv_category.id', '=', 'inv_product.category_id');
             $query->select([
                     'inv_stock_transfer_item.id',
                     'inv_stock_transfer_item.stock_transfer_id',
@@ -288,6 +292,8 @@ class StockTransferModel extends Model
                     'inv_stock_transfer_item.request_quantity',
                     'inv_stock_transfer_item.quantity',
                     'inv_stock_transfer_item.name',
+                    'inv_stock.id as inv_product_id',
+                    'inv_category.name as category_name',
                     'inv_stock_transfer_item.uom',
                     DB::raw('DATE_FORMAT(ipi.expired_date, "%d-%m-%Y") as item_expired_date'),
                 ])->with([
@@ -332,6 +338,7 @@ class StockTransferModel extends Model
                     'id'              => $item->id,
                     'stock_item_id'   => $item->stock_item_id,
                     'name'            => $item->name,
+                    'category'            => $item->category_name,
                     'uom'             => $item->uom,
                     'quantity'  => $item->quantity,
                     'stock_quantity'  => $item->stock_quantity,
