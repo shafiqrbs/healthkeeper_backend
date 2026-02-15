@@ -17,23 +17,23 @@ final class Kernel extends ConsoleKernel
     {
         // Clean custom logs at 12:00 AM (before backup)
         $schedule->command('logs:clean-requests --days=10')
-            ->dailyAt('12:00')
+            ->dailyAt('12:10')
             ->onSuccess(fn() => \Log::info('Scheduler working :: logs:clean-requests --days=10'));
 
         // Daily DB backup at 01:10 AM
         $schedule->command('backup:run --only-db --disable-notifications')
-            ->dailyAt('12:05')
+            ->dailyAt('12:11')
             ->onSuccess(fn() => \Log::info('Scheduler working :: backup:run --only-db --disable-notifications'));
 
         // Backup cleanup at 01:20 AM
         $schedule->command('backup:clean --disable-notifications')
-            ->dailyAt('12:10')
+            ->dailyAt('12:12')
             ->onSuccess(fn() => \Log::info('Scheduler working :: backup:clean --disable-notifications'));
 
 
         // Clean activity logs at 01:30 AM (after backup)
         $schedule->command('activitylog:clean --days=10 --force')
-            ->dailyAt('12:15')
+            ->dailyAt('12:13')
             ->onSuccess(fn() => \Log::info('Scheduler working :: activitylog:clean --days=10 --force'));
     }
 
