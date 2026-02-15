@@ -1225,30 +1225,28 @@ class ReportModel extends Model
 
     public static function refundUserCollection($domain,$request)
     {
-        $entities = InvoiceParticularModel::where([['hms_invoice.config_id',$domain['hms_config']]])
-            ->where('hms_invoice_particular.status',1)
-            ->where('hms_invoice_particular.is_refund',1)
-            ->where('hms_invoice_transaction.process','Done')
-            ->join('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
-            ->join('hms_invoice_transaction_refund as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_refund_id')
-            ->join('users as createdBy','createdBy.id','=','hms_invoice_transaction.created_by_id')
+        $entities = RefundModel::where([['hms_invoice.config_id',$domain['hms_config']]])
+            ->where('hms_invoice_transaction_refund.process','Done')
+            ->join('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_transaction_refund.hms_invoice_id')
+            ->join('users as createdBy','createdBy.id','=','hms_invoice_transaction_refund.created_by_id')
             ->join('cor_setting as employeeGroup','employeeGroup.id','=','createdBy.employee_group_id')
             ->select([
-                DB::raw('SUM(hms_invoice_transaction.amount) as total'),
+                DB::raw('SUM(hms_invoice_transaction_refund.amount) as total'),
                 'createdBy.name as name',
                 'employeeGroup.name as group_name',
             ])->groupBy('createdBy.name');
+
         if (isset($request['start_date']) && isset($request['end_date'])){
             $start_date = new \DateTime($request['start_date']);
             $end_date = new \DateTime($request['end_date']);
             $start_date = $start_date->format('Y-m-d 00:00:00');
             $end_date = $end_date->format('Y-m-d 23:59:59');
-            $entities = $entities->whereBetween('hms_invoice_transaction.updated_at',[$start_date, $end_date]);
+            $entities = $entities->whereBetween('hms_invoice_transaction_refund.updated_at',[$start_date, $end_date]);
         }else{
             $date = new \DateTime();
             $start_date = $date->format('Y-m-d 00:00:00');
             $end_date = $date->format('Y-m-d 23:59:59');
-            $entities = $entities->whereBetween('hms_invoice_transaction.updated_at',[$start_date, $end_date]);
+            $entities = $entities->whereBetween('hms_invoice_transaction_refund.updated_at',[$start_date, $end_date]);
         }
         $entities = $entities->get();
         return $entities;
