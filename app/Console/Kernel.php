@@ -15,26 +15,25 @@ final class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        // Clean custom logs at 12:00 AM (before backup)
-        $schedule->command('logs:clean-requests --days=10')
-            ->dailyAt('12:10')
-            ->onSuccess(fn() => \Log::info('Scheduler working :: logs:clean-requests --days=10'));
+        $schedule->command('logs:clean-requests --days=5')
+            ->dailyAt('1:00')
+            ->onSuccess(fn() => \Log::info('Scheduler working :: logs:clean-requests --days=5'));
 
         // Daily DB backup at 01:10 AM
         $schedule->command('backup:run --only-db --disable-notifications')
-            ->dailyAt('12:11')
+            ->dailyAt('1:40')
             ->onSuccess(fn() => \Log::info('Scheduler working :: backup:run --only-db --disable-notifications'));
 
         // Backup cleanup at 01:20 AM
         $schedule->command('backup:clean --disable-notifications')
-            ->dailyAt('12:12')
+            ->dailyAt('2:40')
             ->onSuccess(fn() => \Log::info('Scheduler working :: backup:clean --disable-notifications'));
 
 
         // Clean activity logs at 01:30 AM (after backup)
-        $schedule->command('activitylog:clean --days=10 --force')
-            ->dailyAt('12:13')
-            ->onSuccess(fn() => \Log::info('Scheduler working :: activitylog:clean --days=10 --force'));
+        $schedule->command('activitylog:clean --days=5 --force')
+            ->dailyAt('3:30')
+            ->onSuccess(fn() => \Log::info('Scheduler working :: activitylog:clean --days=5 --force'));
     }
 
     /**
