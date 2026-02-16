@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\App\Models\CustomerModel;
 use Modules\Inventory\App\Models\SalesModel;
+use function Symfony\Component\TypeInfo\float;
 
 
 class ReportModel extends Model
@@ -546,9 +547,9 @@ class ReportModel extends Model
             $invoiceMerged[] = [
                 'name' => $mode_id,
                 'group_name' => $group_name,
-                'total' => $total,
-                'refund' => $refund_total, // default 0 if not refunded
-                'sub_total' => $sub_total, // default 0 if not refunded
+                'total' => (float)$total,
+                'refund' => (float) $refund_total, // default 0 if not refunded
+                'sub_total' => (float)$sub_total, // default 0 if not refunded
             ];
         }
         $groups = [];
