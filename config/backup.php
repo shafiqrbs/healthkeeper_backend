@@ -8,7 +8,7 @@ return [
          * the backups.
          */
 //        'name' => env('APP_NAME', 'laravel-backup'),
-        'name' => "database-backup",
+        'name' => "database-backup-tb",
 
         'source' => [
             'files' => [
