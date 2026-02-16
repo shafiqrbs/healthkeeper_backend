@@ -17,26 +17,33 @@ final class Kernel extends ConsoleKernel
     {
         $schedule->command('logs:clean-requests --days=5')
 //            ->dailyAt('1:00')
-            ->everyFiveMinutes()
+            ->dailyAt('00:01')
             ->withoutOverlapping()
             ->onSuccess(fn() => \Log::info('Scheduler work Done :: logs:clean-requests --days=5'))
             ->onFailure(fn() => \Log::info('Scheduler work Fail :: logs:clean-requests --days=5'));
 
-        /*// Daily DB backup at 01:10 AM
+        $schedule->command('activitylog:clean --days=5 --force')
+//            ->dailyAt('2:00')
+            ->dailyAt('00:21')
+            ->withoutOverlapping()
+            ->onSuccess(fn() => \Log::info('Scheduler working Done :: activitylog:clean --days=5 --force'))
+            ->onFailure(fn() => \Log::info('Scheduler working Fail :: activitylog:clean --force'));
+
+        // Daily DB backup at 01:10 AM
         $schedule->command('backup:run --only-db --disable-notifications')
-            ->dailyAt('1:40')
-            ->onSuccess(fn() => \Log::info('Scheduler working :: backup:run --only-db --disable-notifications'));
+//            ->dailyAt('3:00')
+            ->dailyAt('00:40')
+            ->withoutOverlapping()
+            ->onSuccess(fn() => \Log::info('Scheduler working Done :: backup:run --only-db --disable-notifications'))
+            ->onFailure(fn() => \Log::info('Scheduler working Fail :: backup:run --only-db --disable-notifications'));
 
         // Backup cleanup at 01:20 AM
         $schedule->command('backup:clean --disable-notifications')
-            ->dailyAt('2:40')
-            ->onSuccess(fn() => \Log::info('Scheduler working :: backup:clean --disable-notifications'));
-
-
-        // Clean activity logs at 01:30 AM (after backup)
-        $schedule->command('activitylog:clean --days=5 --force')
-            ->dailyAt('3:30')
-            ->onSuccess(fn() => \Log::info('Scheduler working :: activitylog:clean --days=5 --force'));*/
+//            ->dailyAt('5:00')
+            ->dailyAt('1:00')
+            ->withoutOverlapping()
+            ->onSuccess(fn() => \Log::info('Scheduler working Done :: backup:clean --disable-notifications'))
+            ->onFailure(fn() => \Log::info('Scheduler working Fail :: backup:clean --disable-notifications'));
     }
 
     /**
