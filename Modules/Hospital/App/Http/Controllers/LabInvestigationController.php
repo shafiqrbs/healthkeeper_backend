@@ -222,8 +222,12 @@ class LabInvestigationController extends Controller
         $data['comment'] = $data['comment'] ?? null;
         $data['lab_no'] = $data['lab_no'] ?? null;
         $entity->update($data);
+
+        $invoiceParticular = InvoiceParticularModel::with(['reports','particular:id,slug,is_custom_report,instruction,slug,category_id,specimen','particular.category:id,name','custom_report'])->find($entity->id);
+        $basicInfo = InvoiceModel::getInvoiceBasicInfo($entity->hms_invoice_id);
+        $data = ['entity' => $basicInfo,'invoiceParticular' => $invoiceParticular];
         $service = new JsonRequestResponse();
-        return $service->returnJosnResponse($entity);
+        return $service->returnJosnResponse($data);
 
     }
 

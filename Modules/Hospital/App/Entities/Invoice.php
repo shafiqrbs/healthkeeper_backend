@@ -165,6 +165,13 @@ class Invoice
      **/
     private $referredBy;
 
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
+     * @ORM\JoinColumn(name="ipd_confirmed_by_id", referencedColumnName="id", nullable=true)
+     **/
+    private  $ipdConfirmedBy;
+
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
      * @ORM\JoinColumn(name="delivered_by_id", referencedColumnName="id", nullable=true)
