@@ -201,7 +201,7 @@ class InvoiceModel extends Model
 
         $entities = self::where([['hms_invoice.config_id',$domain['hms_config']]])
             ->leftjoin('hms_prescription as prescription','prescription.hms_invoice_id','=','hms_invoice.id')
-            ->leftjoin('users as doctor','doctor.id','=','prescription.created_by_id')
+            ->leftjoin('users as doctor','doctor.id','=','prescription.prescribe_doctor_id')
             ->leftjoin('hms_particular as vr','vr.id','=','hms_invoice.room_id')
             ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
             ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
