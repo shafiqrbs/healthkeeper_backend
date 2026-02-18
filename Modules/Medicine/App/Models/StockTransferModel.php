@@ -67,6 +67,8 @@ class StockTransferModel extends Model
     {
         return $this->hasMany(StockTransferItemModel::class, 'stock_transfer_id');
     }
+
+
     public static function getRecordsForCentral($request, $domain)
     {
         // Pagination setup
@@ -248,6 +250,67 @@ class StockTransferModel extends Model
             'entities' => $entities,
         ];
     }
+
+     public static function getStockItems($request, $domain)
+    {
+        // Pagination setup
+        $page = isset($request['page']) && $request['page'] > 0 ? ($request['page'] - 1) : 0;
+        $perPage = !empty($request['offset']) ? (int)$request['offset'] : 50;
+        $skip = $page * $perPage;
+
+        $stores = UserModel::getUserActiveWarehouse($domain['user_id']);
+        $userWarehouseId = $stores->pluck('id')->toArray();
+
+        // Base query
+        $entities = StockTransferItemModel::where('inv_stock_transfer.config_id', $domain['config_id'])
+            ->join('inv_stock_transfer', 'inv_stock_transfer.id', '=', 'inv_stock_transfer_item.stock_transfer_id')
+            ->join('cor_warehouses as tw', 'tw.id', '=', 'inv_stock_transfer.to_warehouse_id')
+            ->join('inv_purchase_item as ipi', 'ipi.id', '=', 'inv_stock_transfer_item.purchase_item_id')
+            ->join('inv_stock as isi', 'isi.id', '=', 'inv_stock_transfer_item.stock_item_id')
+            ->join('inv_product as ip', 'ip.id', '=', 'isi.product_id')
+            ->join('inv_category as c', 'c.id', '=', 'ip.category_id')
+            ->select([
+                'inv_stock_transfer.id',
+                'tw.name as warehouse_name',
+                'inv_stock_transfer_item.name',
+                'c.name as category',
+                'inv_stock_transfer_item.quantity',
+                'inv_stock_transfer_item.issue_quantity',
+                'inv_stock_transfer_item.remaining_quantity',
+                'inv_stock_transfer_item.uom',
+                DB::raw('DATE_FORMAT(ipi.expired_date, "%d-%m-%Y") as expired_date'),
+            ]);
+
+        // 🏭 To warehouse filter
+        $entities->whereIn('inv_stock_transfer.to_warehouse_id', $userWarehouseId);
+        if (!empty($request['warehouse_id'])) {
+            $entities->where('tw.id', $request['warehouse_id']);
+        }
+
+        // 📅 Date range filter
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'] . ' 00:00:00';
+            $end_date = !empty($request['end_date'])
+                ? $request['end_date'] . ' 23:59:59'
+                : $request['start_date'] . ' 23:59:59';
+            $entities->whereBetween('inv_stock_transfer.created_at', [$start_date, $end_date]);
+        }
+
+        // Get total count before pagination
+        $total = $entities->count();
+
+        // Pagination + sorting
+        $entities = $entities->orderBy('inv_stock_transfer_item.name', 'ASC')
+            ->skip($skip)
+            ->take($perPage)
+            ->get();
+
+        return [
+            'count' => $total,
+            'entities' => $entities,
+        ];
+    }
+
     public static function getDetails($id)
     {
         $entity = self::where('inv_stock_transfer.uid', $id)

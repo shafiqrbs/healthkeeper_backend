@@ -2,6 +2,7 @@
 
 namespace Modules\Hospital\App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
@@ -375,6 +376,24 @@ class PrescriptionModel extends Model
             ->first();
 
         return $entity;
+    }
+
+    public static function getDoctorPrescribes($domain)
+    {
+        $entities = self::where('hms_invoice.config_id', $domain['hms_config'])
+            ->where('hms_invoice.invoice_mode', 'opd')
+            ->whereDate('hms_prescription.created_at', Carbon::today())
+            ->join('hms_invoice','hms_invoice.id','=','hms_prescription.hms_invoice_id')
+            ->join('users as doctor','doctor.id','=','hms_prescription.prescribe_doctor_id')
+            ->select([
+                'doctor.id as id',
+                'doctor.name',
+                DB::raw('COUNT(hms_prescription.id) as invoice_count')
+            ])
+            ->groupBy('doctor.id')
+            ->orderBY('doctor.name','ASC')
+            ->get();
+        return $entities;
     }
 
 

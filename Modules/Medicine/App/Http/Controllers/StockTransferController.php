@@ -64,6 +64,8 @@ class StockTransferController extends Controller
         return $response;
     }
 
+
+
     /**
      * Store a newly created resource in storage.
      */
@@ -461,6 +463,21 @@ class StockTransferController extends Controller
             'data' => $batchWiseStock['items']
         ]);
 
+    }
+
+    public function storeStockItemReport(Request $request)
+    {
+        $data = StockTransferModel::getStockItems($request, $this->domain);
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        $response->setContent(json_encode([
+            'message' => 'success',
+            'status' => ResponseAlias::HTTP_OK,
+            'total' => $data['count'],
+            'data' => $data['entities']
+        ]));
+        $response->setStatusCode(ResponseAlias::HTTP_OK);
+        return $response;
     }
 
 

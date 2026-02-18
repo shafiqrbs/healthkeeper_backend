@@ -727,8 +727,11 @@ class InvoiceModel extends Model
             ->groupBy('hms_particular.id', 'hms_particular.name')
             ->orderBy('hms_particular.name', 'ASC')
             ->get();
+            $doctorVisits =  PrescriptionModel::getDoctorPrescribes($domain);
+            $doctorIpd =  self::getIpdDoctors($domain);
+            $data = array('entities'=> $entities, 'doctorVisits' => $doctorVisits, 'doctorIpds' => $doctorIpd);
 
-        return $entities;
+        return $data;
     }
 
     public static function getOpdRooms($domain)
@@ -787,6 +790,28 @@ class InvoiceModel extends Model
             ->get()->first()->id;
 
         return array('ipdRooms' => $entities ,'selectedRoom' => $selected);
+    }
+
+    public static function getIpdDoctors($domain)
+    {
+
+        $date = new \DateTime();
+        $start_date = $date->format('Y-m-d 00:00:00');
+        $end_date   = $date->format('Y-m-d 23:59:59');
+        $entities = self::where([['hms_invoice.config_id', $domain['hms_config']]])
+            ->whereBetween('hms_invoice.created_at', [$start_date, $end_date])
+            ->join('users as doctor','doctor.id','=','hms_invoice.ipd_confirmed_by_id')
+            ->select(
+                'doctor.id as id',
+                DB::raw("doctor.name as name"),
+                DB::raw('COUNT(hms_invoice.id) as invoice_count')
+            )
+            ->groupBy('doctor.id', 'doctor.name')
+            ->orderBy('doctor.name', 'ASC')
+            ->get();
+
+        return $entities;
+
     }
 
     public static function getIpdRooms($domain)

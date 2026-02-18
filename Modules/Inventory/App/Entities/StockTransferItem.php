@@ -58,6 +58,12 @@ class StockTransferItem
 
     /**
      * @var integer
+     * @ORM\Column(name="issue_quantity", type="integer",nullable=true)
+     */
+    private $issueQuantity;
+
+    /**
+     * @var integer
      * @ORM\Column(name="request_quantity", type="integer",nullable=true)
      */
     private $requestQuantity;
@@ -67,6 +73,20 @@ class StockTransferItem
      * @ORM\Column(name="stock_quantity", type="integer",nullable=true)
      */
     private $stockQuantity;
+
+    /**
+     * @var integer
+     * @ORM\Column(name="damage_quantity", type="integer",nullable=true)
+     */
+    private $damageQuantity;
+
+
+    /**
+     * @var integer
+     * @ORM\Column(name="remaining_quantity", type="integer",nullable=true)
+     */
+    private $remainingQuantity;
+
 
     /**
      * @var integer
