@@ -300,7 +300,10 @@ class StockTransferModel extends Model
         $total = $entities->count();
 
         // Pagination + sorting
-        $entities = $entities->orderBy('inv_stock_transfer_item.name', 'ASC')
+        $entities = $entities
+            ->orderBy('tw.name','ASC')
+            ->orderBy('ipi.expired_date','ASC')
+            ->orderBy('inv_stock_transfer_item.name', 'ASC')
             ->skip($skip)
             ->take($perPage)
             ->get();
