@@ -36,10 +36,10 @@ class DamageItem
     private $purchaseItem;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\WearHouse")
+     * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\Warehouse")
      * @ORM\OrderBy({"sorting" = "ASC"})
      **/
-     private $wearHouse;
+     private $warehouse;
 
     /**
      * @var integer

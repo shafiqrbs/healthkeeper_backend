@@ -30,6 +30,7 @@ class StockItemInventoryHistoryModel extends Model
         'total',
         'dispense_id',
         'dispense_item_id',
+        'damage_item_id',
         'stock_transfer_item_id',
         'stock_transfer_id'
     ];
@@ -95,6 +96,9 @@ class StockItemInventoryHistoryModel extends Model
                 case 'purchase-return':
                     $data['purchase_return_id'] = $item->purchase_return_id ?? null;
                     $data['purchase_return_item_id'] = $item->id ?? null;
+                    break;
+                case 'damage':
+                    $data['damage_item_id'] = $item->id ?? null;
                     break;
                 case 'stock-transfer-in':
                 case 'stock-transfer-out':

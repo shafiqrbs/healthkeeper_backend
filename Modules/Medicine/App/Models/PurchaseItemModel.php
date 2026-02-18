@@ -28,6 +28,8 @@ class PurchaseItemModel extends Model
 				"name",
 				"quantity",
 				"production_date",
+				"damage_quantity",
+				"remaining_quantity",
 				"expired_date",
 				"warehouse_id"
         ];
@@ -195,6 +197,27 @@ class PurchaseItemModel extends Model
             ->orderBy('inv_stock.name')
             ->get();
     }
+
+    public static function getPurchaseRemainingQuantity($id)
+    {
+        $item = self::find($id);
+
+        if (!$item) {
+            return 0;
+        }
+
+        // Calculate remaining quantity
+        return ($item->quantity ?? 0)
+        + ($item->sales_return_quantity ?? 0)
+        + ($item->bonus_quantity ?? 0)
+        - (
+            ($item->warehouse_transfer_quantity ?? 0)
+            + ($item->sales_quantity ?? 0)
+            + ($item->purchase_return_quantity ?? 0)
+            + ($item->damage_quantity ?? 0)
+        );
+    }
+
 
 
 

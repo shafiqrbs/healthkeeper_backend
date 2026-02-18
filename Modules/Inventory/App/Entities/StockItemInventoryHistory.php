@@ -42,6 +42,12 @@ class StockItemInventoryHistory
     protected  $purchaseItem;
 
     /**
+     * @ORM\ManyToOne(targetEntity="DamageItem")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     **/
+    protected  $damageItem;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Purchase")
      * @ORM\JoinColumn(onDelete="CASCADE")
      **/
