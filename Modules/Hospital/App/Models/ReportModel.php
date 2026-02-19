@@ -1156,6 +1156,52 @@ class ReportModel extends Model
         return $entities;
     }
 
+    public static function getPatientAdmission($domain,$request)
+    {
+
+        $entities = InvoiceModel::where([['hms_invoice.config_id',$domain['hms_config']]])
+            ->whereIn('hms_invoice.invoice_mode',['ipd'])
+            ->where('hms_invoice.release_mode',['discharge','referred'])
+            ->join('hms_prescription as hms_prescription','hms_invoice.id','=','hms_prescription.hms_invoice_id')
+            ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
+            ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
+            ->select([
+                'hms_invoice.id',
+                'customer.customer_id as patient_id',
+                'hms_invoice.invoice as invoice',
+                'customer.name',
+                'customer.mobile',
+                'customer.age',
+                'hms_prescription.disease_profile',
+                DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
+                DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d %b %Y, %h:%i %p") as created_at'), 'hms_invoice.process as process',
+            ]);
+
+        if (isset($request['start_date']) && !empty($request['start_date'])){
+            $start_date = new \DateTime($request['start_date']);
+            $end_date = new \DateTime($request['end_date']);
+            $start_date = $start_date->format('Y-m-d 00:00:00');
+            $end_date = $end_date->format('Y-m-d 23:59:59');
+            $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
+        }else{
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date = $date->format('Y-m-d 23:59:59');
+            $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
+        }
+
+        if (isset($request['term']) && !empty($request['term'])){
+            $term = trim($request['term']);
+            $entities = $entities->where(function ($q) use ($term) {
+                $q->where('hms_prescription.disease_profile', 'LIKE', "%{$term}%");
+            });
+        }
+        $entities = $entities->orderBy('hms_invoice.created_at','ASC')->get();
+        return $entities;
+
+
+    }
+
     public static function summaryCollection($domain,$request)
     {
         $entities = InvoiceParticularModel::where([['hms_invoice.config_id',$domain['hms_config']]])

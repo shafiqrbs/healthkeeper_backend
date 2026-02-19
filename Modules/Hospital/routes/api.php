@@ -298,6 +298,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
         Route::get('/summary-investigation', [ReportsController::class,'summaryInvestigation'])->name('report_patient_ticket');
         Route::get('/patient-collection', [ReportsController::class,'patientCollection'])->name('report_patient_ticket');
         Route::get('/patient-ticket', [ReportsController::class,'patientTicket'])->name('report_patient_ticket');
+        Route::get('/patient-admission', [ReportsController::class,'patientAdmission'])->name('report_patient_ticket');
         Route::get('/master-data-users', [ReportsController::class,'reportUser'])->name('dashboard_daily_summary');
 
     });

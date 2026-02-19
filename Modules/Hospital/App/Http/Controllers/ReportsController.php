@@ -148,6 +148,17 @@ class ReportsController extends Controller
         return $data;
     }
 
+     /**
+     * Display a listing of the resource.
+     */
+    public function patientAdmission(Request $request){
+
+        $data = ReportModel::getPatientAdmission($this->domain,$request);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse($data);
+        return $data;
+    }
+
     /**
      * Display a listing of the resource.
      */
