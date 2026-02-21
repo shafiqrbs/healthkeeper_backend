@@ -33,10 +33,6 @@ class ParticularController extends Controller
 
     public function index(Request $request)
     {
-        $userGroup = (isset($request['user_group']) and $request['user_group']) ? $request['user_group']:'';
-        if($userGroup){
-           ParticularModel::getDoctorNurseStaff($request, $this->domain);
-        }
         $data = ParticularModel::getRecords($request, $this->domain);
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');
@@ -50,7 +46,19 @@ class ParticularController extends Controller
         return $response;
     }
 
-    public function indexRxEmergency()
+    public function syncUsers()
+    {
+        $userGroup = (isset($request['user_group']) and $request['user_group']) ? $request['user_group']:'';
+        if($userGroup){
+            ParticularModel::getDoctorNurseStaff($request, $this->domain);
+        }
+        $service = new JsonRequestResponse();
+        $data = ['status'=>'success'];
+        $response = $service->returnJosnResponse($data);
+        return $response;
+    }
+
+     public function indexRxEmergency()
     {
 
         $data = ParticularModel::getParticularRxEmergencyDropdown($this->domain, 'rx-emergency');
@@ -305,7 +313,6 @@ class ParticularController extends Controller
      */
     public function destroy($id)
     {
-
         DB::transaction(function () use ($id) {
             ParticularModel::find($id)
                 ->update([

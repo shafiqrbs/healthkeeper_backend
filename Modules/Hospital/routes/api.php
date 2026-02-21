@@ -90,6 +90,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::prefix('core')->middleware([HeaderAuthenticationMiddleware::class])->group(function() {
         Route::get('/user-import', [HospitalController::class,'userImport'])->name('user-import');
         Route::get('/particular/rxemergency', [ParticularController::class,'indexRxEmergency'])->name('index_rx_emergency');
+        Route::get('/particular/sync-users', [ParticularController::class,'syncUsers'])->name('syncUsers');
         Route::apiResource('particular', ParticularController::class)
             ->middleware([HeaderAuthenticationMiddleware::class])
             ->names([
