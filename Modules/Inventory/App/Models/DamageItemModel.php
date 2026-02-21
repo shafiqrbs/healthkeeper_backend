@@ -16,7 +16,7 @@ class DamageItemModel extends Model
 
     protected $casts = ['created_at' => 'datetime', 'updated_at' => 'datetime'];
 
-    protected $fillable = ['config_id','purchase_item_id','warehouse_id','quantity','price','purchase_price','sub_total','notes','damage_mode','process'];
+    protected $fillable = ['config_id','purchase_item_id','warehouse_id','quantity','price','purchase_price','sub_total','notes','damage_mode','process','stock_transfer_item_id'];
 
     public static function boot() {
 

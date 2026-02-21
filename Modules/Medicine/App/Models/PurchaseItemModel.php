@@ -198,7 +198,7 @@ class PurchaseItemModel extends Model
             ->get();
     }
 
-    public static function getPurchaseRemainingQuantity($id)
+    public static function getPurchaseItemRemainingQuantity($id)
     {
         $item = self::find($id);
 

@@ -280,9 +280,9 @@ class StockTransferController extends Controller
                     if ($purchaseItemId) {
 
                         $findPurchaseItemStock = PurchaseItemModel::find($purchaseItemId);
-                        $purchaseItemRemainQuantity = PurchaseItemModel::remainingQuantity($purchaseItemId);
+                        $purchaseRemainQuantity = PurchaseItemModel::remainingQuantity($purchaseItemId);
 
-                        if ($findPurchaseItemStock && ($purchaseItemRemainQuantity >= $stockTransferItem['quantity'])) {
+                        if ($findPurchaseItemStock && ($purchaseRemainQuantity >= $stockTransferItem['quantity'])) {
 
                             $findStockItem = StockItemModel::find($stockTransferItem['stock_item_id']);
                             if (!$findStockItem) {
@@ -340,13 +340,18 @@ class StockTransferController extends Controller
                             $findPurchaseItemStock->warehouse_transfer_quantity =
                                 ($findPurchaseItemStock->warehouse_transfer_quantity ?? 0) + $quantity;
                             $findPurchaseItemStock->save();
+                            $findPurchaseItemStock->remaining_quantity = PurchaseItemModel::getPurchaseItemRemainingQuantity($purchaseItemId);
+                            $findPurchaseItemStock->save();
 
                         } else {
                             // Insufficient remaining quantity → mark as zero and continue
                             StockTransferItemModel::find($stockTransferItemId)?->update(['quantity' => 0]);
                         }
                         $findStockTransferItem = StockTransferItemModel::find($stockTransferItemId);
-                        $findStockTransferItem->update(['stock_quantity' => $purchaseItemRemainQuantity]);
+                        $findStockTransferItem->update([
+                            'stock_quantity' => $purchaseRemainQuantity,
+                            'remaining_quantity' => StockTransferItemModel::getStockTransferItemRemainingQuantity($stockTransferItemId),
+                        ]);
                     } else {
                         // Missing purchase_item_id → mark as zero and continue
                         StockTransferItemModel::find($stockTransferItemId)?->update(['quantity' => 0]);

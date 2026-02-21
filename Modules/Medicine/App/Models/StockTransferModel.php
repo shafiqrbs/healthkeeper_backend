@@ -376,6 +376,7 @@ class StockTransferModel extends Model
                                 'inv_purchase_item.warehouse_id',
                                 'inv_purchase_item.quantity',
                                 'inv_purchase_item.sales_quantity',
+                                'inv_purchase_item.remaining_quantity',
                                 'inv_purchase_item.expired_date'
                             ]);
                     }
@@ -393,7 +394,8 @@ class StockTransferModel extends Model
                         'warehouse_id'      => $p->warehouse_id,
                         'purchase_quantity' => $p->quantity,
                         'sales_quantity'    => $salesQty,
-                        'remain_quantity'   => PurchaseItemModel::remainingQuantity($p->id),
+//                        'remain_quantity'   => PurchaseItemModel::remainingQuantity($p->id),
+                        'remain_quantity'   => $p->remaining_quantity,
                         'expired_date'      => $p->expired_date
                             ? Carbon::parse($p->expired_date)->format('d-M-Y')
                             : null,

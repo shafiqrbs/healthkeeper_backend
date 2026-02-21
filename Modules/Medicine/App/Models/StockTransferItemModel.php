@@ -14,7 +14,7 @@ class StockTransferItemModel extends Model
     protected $guarded = ['id'];
 
     protected $fillable = [
-        'config_id', 'stock_transfer_id', 'stock_item_id', 'purchase_item_id', 'quantity', 'created_at', 'updated_at', 'uom', 'name', 'stock_quantity'
+        'config_id', 'stock_transfer_id', 'stock_item_id', 'purchase_item_id', 'quantity', 'created_at', 'updated_at', 'uom', 'name', 'stock_quantity','remaining_quantity','issue_quantity','damage_quantity'
     ];
 
     public static function boot()
@@ -325,6 +325,24 @@ class StockTransferItemModel extends Model
 
 
     }
+
+
+    public static function getStockTransferItemRemainingQuantity($id)
+    {
+        $item = self::find($id);
+
+        if (!$item) {
+            return 0;
+        }
+
+        // Calculate remaining quantity
+        return ($item->quantity ?? 0)
+            - (
+                ($item->issue_quantity ?? 0)
+                + ($item->damage_quantity ?? 0)
+            );
+    }
+
 
 
 }

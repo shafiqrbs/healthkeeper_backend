@@ -36,6 +36,12 @@ class DamageItem
     private $purchaseItem;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\StockTransferItem")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     **/
+    private $stockTransferItem;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\Warehouse")
      * @ORM\OrderBy({"sorting" = "ASC"})
      **/

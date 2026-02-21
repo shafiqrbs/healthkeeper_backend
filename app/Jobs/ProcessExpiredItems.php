@@ -9,79 +9,181 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Modules\Core\App\Models\UserModel;
 use Modules\Inventory\App\Models\DamageItemModel;
 use Modules\Inventory\App\Models\StockItemHistoryModel;
 use Modules\Medicine\App\Models\PurchaseItemModel;
+use Modules\Medicine\App\Models\StockTransferItemModel;
 
 class ProcessExpiredItems implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct()
+    public function handle(): void
     {
-        //
+        PurchaseItemModel::whereDate('expired_date', '<=', now())
+            ->where('remaining_quantity', '>', 0)
+            ->select('id', 'remaining_quantity', 'stock_item_id', 'name', 'warehouse_id', 'config_id', 'purchase_price',
+                'quantity','sales_return_quantity','bonus_quantity','warehouse_transfer_quantity',
+                'sales_quantity','purchase_return_quantity','damage_quantity'
+            )
+            ->chunk(/**
+             * @throws \Throwable
+             */ 100, function ($items) {
+
+                foreach ($items as $item) {
+
+                    DB::transaction(function () use ($item) {
+
+                        $qty = $item->remaining_quantity;
+
+                        if ($qty <= 0) {
+                            return;
+                        }
+
+                        // =========================
+                        // PURCHASE DAMAGE PROCESS
+                        // =========================
+                        $this->processDamage(
+                            type: 'purchase',
+                            refId: $item->id,
+                            qty: $qty,
+                            stockItemId: $item->stock_item_id,
+                            name: $item->name,
+                            warehouseId: $item->warehouse_id,
+                            configId: $item->config_id,
+                            price: $item->purchase_price ?? 0
+                        );
+
+                        // update purchase item (atomic + correct calc)
+                        $newDamageQty = $item->damage_quantity + $qty;
+
+                        $remainingQuantity = PurchaseItemModel::getPurchaseItemRemainingQuantity($item->id);
+
+                        $item->update([
+                            'damage_quantity' => $newDamageQty,
+                            'remaining_quantity' => $remainingQuantity-$newDamageQty,
+                        ]);
+
+                        // =========================
+                        // TRANSFER DAMAGE PROCESS
+                        // =========================
+                        $transferItems = StockTransferItemModel::where('inv_stock_transfer_item.purchase_item_id', $item->id)
+                            ->join('inv_stock_transfer', 'inv_stock_transfer.id', '=', 'inv_stock_transfer_item.stock_transfer_id')
+                            ->where('inv_stock_transfer_item.remaining_quantity', '>', 0)
+                            ->select(
+                                'inv_stock_transfer_item.*',
+                                'inv_stock_transfer.to_warehouse_id as warehouse_id'
+                            )
+                            ->lockForUpdate()
+                            ->get();
+
+                        foreach ($transferItems as $transfer) {
+
+                            $qty = $transfer->remaining_quantity;
+
+                            if ($qty <= 0) {
+                                continue;
+                            }
+
+                            $this->processDamage(
+                                type: 'transfer',
+                                refId: $transfer->id,
+                                qty: $qty,
+                                stockItemId: $transfer->stock_item_id,
+                                name: $transfer->name,
+                                warehouseId: $transfer->warehouse_id,
+                                configId: $transfer->config_id,
+                                price: $transfer->purchase_price ?? 0
+                            );
+
+                            $newDamageQty = $transfer->damage_quantity + $qty;
+
+                            $remainingQuantity =
+                                ($transfer->quantity ?? 0)
+                                - (
+                                    ($transfer->issue_quantity ?? 0)
+                                    + $newDamageQty
+                                );
+
+                            $transfer->update([
+                                'damage_quantity' => $newDamageQty,
+                                'remaining_quantity' => $remainingQuantity,
+                            ]);
+                        }
+                    });
+                }
+            });
     }
 
     /**
-     * Execute the job.
+     * Common Damage Processing
      */
-    public function handle(): void
-    {
-        DB::transaction(function () {
+    private function processDamage(
+        string $type,
+        int $refId,
+        float $qty,
+        int $stockItemId,
+        string $name,
+        int $warehouseId,
+        int $configId,
+        float $price
+    ): void {
 
-            $expiredPurchaseItems = PurchaseItemModel::whereDate('expired_date', '<=', now())
-                ->where('remaining_quantity', '>', 0)
-                ->select('id', 'remaining_quantity', 'stock_item_id', 'name', 'warehouse_id', 'config_id')
-                ->lockForUpdate()
-                ->get();
+        $damageMode = $type === 'purchase' ? 'Purchase' : 'Stock-transfer';
 
-            foreach ($expiredPurchaseItems as $item) {
+        $attributes = [
+            'config_id' => $configId,
+            'warehouse_id' => $warehouseId,
+            'damage_mode' => $damageMode,
+        ];
 
-                $qty = $item->remaining_quantity;
+        if ($type === 'purchase') {
+            $attributes['purchase_item_id'] = $refId;
+        } else {
+            $attributes['stock_transfer_item_id'] = $refId;
+        }
 
-                // create or update damage record
-                $damageItem = DamageItemModel::updateOrCreate([
-                    'config_id' => $item->config_id,
-                    'purchase_item_id' => $item->id,
-                    'warehouse_id' => $item->warehouse_id,
-                    'damage_mode' => 'Purchase',
-                    'process' => 'Created'
-                ],[
-                    'quantity' => $qty,
-                    'price' => $item->purchase_price,
-                    'purchase_price' => $item->purchase_price,
-                    'sub_total' => $item->purchase_price*$qty,
-                ]);
+        $damageItem = DamageItemModel::updateOrCreate(
+            $attributes,
+            [
+                'quantity' => $qty,
+                'price' => $price,
+                'purchase_price' => $price,
+                'sub_total' => $price * $qty,
+                'process' => 'Created'
+            ]
+        );
 
-                // stock manage
-                $domain = UserModel::getUserDataByConfigId($item->config_id);
-                $damageItem->stock_item_id = $item->stock_item_id;
-                $damageItem->name = $item->name;
-                StockItemHistoryModel::openingStockQuantity($damageItem, 'damage', $domain);
-                // for maintain inventory daily stock
-                date_default_timezone_set('Asia/Dhaka');
-                DailyStockService::maintainDailyStock(
-                    date: date('Y-m-d'),
-                    field: 'damage_quantity',
-                    configId: $damageItem->config_id,
-                    warehouseId: $damageItem->warehouse_id,
-                    stockItemId: $damageItem->stock_item_id,
-                    quantity: $damageItem->quantity
-                );
-                DamageItemModel::find($damageItem->id)->update(['process' => 'Completed']);
+        // stock history
+        $domain = UserModel::getUserDataByConfigId($configId);
 
-                $remainingQuantity = PurchaseItemModel::getPurchaseRemainingQuantity($item->id);
+        StockItemHistoryModel::openingStockQuantity(
+            (object)[
+                'id' => $damageItem->id,
+                'stock_item_id' => $stockItemId,
+                'name' => $name,
+                'config_id' => $configId,
+                'warehouse_id' => $warehouseId,
+                'quantity' => $qty,
+            ],
+            'damage',
+            $domain
+        );
 
-                $item->update([
-                    'damage_quantity' => $item->damage_quantity + $qty,
-                    'remaining_quantity' => $remainingQuantity,
-                ]);
-            }
-        });
+        // daily stock
+        DailyStockService::maintainDailyStock(
+            date: now()->toDateString(),
+            field: 'damage_quantity',
+            configId: $configId,
+            warehouseId: $warehouseId,
+            stockItemId: $stockItemId,
+            quantity: $qty
+        );
+
+        // mark completed
+        $damageItem->update([
+            'process' => 'Completed'
+        ]);
     }
 }
