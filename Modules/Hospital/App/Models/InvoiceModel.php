@@ -246,6 +246,7 @@ class InvoiceModel extends Model
                 'hms_invoice.admission_day as admission_day',
                 'hms_invoice.consume_day as consume_day',
                 'hms_invoice.remaining_day as remaining_day',
+                'hms_invoice.is_admission as is_admission',
             ]);
 
         if (isset($request['term']) && !empty($request['term'])){
