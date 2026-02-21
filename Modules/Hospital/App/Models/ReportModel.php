@@ -1161,8 +1161,9 @@ class ReportModel extends Model
 
         $entities = InvoiceModel::where([['hms_invoice.config_id',$domain['hms_config']]])
             ->whereIn('hms_invoice.invoice_mode',['ipd'])
-            ->where('hms_invoice.release_mode',['discharge','referred'])
+            ->whereIn('hms_invoice.release_mode',['discharge','referred','death'])
             ->join('hms_prescription as hms_prescription','hms_invoice.id','=','hms_prescription.hms_invoice_id')
+            ->join('hms_admission_patient_details as hms_admission_patient_details','hms_invoice.id','=','hms_admission_patient_details.hms_invoice_id')
             ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
             ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
             ->select([
@@ -1172,7 +1173,10 @@ class ReportModel extends Model
                 'customer.name',
                 'customer.mobile',
                 'customer.age',
+                'hms_invoice.release_mode',
                 'hms_prescription.disease_profile',
+                'hms_admission_patient_details.cause_death',
+                'hms_admission_patient_details.about_death',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d %b %Y, %h:%i %p") as created_at'), 'hms_invoice.process as process',
             ]);
@@ -1193,7 +1197,9 @@ class ReportModel extends Model
         if (isset($request['term']) && !empty($request['term'])){
             $term = trim($request['term']);
             $entities = $entities->where(function ($q) use ($term) {
-                $q->where('hms_prescription.disease_profile', 'LIKE', "%{$term}%");
+                $q->where('hms_prescription.disease_profile', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_admission_patient_details.cause_death', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_admission_patient_details.about_death', 'LIKE', "%{$term}%");
             });
         }
         $entities = $entities->orderBy('hms_invoice.created_at','ASC')->get();
