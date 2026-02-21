@@ -349,7 +349,7 @@ class MedicineStockController extends Controller
         $params = $request->only(['warehouse_id', 'stock_item_id', 'start_date', 'end_date','page','offset']);
 
 
-        if (!$params['start_date']) {
+        if (isset($params['start_date']) and  !$params['start_date']) {
             return response([
                 'result' => false,
                 'message' => 'Start date missing.',
@@ -372,21 +372,21 @@ class MedicineStockController extends Controller
         $params = $request->only(['warehouse_id', 'stock_item_id', 'start_date', 'end_date','page','offset']);
 
 
-        if (!$params['start_date']) {
+        if (isset($params['start_date']) and !$params['start_date']) {
             return response([
                 'result' => false,
                 'message' => 'Start date missing.',
                 'status' => ResponseAlias::HTTP_BAD_REQUEST
             ]);
         }
-        if (!$params['end_date']) {
+        if (isset($params['end_date']) and !$params['end_date']) {
             return response([
                 'result' => false,
                 'message' => 'End date missing.',
                 'status' => ResponseAlias::HTTP_BAD_REQUEST
             ]);
         }
-        if (!$params['warehouse_id']) {
+        if (isset($params['warehouse_id']) and !$params['warehouse_id']) {
             return response([
                 'result' => false,
                 'message' => 'Warehouse missing.',
@@ -407,8 +407,8 @@ class MedicineStockController extends Controller
 
     public function medicineSummeryReport(Request $request)
     {
-        $params = $request->only(['warehouse_id', 'start_date', 'end_date','page','offset']);
-        if (!$params['start_date']) {
+        $params = $request->only(['warehouse_id', 'category_id','start_date', 'end_date','page','offset']);
+        if (isset($params['start_date']) and !$params['start_date']) {
             return response([
                 'result' => false,
                 'message' => 'Start date missing.',
