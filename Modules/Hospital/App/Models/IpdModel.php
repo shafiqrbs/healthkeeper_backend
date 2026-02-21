@@ -2,10 +2,12 @@
 
 namespace Modules\Hospital\App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Modules\AppsApi\App\Services\GeneratePatternCodeService;
+use Modules\AppsApi\App\Services\JsonRequestResponse;
 use Modules\Core\App\Models\CustomerModel;
 use function Symfony\Component\TypeInfo\int;
 
@@ -296,6 +298,8 @@ class IpdModel extends Model
         $page =  isset($request['page']) && $request['page'] > 0?($request['page'] - 1 ) : 0;
         $perPage = isset($request['offset']) && $request['offset']!=''? (int)($request['offset']):50;
         $skip = isset($page) && $page!=''? (int)$page * $perPage:0;
+
+        self::cancelAdmissionInvoice($domain);
 
         $entities = self::where([['hms_invoice.config_id',$domain['hms_config']]])
             ->leftjoin('hms_prescription as prescription','prescription.hms_invoice_id','=','hms_invoice.id')
@@ -613,6 +617,7 @@ class IpdModel extends Model
             ]);
             $parent->update([
                 'process' => 'closed',
+                'is_admission' => 1,
             ]);
         }
         return $entity->id;
@@ -1072,6 +1077,28 @@ class IpdModel extends Model
                 'created_at'    => $date,
             ]
         );
+    }
+
+    public static function cancelAdmissionInvoice($domain)
+    {
+
+        $dayBeforeYesterday = Carbon::now()->subDays(2)->toDateString();
+        $invoiceIds = InvoiceModel::where('config_id', $domain['hms_config'])
+            ->whereDate('created_at', '<', $dayBeforeYesterday)
+            ->whereIn('process',['confirmed','billing'])
+            ->pluck('id');
+        ParticularModel::where('is_booked', 1)
+            ->whereIn('admission_id', $invoiceIds)
+            ->update([
+                'is_booked' => 0,
+                'admission_id' => null,
+            ]);
+        InvoiceModel::whereIn('id', $invoiceIds)
+            ->update([
+                'process' => 'cancel',
+                'deleted_by_id' => $domain['user_id'],
+            ]);
+
     }
 
 }
