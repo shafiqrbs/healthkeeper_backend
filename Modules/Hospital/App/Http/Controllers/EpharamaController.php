@@ -25,6 +25,7 @@ use Modules\Hospital\App\Models\PrescriptionModel;
 use Modules\Inventory\App\Models\PurchaseItemModel;
 use Modules\Inventory\App\Models\SalesModel;
 use Modules\Inventory\App\Models\StockItemHistoryModel;
+use Modules\Medicine\App\Models\StockTransferItemModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 use Throwable;
 
@@ -80,13 +81,13 @@ class EpharamaController extends Controller
      * Update the specified resource in storage.
      */
 
-    public function update(Request $request, $id)
+    public function update1(Request $request, $id)
     {
         $domain = $this->domain;
         $input = $request->only(['comment']);
 
         // --- Fetch invoice ---
-        $invoice = InvoiceModel::where('barcode', $id)->first();
+        $invoice = InvoiceModel::where('barcode', $id)->lockForUpdate()->first();
         if (!$invoice) {
             return response()->json([
                 'message' => 'Invoice not found',
@@ -105,7 +106,7 @@ class EpharamaController extends Controller
         }
 
         // --- Fetch Sales ---
-        $sales = SalesModel::with('salesItems')->find($invoice->sales_id);
+        $sales = SalesModel::with('salesItems')->lockForUpdate()->find($invoice->sales_id);
         if (!$sales) {
             return response()->json([
                 'message' => 'Sales record not found',
@@ -180,6 +181,94 @@ class EpharamaController extends Controller
             ], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function update(Request $request, $id)
+    {
+        $domain = $this->domain;
+        $input = $request->only(['comment']);
+
+        // --- Fetch invoice ---
+        $invoice = InvoiceModel::where('barcode', $id)->first();
+        if (!$invoice) {
+            return response()->json([
+                'message' => 'Invoice not found',
+                'status' => ResponseAlias::HTTP_NOT_FOUND
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        // --- Fetch OPD warehouse ---
+        $opdWarehouseId = HospitalConfigModel::find($domain['hms_config'])?->opd_store_id;
+
+        if (empty($opdWarehouseId)) {
+            return response()->json([
+                'message' => 'OpdWarehouse not found',
+                'status' => ResponseAlias::HTTP_NOT_FOUND
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        // --- Fetch Sales ---
+        $sales = SalesModel::with('salesItems')->find($invoice->sales_id);
+        if (!$sales) {
+            return response()->json([
+                'message' => 'Sales record not found',
+                'status' => ResponseAlias::HTTP_NOT_FOUND
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        return DB::transaction(function () use ($invoice, $sales, $domain, $input, $opdWarehouseId) {
+
+            if ($invoice->is_medicine_delivered != 1) {
+
+                $invoice->update([
+                    'process' => 'Done',
+                    'is_medicine_delivered' => 1,
+                    'medicine_delivered_by_id' => $domain['user_id'],
+                    'medicine_delivered_comment' => $input['comment'] ?? null,
+                    'medicine_delivered_date' => now(),
+                ]);
+
+                foreach ($sales->salesItems as $item) {
+
+                    $item->update([
+                        'warehouse_id' => $opdWarehouseId,
+                        'config_id' => $domain['config_id'],
+                    ]);
+
+                    // indent wise item issue
+                    StockTransferItemModel::indentWiseItemIssue(
+                        stockItemId: $item->stock_item_id,
+                        quantity: $item->quantity,
+                        warehouseId: $item->warehouse_id,
+                        configId: $domain['config_id']
+                    );
+
+                    // handle stock history
+                    StockItemHistoryModel::openingStockQuantity($item, 'sales', $domain);
+
+                    // handle daily stock
+                    DailyStockService::maintainDailyStock(
+                        date: now()->format('Y-m-d'),
+                        field: 'sales_quantity',
+                        configId: $domain['config_id'],
+                        warehouseId: $item->warehouse_id,
+                        stockItemId: $item->stock_item_id,
+                        quantity: $item->quantity
+                    );
+                }
+
+                $sales->update([
+                    'approved_by_id' => $domain['user_id'],
+                    'process' => 'Closed'
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Updated successfully',
+                'status' => ResponseAlias::HTTP_OK
+            ]);
+        });
+    }
+
 
 
     public function inlineUpdate(Request $request,$id)

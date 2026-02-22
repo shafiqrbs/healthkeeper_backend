@@ -343,6 +343,85 @@ class StockTransferItemModel extends Model
             );
     }
 
+    public static function getIndentWiseItemIssue1($stockItemId, $quantity, $warehouseId, $configId)
+    {
+        $items = self::join('inv_stock_transfer','inv_stock_transfer.id','=','inv_stock_transfer_item.stock_transfer_id')
+            ->where('inv_stock_transfer_item.stock_item_id', $stockItemId)
+            ->where('inv_stock_transfer.to_warehouse_id', $warehouseId)
+            ->where('inv_stock_transfer.config_id', $configId)
+            ->whereNotNull('inv_stock_transfer_item.purchase_item_id')
+            ->where('inv_stock_transfer_item.remaining_quantity','>',0)
+            ->orderBy('inv_stock_transfer_item.id','desc')
+            ->select([
+                'inv_stock_transfer_item.id',
+                'inv_stock_transfer_item.name',
+                'inv_stock_transfer_item.remaining_quantity',
+                'inv_stock_transfer_item.issue_quantity',
+            ])
+            ->get();
+
+        $remainingToIssue = $quantity;
+
+        foreach ($items as $item) {
+            if ($remainingToIssue <= 0) break;
+
+            $availableQty = $item->remaining_quantity;
+
+            $issueQty = min($availableQty, $remainingToIssue);
+
+            $item->issue_quantity = ($item->issue_quantity ?? 0) + $issueQty;
+            $item->remaining_quantity = $availableQty - $issueQty;
+            $item->save();
+
+            $remainingToIssue -= $issueQty;
+        }
+
+        return true;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public static function indentWiseItemIssue($stockItemId, $quantity, $warehouseId, $configId)
+    {
+        $items = self::join('inv_stock_transfer','inv_stock_transfer.id','=','inv_stock_transfer_item.stock_transfer_id')
+            ->where('inv_stock_transfer_item.stock_item_id', $stockItemId)
+            ->where('inv_stock_transfer.to_warehouse_id', $warehouseId)
+            ->where('inv_stock_transfer.config_id', $configId)
+            ->whereNotNull('inv_stock_transfer_item.purchase_item_id')
+            ->where('inv_stock_transfer_item.remaining_quantity','>',0)
+            ->orderBy('inv_stock_transfer_item.id','asc')
+            ->lockForUpdate()
+            ->select([
+                'inv_stock_transfer_item.id',
+                'inv_stock_transfer_item.remaining_quantity',
+                'inv_stock_transfer_item.issue_quantity',
+            ])
+            ->get();
+
+        $remainingToIssue = $quantity;
+
+        foreach ($items as $item) {
+            if ($remainingToIssue <= 0) break;
+
+            $availableQty = $item->remaining_quantity;
+
+            $issueQty = min($availableQty, $remainingToIssue);
+
+            $item->issue_quantity = ($item->issue_quantity ?? 0) + $issueQty;
+            $item->remaining_quantity = $availableQty - $issueQty;
+            $item->save();
+
+            $remainingToIssue -= $issueQty;
+        }
+
+        if ($remainingToIssue > 0) {
+            throw new \Exception("Insufficient stock for stock_item_id: {$stockItemId}");
+        }
+
+        return true;
+    }
+
 
 
 }
