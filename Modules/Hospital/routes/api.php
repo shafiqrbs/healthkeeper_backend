@@ -214,7 +214,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::get('/ipd/dorb-process/{id}', [IpdController::class, 'processDorb'])->name('ipd_confirm');
     Route::get('/ipd/dorb-confirm/{id}', [IpdController::class, 'processApproveDorb'])->name('ipd_confirm');
 
-    Route::get('/epharma/item-delete/{id}', [EpharamaController::class, 'deleteSalesItem'])->name('deleteSalesItem');
+    Route::delete('/epharma/item-delete/{id}', [EpharamaController::class, 'deleteSalesItem'])->name('deleteSalesItem');
     Route::apiResource('epharma',
         EpharamaController::class)
         ->middleware([HeaderAuthenticationMiddleware::class])
