@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class StockTransferItemModel extends Model
 {
@@ -416,7 +417,9 @@ class StockTransferItemModel extends Model
         }
 
         if ($remainingToIssue > 0) {
-            throw new \Exception("{$name} stock low. ");
+            throw ValidationException::withMessages([
+                'stock' => ["{$name} stock low."]
+            ]);
         }
 
         return true;
