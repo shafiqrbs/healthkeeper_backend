@@ -23,6 +23,7 @@ use Modules\Hospital\App\Models\InvoicePathologicalReportModel;
 
 use Modules\Hospital\App\Models\PrescriptionModel;
 use Modules\Inventory\App\Models\PurchaseItemModel;
+use Modules\Inventory\App\Models\SalesItemModel;
 use Modules\Inventory\App\Models\SalesModel;
 use Modules\Inventory\App\Models\StockItemHistoryModel;
 use Modules\Medicine\App\Models\StockTransferItemModel;
@@ -214,11 +215,8 @@ class EpharamaController extends Controller
                 'status' => ResponseAlias::HTTP_NOT_FOUND
             ], ResponseAlias::HTTP_NOT_FOUND);
         }
-
         return DB::transaction(function () use ($invoice, $sales, $domain, $input, $opdWarehouseId) {
-
             if ($invoice->is_medicine_delivered != 1) {
-
                 $invoice->update([
                     'process' => 'Done',
                     'is_medicine_delivered' => 1,
@@ -228,46 +226,46 @@ class EpharamaController extends Controller
                 ]);
 
                 foreach ($sales->salesItems as $item) {
+                    if($item->is_delete == 0 ) {
+                        $item->update([
+                            'warehouse_id' => $opdWarehouseId,
+                            'config_id' => $domain['config_id'],
+                        ]);
 
-                    $item->update([
-                        'warehouse_id' => $opdWarehouseId,
-                        'config_id' => $domain['config_id'],
-                    ]);
+                        // indent wise item issue
+                        StockTransferItemModel::indentWiseItemIssue(
+                            stockItemId: $item->stock_item_id,
+                                    quantity: $item->quantity,
+                                    warehouseId: $item->warehouse_id,
+                                    configId: $domain['config_id'],
+                                    name: $item->name
+                                );
 
-                    // indent wise item issue
-                    StockTransferItemModel::indentWiseItemIssue(
-                        stockItemId: $item->stock_item_id,
-                        quantity: $item->quantity,
-                        warehouseId: $item->warehouse_id,
-                        configId: $domain['config_id'],
-                        name: $item->name
-                    );
+                                // handle stock history
+                                StockItemHistoryModel::openingStockQuantity($item, 'sales', $domain);
 
-                    // handle stock history
-                    StockItemHistoryModel::openingStockQuantity($item, 'sales', $domain);
-
-                    // handle daily stock
-                    DailyStockService::maintainDailyStock(
-                        date: now()->format('Y-m-d'),
-                        field: 'sales_quantity',
-                        configId: $domain['config_id'],
-                        warehouseId: $item->warehouse_id,
-                        stockItemId: $item->stock_item_id,
-                        quantity: $item->quantity
-                    );
+                                // handle daily stock
+                                DailyStockService::maintainDailyStock(
+                                    date: now()->format('Y-m-d'),
+                                    field: 'sales_quantity',
+                                    configId: $domain['config_id'],
+                                    warehouseId: $item->warehouse_id,
+                                    stockItemId: $item->stock_item_id,
+                                    quantity: $item->quantity
+                                );
+                        }
                 }
-
                 $sales->update([
                     'approved_by_id' => $domain['user_id'],
                     'process' => 'Closed'
                 ]);
             }
-
             return response()->json([
                 'message' => 'Updated successfully',
                 'status' => ResponseAlias::HTTP_OK
             ]);
         });
+
     }
 
 
@@ -289,6 +287,18 @@ class EpharamaController extends Controller
     {
         $service = new JsonRequestResponse();
         PrescriptionModel::find($id)->delete();
+        $entity = ['message' => 'delete'];
+        return $service->returnJosnResponse($entity);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function deleteSalesItem($id)
+    {
+        $service = new JsonRequestResponse();
+        $item = SalesItemModel::find($id);
+        $item->update(['is_delete' => 1]);
         $entity = ['message' => 'delete'];
         return $service->returnJosnResponse($entity);
     }
