@@ -21,7 +21,7 @@ class ProcessExpiredItems implements ShouldQueue
 
     public function handle(): void
     {
-        PurchaseItemModel::whereDate('expired_date', '<=', now())
+        PurchaseItemModel::whereDate('expired_date', '<', now())
             ->where('remaining_quantity', '>', 0)
             ->select('id', 'remaining_quantity', 'stock_item_id', 'name', 'warehouse_id', 'config_id', 'purchase_price',
                 'quantity','sales_return_quantity','bonus_quantity','warehouse_transfer_quantity',

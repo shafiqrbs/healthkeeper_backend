@@ -16,9 +16,6 @@ final class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        // Process expire stock product
-//        $schedule->job(new ProcessExpiredItems())->everyFiveSeconds();
-
         $schedule->command('logs:clean-requests --days=3')
             ->dailyAt('1:00')
             ->withoutOverlapping()
@@ -26,10 +23,13 @@ final class Kernel extends ConsoleKernel
             ->onFailure(fn() => \Log::info('Scheduler work Fail :: logs:clean-requests --days=5'));
 
         $schedule->command('activitylog:clean --days=3 --force')
-            ->dailyAt('2:00')
+            ->dailyAt('1:30')
             ->withoutOverlapping()
             ->onSuccess(fn() => \Log::info('Scheduler working Done :: activitylog:clean --days=5 --force'))
             ->onFailure(fn() => \Log::info('Scheduler working Fail :: activitylog:clean --force'));
+
+        // Process expire stock product
+        $schedule->job(new ProcessExpiredItems())->dailyAt('2:10')->withoutOverlapping();
 
         // Daily DB backup at 01:10 AM
         $schedule->command('backup:run --only-db --disable-notifications')
