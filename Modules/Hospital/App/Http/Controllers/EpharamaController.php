@@ -239,7 +239,8 @@ class EpharamaController extends Controller
                         stockItemId: $item->stock_item_id,
                         quantity: $item->quantity,
                         warehouseId: $item->warehouse_id,
-                        configId: $domain['config_id']
+                        configId: $domain['config_id'],
+                        name: $item->name
                     );
 
                     // handle stock history

@@ -382,7 +382,7 @@ class StockTransferItemModel extends Model
     /**
      * @throws \Exception
      */
-    public static function indentWiseItemIssue($stockItemId, $quantity, $warehouseId, $configId)
+    public static function indentWiseItemIssue($stockItemId, $quantity, $warehouseId, $configId, $name)
     {
         $items = self::join('inv_stock_transfer','inv_stock_transfer.id','=','inv_stock_transfer_item.stock_transfer_id')
             ->where('inv_stock_transfer_item.stock_item_id', $stockItemId)
@@ -416,7 +416,7 @@ class StockTransferItemModel extends Model
         }
 
         if ($remainingToIssue > 0) {
-            throw new \Exception("Insufficient stock for stock_item_id: {$stockItemId}");
+            throw new \Exception("Insufficient stock for stock_item_id: {$name}");
         }
 
         return true;
