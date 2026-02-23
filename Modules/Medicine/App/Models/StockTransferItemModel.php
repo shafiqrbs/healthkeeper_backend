@@ -416,7 +416,7 @@ class StockTransferItemModel extends Model
         }
 
         if ($remainingToIssue > 0) {
-            throw new \Exception("Insufficient stock for stock_item_id: {$name}");
+            throw new \Exception("{$name} stock low. ");
         }
 
         return true;
