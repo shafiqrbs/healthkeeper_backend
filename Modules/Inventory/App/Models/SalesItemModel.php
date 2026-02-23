@@ -47,6 +47,7 @@ class SalesItemModel extends Model
         'expired_date',
         'purchase_item_id',
         'requisition_item_id',
+        'is_delete',
     ];
 
     public static function boot() {

@@ -109,6 +109,7 @@ class EpharmaModel extends Model
                     'inv_sales_item.name',
                     'inv_sales_item.quantity',
                     'inv_sales_item.price',
+                    'inv_sales_item.is_delete',
                 ]);
             }]);
 

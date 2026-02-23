@@ -297,8 +297,10 @@ class EpharamaController extends Controller
     public function deleteSalesItem($id)
     {
         $service = new JsonRequestResponse();
-        $item = SalesItemModel::find($id);
-        $item->update(['is_delete' => 1]);
+        $item = SalesItemModel::findOrFail($id);
+        $item->update([
+            'is_delete' => 1
+        ]);
         $entity = ['message' => 'delete'];
         return $service->returnJosnResponse($entity);
     }
