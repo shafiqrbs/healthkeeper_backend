@@ -21,6 +21,7 @@ class PurchaseRequest extends FormRequest
         return [
             'vendor_id' => 'required|integer|regex:/^\d+(\.\d{1,2})?$/',
             'created_by_id' => 'nullable|integer',
+            'received_date' => 'nullable|date',
             'grn' => 'nullable|string',
             'remark' => 'nullable|string',
             'items' => 'required|array',
