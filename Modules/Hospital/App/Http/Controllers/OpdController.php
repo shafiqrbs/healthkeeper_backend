@@ -249,6 +249,7 @@ class OpdController extends Controller
             [
                 'created_by_id' => $userId ,
                 'process' => "new",
+                'prescribe_doctor_id' => $domain['user_id'],
                 'doctor_id' => $doctorId
             ]
         );

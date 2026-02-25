@@ -162,6 +162,51 @@ class InvoiceTransactionModel extends Model
 
     }
 
+    public static function getUpdateFreeInvestigation($entity,$transaction,$data)
+    {
+        $date =  new \DateTime("now");
+        if($entity->parent_id > 0){
+            $reportMode  = $entity->parent->invoice_mode;
+        }else{
+            $reportMode  = $entity->invoice_mode;
+        }
+        $investigations= $data;
+        if (!empty($investigations) && is_array($investigations)) {
+            foreach ($investigations as $investigation) {
+
+
+                $particular = ParticularModel::find($investigation['id']);
+                if (!$particular) {
+                    continue; // Skip if not found
+                }
+                $uniqueId = self::generateUniqueCode(12);
+                InvoiceParticularModel::updateOrCreate(
+                    [
+                        'hms_invoice_id' => $entity->id,
+                        'invoice_transaction_id' => $transaction,
+                        'particular_id' => $particular->id,
+                    ],
+                    [
+                        'unique_id' => $uniqueId,
+                        'category_id' => $particular->category_id,
+                        'name' => $particular->name,
+                        'mode' => 'investigation',
+                        'report_mode' => $reportMode,
+                        'quantity' => 1,
+                        'is_available' => $particular->is_available,
+                        'price' => $particular->price ?? 0,
+                        'estimate_price' => $particular->price ?? 0,
+                        'sub_total' => $particular->price ?? 0,
+                        'updated_at' => $date,
+                        'created_at' => $date,
+                        'status' => 1,
+                        'is_invoice' => 1,
+                    ]
+                );
+            }
+        }
+    }
+
     public static function insertIpdInvestigations($domain,$id,$data)
     {
 

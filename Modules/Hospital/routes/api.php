@@ -241,6 +241,8 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
         Route::get('/sample-confirm/{id}', [LabInvestigationController::class,'barcodeConfirm'])->name('barcodeConfirm_update');
         Route::get('test-reports', [LabInvestigationController::class, 'labReports'])->name('lab_reports');
         Route::get('reset-free-investigation', [LabInvestigationController::class, 'resetFreeInvestigation'])->name('resetFreeInvestigation');
+        Route::get('free-investigation', [LabInvestigationController::class, 'freeInvestigation'])->name('freeInvestigation');
+        Route::post('free-investigation-create/{id}', [LabInvestigationController::class, 'freeInvestigationCreate'])->name('freeInvestigationCreate');
         Route::get('/category-group/{id}', [LabInvestigationController::class, 'categoryGroup'])->name('lab_category_group_reports');
         Route::get('/report-keyword-search/{id}', [LabInvestigationController::class, 'reportKeywordSearch'])->name('reportKeywordSearch');
         Route::apiResource('', LabInvestigationController::class)->parameters(['' => 'id']);

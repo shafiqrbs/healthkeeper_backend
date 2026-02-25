@@ -88,7 +88,7 @@ class LabInvestigationController extends Controller
     }
 
 
-      /**
+     /**
      * Display a listing of the resource.
      */
     public function resetFreeInvestigation(Request $request){
@@ -100,6 +100,48 @@ class LabInvestigationController extends Controller
         $response->setContent(json_encode([
             'message' => 'success',
             'data' => $data,
+            'status' => Response::HTTP_OK,
+        ]));
+        $response->setStatusCode(Response::HTTP_OK);
+        return $response;
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function freeInvestigation(){
+
+        $domain = $this->domain;
+        $data  = LabInvestigationModel::getFreeInvestigation($domain);
+        $response = new Response();
+        $response->headers->set('Content-Type','application/json');
+        $response->setContent(json_encode([
+            'message' => 'success',
+            'data' => $data,
+            'status' => Response::HTTP_OK,
+        ]));
+        $response->setStatusCode(Response::HTTP_OK);
+        return $response;
+    }
+
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function freeInvestigationCreate(Request $request,$id){
+
+        $input = $request->input();
+        $data = $input['json_content'];
+        $entity = InvoiceModel::findByIdOrUid($id);
+        $transaction  = InvoiceTransactionModel::where('hms_invoice_id',$entity->id)->where('is_free',1)->first();
+        if($transaction){
+            InvoiceTransactionModel::getUpdateFreeInvestigation($entity,$transaction->id,$data);
+        }
+        $response = new Response();
+        $response->headers->set('Content-Type','application/json');
+        $response->setContent(json_encode([
+            'message' => 'success',
+            'data' => 'success',
             'status' => Response::HTTP_OK,
         ]));
         $response->setStatusCode(Response::HTTP_OK);

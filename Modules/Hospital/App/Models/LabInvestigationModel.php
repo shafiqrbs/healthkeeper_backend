@@ -299,6 +299,8 @@ class LabInvestigationModel extends Model
                         'hms_invoice_transaction.mode',
                         'hms_invoice_transaction.process',
                         'hms_invoice_transaction.total',
+                        'hms_invoice_transaction.is_free',
+                        'hms_invoice_transaction.mode',
                         'hms_invoice_transaction.created_at'
                     ])
                         ->where('hms_invoice_transaction.mode', 'investigation')
@@ -406,6 +408,23 @@ class LabInvestigationModel extends Model
         }
 
     }
+
+    public static function getFreeInvestigation($domain)
+    {
+        $config =  $domain['hms_config'];
+        $entities = ParticularModel::where('hms_particular.config_id',$config)->where('hms_particular.is_delete',0)
+            ->where('hms_particular.is_free', 1)
+            ->where('hms_particular.is_custom_report', 1)
+            ->join('hms_particular_mode','hms_particular_mode.id','=','hms_particular.diagnostic_department_id')
+            ->join('inv_category','inv_category.id','=','hms_particular.category_id')
+            ->where('hms_particular_mode.slug', 'microbiology')
+            ->where('inv_category.slug', 'genexpert-2')
+            ->select([
+                'hms_particular.id as id','hms_particular.name as name'
+            ])->get();
+        return $entities;
+    }
+
 
     public static function getResetFreeInvestigation($domain)
     {

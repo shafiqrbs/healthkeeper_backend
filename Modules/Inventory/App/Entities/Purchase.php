@@ -238,6 +238,12 @@ class Purchase
      */
     private $invoiceDate;
 
+     /**
+     * @var \DateTime
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $workorderDate;
+
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Core\App\Entities\User")
      * @ORM\JoinColumn(onDelete="CASCADE")

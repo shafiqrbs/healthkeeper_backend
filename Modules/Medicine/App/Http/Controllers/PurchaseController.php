@@ -258,7 +258,7 @@ class PurchaseController extends Controller
 
             // Update master
             $data['received_by_id'] = $this->domain['user_id'];
-            $data['received_date'] = now();
+          //  $data['received_date'] = now();
             $data['process'] = 'Received';
             $purchase->update($data);
 

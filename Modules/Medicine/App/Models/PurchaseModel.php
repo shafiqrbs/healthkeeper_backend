@@ -36,6 +36,7 @@ class PurchaseModel extends Model
         'created_by_id',
         'received_by_id',
         'received_date',
+        'workorder_date',
     ];
 
 
@@ -137,7 +138,10 @@ class PurchaseModel extends Model
                 'inv_purchase.id',
                 'inv_purchase.uid',
                 DB::raw('DATE_FORMAT(inv_purchase.created_at, "%d-%m-%Y") as created'),
+                DB::raw('DATE_FORMAT(inv_purchase.workorder_date, "%d-%m-%Y") as workorder_date'),
+                DB::raw('DATE_FORMAT(inv_purchase.received_date, "%d-%m-%Y") as received_date'),
                 'inv_purchase.invoice as invoice',
+                'inv_purchase.grn as grn',
                 'inv_purchase.received_by_id',
                 'inv_purchase.approved_by_id',
                 'inv_purchase.warehouse_id',
@@ -202,6 +206,7 @@ class PurchaseModel extends Model
             ->select([
                 'inv_purchase.id',
                 'inv_purchase.invoice',
+                'inv_purchase.grn',
                 'inv_purchase.process',
                 'inv_purchase.grn',
                 'inv_purchase.warehouse_id',
@@ -220,6 +225,7 @@ class PurchaseModel extends Model
                 'cor_vendors.mobile as vendor_mobile',
                 DB::raw('DATE_FORMAT(inv_purchase.created_at, "%d-%M-%Y") as created'),
                 DB::raw('DATE_FORMAT(inv_purchase.received_date, "%d-%M-%Y") as received_date'),
+                DB::raw('DATE_FORMAT(inv_purchase.workorder_date, "%d-%M-%Y") as workorder_date'),
 
 
             ])->with(['purchaseItems' => function ($query) {
