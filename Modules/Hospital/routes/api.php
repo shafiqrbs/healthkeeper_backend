@@ -176,6 +176,7 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::patch('/ipdprescription/update-template/{id}', [IpdPrescriptionController::class,'updateTemplate'])->name('ipd_updateTemplate');
     Route::get('/ipdprescription/medicine-delete/{id}', [IpdPrescriptionController::class,'deleteMedicine'])->name('deleteMedicine');
     Route::post('/ipdprescription/ordering', [IpdPrescriptionController::class,'updateOrdering'])->name('matrixUpdateOrdering');
+    Route::post('/ipdprescription/create-generic-medicine/{id}', [IpdPrescriptionController::class,'createGenericMedicine'])->name('createGenericMedicine');
     Route::get('/ipdprescription/dosage-meal-search', [IpdPrescriptionController::class,'dosageMealKeywordSearch'])->name('dosageMealKeywordSearch');
     Route::apiResource('ipdprescription', IpdPrescriptionController::class)
         ->middleware([HeaderAuthenticationMiddleware::class])

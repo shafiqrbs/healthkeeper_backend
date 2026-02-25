@@ -35,27 +35,27 @@ class PatientPrescriptionMedicine
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\StockItem")
-     * @ORM\JoinColumn(name="stock_item_id", referencedColumnName="id", nullable=true, onDelete="cascade")
+     * @ORM\JoinColumn(name="stock_item_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      **/
     private $stockItem;
 
 
      /**
      * @ORM\ManyToOne(targetEntity="MedicineDetails")
-     * @ORM\JoinColumn(name="medicine_id", referencedColumnName="id", nullable=true, onDelete="cascade")
+     * @ORM\JoinColumn(name="medicine_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      **/
     private $medicine;
 
 
     /**
      * @ORM\ManyToOne(targetEntity="Modules\Hospital\App\Entities\MedicineDosage")
-     * @ORM\JoinColumn(name="medicine_dosage_id", referencedColumnName="id", nullable=true, onDelete="cascade")
-     **/
+     * @ORM\JoinColumn(name="medicine_dosage_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
+    **/
     private $medicineDosage;
 
      /**
      * @ORM\ManyToOne(targetEntity="Modules\Hospital\App\Entities\MedicineDosage")
-     * @ORM\JoinColumn(name="medicine_bymeal_id", referencedColumnName="id", nullable=true, onDelete="cascade")
+     * @ORM\JoinColumn(name="medicine_bymeal_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      **/
     private $medicineBymeal;
 

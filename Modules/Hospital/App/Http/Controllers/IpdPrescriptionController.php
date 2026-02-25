@@ -31,6 +31,7 @@ use Modules\Hospital\App\Models\PatientModel;
 use Modules\Hospital\App\Models\PatientPrescriptionMedicineModel;
 use Modules\Hospital\App\Models\PrescriptionModel;
 use Modules\Hospital\App\Models\TreatmentMedicineModel;
+use Modules\Medicine\App\Models\MedicineBrandModel;
 
 
 class IpdPrescriptionController extends Controller
@@ -218,6 +219,22 @@ class IpdPrescriptionController extends Controller
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($return);
 
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function createGenericMedicine(Request $request,$id)
+    {
+       /* $config = $this->domain['hms_config'];
+        $entity = PrescriptionModel::findByIdOrUid($id);
+        $input = $request->all();
+        $input['config_id'] = $config;
+        $generic = MedicineBrandModel::insert($input);
+        */
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse(['success'=>'success']);
+        return $data;
     }
 
     /**

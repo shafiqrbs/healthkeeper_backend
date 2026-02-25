@@ -120,4 +120,28 @@ class MedicineBrandModel extends Model
 
     }
 
+    public static function insert($data)
+    {
+        DB::transaction(function () use ($data) {
+
+            $medicineName = $data['name'];
+            $genericName  = $data['generic_name'];
+
+            $existingMedicine = MedicineBrandModel::where('name', $medicineName)->first();
+
+            if ($existingMedicine) {
+                return $existingMedicine;
+            }
+
+            $generic = MedicineGenericModel::firstOrCreate([
+                'name' => $genericName
+            ]);
+
+            MedicineBrandModel::create([
+                'name' => $medicineName,
+                'medicineGeneric_id' => $generic->id
+            ]);
+        });
+    }
+
 }

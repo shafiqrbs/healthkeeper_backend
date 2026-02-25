@@ -423,7 +423,6 @@ class PatientWaiverModel extends Model
                 $q->select(DB::raw(1))
                     ->from('hms_invoice_particular')
                     ->where('mode','investigation')
-                    ->where('status',0)
                     ->whereColumn(
                         'hms_invoice_particular.hms_invoice_id',
                         'hms_invoice.id'
