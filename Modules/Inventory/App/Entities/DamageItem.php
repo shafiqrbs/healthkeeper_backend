@@ -30,6 +30,12 @@ class DamageItem
     private $config;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\Damage")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     **/
+    private $damage;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\PurchaseItem")
      * @ORM\JoinColumn(onDelete="CASCADE")
      **/
