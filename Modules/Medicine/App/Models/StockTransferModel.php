@@ -287,6 +287,10 @@ class StockTransferModel extends Model
             $entities->where('tw.id', $request['warehouse_id']);
         }
 
+        if (!empty($request['stock_item_id'])) {
+            $entities->where('inv_stock_transfer_item.stock_item_id', $request['stock_item_id']);
+        }
+
         // 📅 Date range filter
         if (!empty($request['start_date'])) {
             $start_date = $request['start_date'] . ' 00:00:00';
