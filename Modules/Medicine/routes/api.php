@@ -3,7 +3,6 @@
 use App\Http\Middleware\HeaderAuthenticationMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Modules\Core\App\Http\Middleware\LogRequestResponse;
 use Modules\Medicine\App\Http\Controllers\DispenseController;
 use Modules\Medicine\App\Http\Controllers\MedicineController;
 use Modules\Medicine\App\Http\Controllers\MedicineStockController;
@@ -36,7 +35,7 @@ Route::prefix('/medicine/select')->middleware([HeaderAuthenticationMiddleware::c
 });
 
 Route::post('/medicine/inline-update/{id}', [MedicineController::class,'medicineInlineUpdate'])->name('particular_inline_update');
-Route::prefix('/pharmacy')->middleware([HeaderAuthenticationMiddleware::class,LogRequestResponse::class,'auth:api'])->group(function() {
+Route::prefix('/pharmacy')->middleware([HeaderAuthenticationMiddleware::class,'auth:api'])->group(function() {
     Route::prefix('purchase')->name('purchase.')->group(function () {
         Route::get('approve/{id}', [PurchaseController::class, 'approve'])->name('approve');
         Route::get('receive/{id}', [PurchaseController::class, 'receive'])->name('receive');
