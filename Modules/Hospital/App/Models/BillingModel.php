@@ -221,7 +221,6 @@ class BillingModel extends Model
             $entities = $entities->whereBetween('hms_invoice.created_at', [$start_date, $end_date]);
         }
 
-
         $total = DB::table(DB::raw("({$entities->toSql()}) as sub"))
             ->mergeBindings($entities->getQuery())
             ->count();
