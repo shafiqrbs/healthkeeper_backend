@@ -151,6 +151,18 @@ class ReportsController extends Controller
      /**
      * Display a listing of the resource.
      */
+    public function dischargePatient(Request $request){
+
+        $data = ReportModel::getDischargePatient($this->domain,$request);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse($data);
+        return $data;
+    }
+
+
+     /**
+     * Display a listing of the resource.
+     */
     public function patientAdmission(Request $request){
 
         $data = ReportModel::getPatientAdmission($this->domain,$request);
@@ -158,6 +170,7 @@ class ReportsController extends Controller
         $data = $service->returnJosnResponse($data);
         return $data;
     }
+
 
     /**
      * Display a listing of the resource.
