@@ -196,14 +196,15 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
             'update' => 'ipd.update',
             'destroy' => 'ipd.destroy',
         ]);
-    Route::get('/ipd/view/{id}', [IpdController::class, 'ipdAdmissionShow'])->name('find_bill');
-    Route::patch('/ipd/revised/{id}', [IpdController::class, 'admissionRevised'])->name('find_bill');
-    Route::patch('/ipd/change/{id}', [IpdController::class, 'admissionChange'])->name('find_bill');
-    Route::get('/ipd/internal-transfer/{id}', [IpdController::class, 'internalTransfer'])->name('find_bill');
-    Route::get('/ipd/free-discharge/{id}', [IpdController::class, 'freeDischarge'])->name('find_bill');
-    Route::get('/ipd/patient-absconded/{id}', [IpdController::class, 'patientAbsconded'])->name('find_bill');
-    Route::get('/ipd/discharge-process/{id}', [IpdController::class, 'processDischarge'])->name('find_bill');
-    Route::get('/ipd/room-cancel/{id}', [IpdController::class, 'processCancel'])->name('find_bill');
+    Route::get('/ipd/view/{id}', [IpdController::class, 'ipdAdmissionShow'])->name('ipdAdmissionShow');
+    Route::patch('/ipd/revised/{id}', [IpdController::class, 'admissionRevised'])->name('admissionRevised');
+    Route::patch('/ipd/change/{id}', [IpdController::class, 'admissionChange'])->name('admissionChange');
+    Route::get('/ipd/internal-transfer/{id}', [IpdController::class, 'internalTransfer'])->name('internalTransfer');
+    Route::get('/ipd/free-discharge/{id}', [IpdController::class, 'freeDischarge'])->name('freeDischarge');
+    Route::get('/ipd/patient-absconded/{id}', [IpdController::class, 'patientAbsconded'])->name('patientAbsconded');
+    Route::get('/ipd/discharge-process/{id}', [IpdController::class, 'processDischarge'])->name('processDischarge');
+    Route::get('/ipd/room-cancel/{id}', [IpdController::class, 'processCancel'])->name('processCancel');
+    Route::get('/ipd/patient-reset/{id}', [IpdController::class, 'patientReset'])->name('patientReset');
     Route::patch('/ipd/internal-transfer-process/{id}', [IpdController::class, 'internalTransferProcess'])->name('find_bill');
     Route::get('/ipd/efresh-order/{id}', [IpdController::class,'efreshOrder'])->name('ipd_efreshOrder');
     Route::post('/ipd/patient-chart/{id}', [IpdController::class,'patientChart'])->name('ipd_data_process');

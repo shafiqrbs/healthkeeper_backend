@@ -552,6 +552,7 @@ class InvoiceModel extends Model
             ->leftjoin('hms_particular_mode as particular_payment_mode','particular_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
             ->leftjoin('hms_invoice as invoice_parent','invoice_parent.id','=','hms_invoice.parent_id')
             ->leftjoin('hms_particular_mode as parent_patient_mode','parent_patient_mode.id','=','invoice_parent.patient_mode_id')
+            ->leftjoin('cor_locations','cor_locations.id','=','cor_customers.upazilla_id')
             ->select([
                 'hms_invoice.*',
                 'parent_patient_mode.name as parent_patient_mode_name',
@@ -559,7 +560,7 @@ class InvoiceModel extends Model
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d-%m-%Y") as created'),
                 DB::raw('DATE_FORMAT(hms_invoice.appointment_date, "%d-%m-%Y") as appointment'),
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%m-%Y") as admission_date'),
-                DB::raw('DATE_FORMAT(hms_invoice.release_date, "%d-%m-%Y %H:%i") as release_date'),
+                DB::raw('DATE_FORMAT(hms_invoice.release_date, "%d-%m-%Y") as release_date'),
                 'hms_invoice.invoice as invoice',
                 'hms_invoice.total as total',
                 'hms_invoice.comment',
@@ -575,6 +576,8 @@ class InvoiceModel extends Model
                 'cor_customers.father_name',
                 'cor_customers.mother_name',
                 'cor_customers.upazilla_id',
+                'cor_locations.upazila',
+                'cor_locations.district',
                 'cor_customers.country_id',
                 'cor_customers.profession',
                 'cor_customers.religion_id',
