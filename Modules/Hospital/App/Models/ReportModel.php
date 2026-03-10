@@ -1221,17 +1221,24 @@ class ReportModel extends Model
             ->join('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
             ->leftjoin('hms_particular as vr','vr.id','=','hms_invoice.room_id')
             ->join('hms_particular_mode as patient_payment_mode','patient_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
+            ->leftjoin('cor_locations','cor_locations.id','=','customer.upazilla_id')
+            ->leftjoin('hms_invoice as parent_invoice','parent_invoice.id','=','hms_invoice.parent_id')
             ->select([
                 'hms_invoice.id',
                 'customer.customer_id as patient_id',
                 'hms_invoice.invoice as invoice',
+                'parent_invoice.invoice_mode as invoice_mode',
+                'parent_invoice.id as parent_id',
                 'customer.name',
                 'customer.mobile',
                 'customer.age',
                 'hms_invoice.process',
+                'customer.address',
                 'hms_invoice.release_mode',
                 'vr.display_name as room',
                 'hms_invoice.process as process',
+                'cor_locations.upazila',
+                'cor_locations.district',
                 'patient_mode.name as patient_mode_name',
                 'patient_payment_mode.name as patient_payment_mode_name',
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%M-%Y") as admission_date'),
