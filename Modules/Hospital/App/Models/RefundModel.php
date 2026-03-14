@@ -106,15 +106,7 @@ class RefundModel extends Model
                     ->orWhere('customer.health_id', 'LIKE', "%{$term}%");
             });
         }
-
-        /*if (isset($request['patient_mode']) && !empty($request['patient_mode'])){
-            if (is_array($request['patient_mode'])) {
-                $entities = $entities->whereIn('patient_mode.slug', $request['patient_mode']);
-            } else {
-                $entities = $entities->where('patient_mode.slug', $request['patient_mode']);
-            }
-        }*/
-        $entities = $entities->whereIn('hms_invoice.process', ['New','done','closed','admitted']);
+        $entities = $entities->whereIn('hms_invoice.process', ['New','done','in-progress','closed','admitted']);
         if (isset($request['customer_id']) && !empty($request['customer_id'])){
             $entities = $entities->where('hms_invoice.customer_id',$request['customer_id']);
         }

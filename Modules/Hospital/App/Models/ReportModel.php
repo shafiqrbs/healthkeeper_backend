@@ -1156,7 +1156,7 @@ class ReportModel extends Model
         return $entities;
     }
 
-    public static function getPatientAdmission($domain,$request)
+    public static function getDischargePatient($domain,$request)
     {
 
         $entities = InvoiceModel::where([['hms_invoice.config_id',$domain['hms_config']]])
@@ -1200,6 +1200,75 @@ class ReportModel extends Model
                 $q->where('hms_prescription.disease_profile', 'LIKE', "%{$term}%")
                     ->orWhere('hms_admission_patient_details.cause_death', 'LIKE', "%{$term}%")
                     ->orWhere('hms_admission_patient_details.about_death', 'LIKE', "%{$term}%");
+            });
+        }
+        $entities = $entities->orderBy('hms_invoice.created_at','ASC')->get();
+        return $entities;
+
+
+    }
+
+    public static function getPatientAdmission($domain,$request)
+    {
+
+        $entities = InvoiceModel::where([['hms_invoice.config_id',$domain['hms_config']]])
+            ->whereIn('hms_invoice.invoice_mode',['ipd'])
+            ->whereIn('hms_invoice.process',['discharged','admitted','	re-admission'])
+            ->join('hms_prescription as hms_prescription','hms_invoice.id','=','hms_prescription.hms_invoice_id')
+            ->join('hms_admission_patient_details as hms_admission_patient_details','hms_invoice.id','=','hms_admission_patient_details.hms_invoice_id')
+            ->leftjoin('users as createdBy','createdBy.id','=','hms_invoice.created_by_id')
+            ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
+            ->join('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
+            ->leftjoin('hms_particular as vr','vr.id','=','hms_invoice.room_id')
+            ->join('hms_particular_mode as patient_payment_mode','patient_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
+            ->leftjoin('cor_locations','cor_locations.id','=','customer.upazilla_id')
+            ->leftjoin('hms_invoice as parent_invoice','parent_invoice.id','=','hms_invoice.parent_id')
+            ->select([
+                'hms_invoice.id',
+                'customer.customer_id as patient_id',
+                'hms_invoice.invoice as invoice',
+                'parent_invoice.invoice_mode as invoice_mode',
+                'parent_invoice.id as parent_id',
+                'customer.name',
+                'customer.mobile',
+                'customer.age',
+                'hms_invoice.process',
+                'customer.address',
+                'hms_invoice.release_mode',
+                'vr.display_name as room',
+                'hms_invoice.process as process',
+                'cor_locations.upazila',
+                'cor_locations.district',
+                'patient_mode.name as patient_mode_name',
+                'patient_payment_mode.name as patient_payment_mode_name',
+                DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%M-%Y") as admission_date'),
+                DB::raw('DATE_FORMAT(hms_invoice.release_date, "%d-%M-%Y") as release_date'),
+                DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
+                DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d %b %Y, %h:%i %p") as created_at'), 'hms_invoice.process as process',
+            ]);
+
+        if (isset($request['start_date']) && !empty($request['start_date'])){
+            $start_date = new \DateTime($request['start_date']);
+            $end_date = new \DateTime($request['end_date']);
+            $start_date = $start_date->format('Y-m-d 00:00:00');
+            $end_date = $end_date->format('Y-m-d 23:59:59');
+            $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
+        }else{
+            $date = new \DateTime();
+            $start_date = $date->format('Y-m-d 00:00:00');
+            $end_date = $date->format('Y-m-d 23:59:59');
+            $entities = $entities->whereBetween('hms_invoice.created_at',[$start_date, $end_date]);
+        }
+        if (isset($request['term']) && !empty($request['term'])){
+            $term = trim($request['term']);
+            $entities = $entities->where(function ($q) use ($term) {
+                $q->where('hms_invoice.invoice', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_invoice.uid', 'LIKE', "%{$term}%")
+                    ->orWhere('customer.customer_id', 'LIKE', "%{$term}%")
+                    ->orWhere('customer.name', 'LIKE', "%{$term}%")
+                    ->orWhere('customer.mobile', 'LIKE', "%{$term}%")
+                    ->orWhere('customer.nid', 'LIKE', "%{$term}%")
+                    ->orWhere('customer.health_id', 'LIKE', "%{$term}%");
             });
         }
         $entities = $entities->orderBy('hms_invoice.created_at','ASC')->get();

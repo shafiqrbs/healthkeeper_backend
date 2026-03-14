@@ -311,9 +311,11 @@ class IpdModel extends Model
             ->join('cor_customers as customer','customer.id','=','hms_invoice.customer_id')
             ->join('hms_particular_mode as patient_mode','patient_mode.id','=','hms_invoice.patient_mode_id')
             ->join('hms_particular_mode as patient_payment_mode','patient_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
+            ->leftjoin('hms_invoice as parent_invoice','parent_invoice.id','=','hms_invoice.parent_id')
             ->select([
                 'hms_invoice.id',
                 'hms_invoice.uid',
+                'parent_invoice.invoice as parent_invoice_id',
                 'hms_invoice.parent_id as parent_id',
                 'prescription.id as prescription_id',
                 'prescription.uid as prescription_uid',

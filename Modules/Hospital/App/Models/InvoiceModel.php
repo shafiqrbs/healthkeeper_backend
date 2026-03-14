@@ -552,17 +552,21 @@ class InvoiceModel extends Model
             ->leftjoin('hms_particular_mode as particular_payment_mode','particular_payment_mode.id','=','hms_invoice.patient_payment_mode_id')
             ->leftjoin('hms_invoice as invoice_parent','invoice_parent.id','=','hms_invoice.parent_id')
             ->leftjoin('hms_particular_mode as parent_patient_mode','parent_patient_mode.id','=','invoice_parent.patient_mode_id')
+            ->leftjoin('cor_locations','cor_locations.id','=','cor_customers.upazilla_id')
             ->select([
                 'hms_invoice.*',
                 'parent_patient_mode.name as parent_patient_mode_name',
                 'parent_patient_mode.slug as parent_patient_mode_slug',
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d-%m-%Y") as created'),
                 DB::raw('DATE_FORMAT(hms_invoice.appointment_date, "%d-%m-%Y") as appointment'),
+                DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%m-%Y") as admission_date'),
+                DB::raw('DATE_FORMAT(hms_invoice.release_date, "%d-%m-%Y") as release_date'),
                 'hms_invoice.invoice as invoice',
                 'hms_invoice.total as total',
                 'hms_invoice.comment',
                 'hms_invoice.guardian_name as guardian_name',
                 'hms_invoice.guardian_mobile as guardian_mobile',
+                'hms_invoice.release_mode as release_mode',
                 'cor_customers.name as name',
                 'cor_customers.mobile as mobile',
                 'cor_customers.id as customer_id',
@@ -572,6 +576,8 @@ class InvoiceModel extends Model
                 'cor_customers.father_name',
                 'cor_customers.mother_name',
                 'cor_customers.upazilla_id',
+                'cor_locations.upazila',
+                'cor_locations.district',
                 'cor_customers.country_id',
                 'cor_customers.profession',
                 'cor_customers.religion_id',
@@ -607,9 +613,9 @@ class InvoiceModel extends Model
                 'admission_patient.change_mode as change_mode',
                 'admission_patient.comment as change_comment',
                 'admission_patient.reason as reason',
+                'prescription.disease_profile as diseases_profile',
                 'admission_patient.cause_death as cause_death',
                 'admission_patient.about_death as about_death',
-                'admission_patient.diseases_profile as diseases_profile',
                 'admission_patient.death_date_time as death_date_time',
                 'admission_patient.dead_date_time as dead_date_time',
                 'admission_patient.reason as reason',

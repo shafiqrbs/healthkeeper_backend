@@ -241,7 +241,9 @@ class IpdController extends Controller
                     $entity,
                     $input
                 );
-                $entity->update(['process' => 'confirmed']);
+                $roomPrice = $entity->room->price;
+                $is_free_bed = ($roomPrice == 0 ) ? 1:0;
+                $entity->update(['process' => 'confirmed','is_free_bed' => $is_free_bed]);
             }
 
         }elseif ($admission->change_mode == 'change_day') {
@@ -419,6 +421,27 @@ class IpdController extends Controller
         $service = new JsonRequestResponse();
         $data = $service->returnJosnResponse();
         return $data;
+    }
+
+     /**
+     * Show the form for editing the specified resource.
+     */
+    public function patientReset($id)
+    {
+        $user = $this->domain['user_id'];
+        $entity = InvoiceModel::findByIdOrUid($id);
+        ParticularModel::where([
+            'is_booked' => 1,
+            'admission_id' => $entity->id
+        ])->update([
+            'is_booked' => 0,
+            'admission_id' => null,
+        ]);
+        InvoiceModel::find($id)->delete();
+        $entity = ['message'=>'delete'];
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($entity);
+
     }
 
     /**
