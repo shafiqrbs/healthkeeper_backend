@@ -14,7 +14,7 @@ class LogActivity
             $response = $next($request);
 
             // Debug: Check if activity log is working
-            Log::info('LogActivity middleware triggered for: ' . $request->path());
+//            Log::info('LogActivity middleware triggered for: ' . $request->path());
 
             // Log the request
             activity()
@@ -29,12 +29,12 @@ class LogActivity
                 ])
                 ->log('Request: ' . $request->method() . ' ' . $request->path());
 
-            Log::info('Activity logged successfully');
+//            Log::info('Activity logged successfully');
 
             return $response;
 
         } catch (\Exception $e) {
-            Log::error('LogActivity middleware error: ' . $e->getMessage());
+//            Log::error('LogActivity middleware error: ' . $e->getMessage());
             return $next($request);
         }
     }
