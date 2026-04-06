@@ -11,5 +11,6 @@
     "NbrVatTax": true,
     "Production": true,
     "Hospital": true,
-    "Medicine": true
+    "Medicine": true,
+    "HoribaIntegration": true
 }

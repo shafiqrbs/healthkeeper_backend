@@ -43,6 +43,7 @@ return [
              //   base_path('Modules/Production/App/Entities'),
                 base_path('Modules/Hospital/App/Entities'),
                 base_path('Modules/Medicine/App/Entities'),
+                base_path('Modules/HoribaIntegration/App/Entities'),
             ],
             'repository'    => Doctrine\ORM\EntityRepository::class,
 
