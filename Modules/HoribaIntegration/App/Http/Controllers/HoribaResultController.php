@@ -143,6 +143,47 @@ class HoribaResultController extends Controller
     }
 
     /**
+     * Update result fields (inline edit).
+     */
+    public function update(Request $request, $id)
+    {
+        $entity = HoribaResultModel::find($id);
+
+        if (!$entity) {
+            $response = new Response();
+            $response->headers->set('Content-Type', 'application/json');
+            $response->setContent(json_encode([
+                'message' => 'Record not found',
+                'status' => Response::HTTP_NOT_FOUND,
+            ]));
+            $response->setStatusCode(Response::HTTP_NOT_FOUND);
+            return $response;
+        }
+
+        $allowedFields = [
+            'sample_id', 'patient_id', 'patient_name', 'patient_gender',
+            'patient_age_years', 'patient_age_months',
+            'wbc', 'gra_pct', 'lym_pct', 'mid_pct', 'mon_pct', 'eos_pct', 'bas_pct',
+            'gra_count', 'lym_count', 'mid_count', 'esr', 'cir_eos',
+            'rbc', 'hgb', 'hct', 'mcv', 'mch', 'mchc', 'rdw_sd', 'rdw',
+            'plt', 'mpv', 'pct_val', 'pdw', 'plcr', 'bt', 'ct',
+        ];
+
+        $data = $request->only($allowedFields);
+        $entity->update($data);
+
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        $response->setContent(json_encode([
+            'message' => 'Result updated successfully',
+            'status' => Response::HTTP_OK,
+            'data' => $entity->fresh(),
+        ]));
+        $response->setStatusCode(Response::HTTP_OK);
+        return $response;
+    }
+
+    /**
      * Map result to invoice particular.
      */
     public function mapResult(Request $request, $id)

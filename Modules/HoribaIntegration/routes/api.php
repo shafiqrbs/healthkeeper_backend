@@ -22,6 +22,7 @@ Route::prefix('/horiba-integration')->middleware([HeaderAuthenticationMiddleware
     Route::get('horiba-results/stats', [HoribaResultController::class, 'stats']);
     Route::get('horiba-results', [HoribaResultController::class, 'index']);
     Route::get('horiba-results/{id}', [HoribaResultController::class, 'show']);
+    Route::patch('horiba-results/{id}', [HoribaResultController::class, 'update']);
     Route::post('horiba-results/{id}/map', [HoribaResultController::class, 'mapResult']);
     Route::post('horiba-results/{id}/approve', [HoribaResultController::class, 'approveResult']);
 });
