@@ -20,6 +20,8 @@ Route::post('/horiba-integration/horiba-results/import-cbc', [HoribaResultContro
 // Frontend — user authenticated routes
 Route::prefix('/horiba-integration')->middleware([HeaderAuthenticationMiddleware::class, 'auth:api'])->group(function () {
     Route::get('horiba-results/stats', [HoribaResultController::class, 'stats']);
+    Route::get('horiba-results/search-invoices', [HoribaResultController::class, 'searchInvoices']);
+    Route::get('horiba-results/invoice-particulars/{invoiceId}', [HoribaResultController::class, 'invoiceParticulars']);
     Route::get('horiba-results', [HoribaResultController::class, 'index']);
     Route::get('horiba-results/{id}', [HoribaResultController::class, 'show']);
     Route::patch('horiba-results/{id}', [HoribaResultController::class, 'update']);

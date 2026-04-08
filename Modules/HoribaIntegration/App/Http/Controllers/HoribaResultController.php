@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Modules\Core\App\Models\UserModel;
 use Modules\HoribaIntegration\App\Http\Requests\HoribaImportCbcRequest;
 use Modules\HoribaIntegration\App\Models\HoribaResultModel;
+use Modules\Hospital\App\Models\InvoiceModel;
+use Modules\Hospital\App\Models\InvoiceParticularModel;
 
 class HoribaResultController extends Controller
 {
@@ -204,6 +206,7 @@ class HoribaResultController extends Controller
         $entity->update([
             'invoice_particular_id' => $request->input('invoice_particular_id'),
             'is_mapped' => true,
+            'is_approved' => true,
         ]);
 
         $response = new Response();
@@ -245,6 +248,97 @@ class HoribaResultController extends Controller
             'message' => 'Result approved successfully',
             'status' => Response::HTTP_OK,
             'data' => $entity,
+        ]));
+        $response->setStatusCode(Response::HTTP_OK);
+        return $response;
+    }
+
+    /**
+     * Search invoices for mapping.
+     */
+    public function searchInvoices(Request $request)
+    {
+        $term = trim($request->input('term', ''));
+
+        if (strlen($term) < 2) {
+            $response = new Response();
+            $response->headers->set('Content-Type', 'application/json');
+            $response->setContent(json_encode([
+                'message' => 'success',
+                'status' => Response::HTTP_OK,
+                'data' => [],
+            ]));
+            $response->setStatusCode(Response::HTTP_OK);
+            return $response;
+        }
+
+        $domain = $this->domain;
+        $entities = InvoiceModel::join('cor_customers as customer', 'customer.id', '=', 'hms_invoice.customer_id')
+            ->where(function ($q) use ($term) {
+                $q->where('customer.name', 'LIKE', "%{$term}%")
+                    ->orWhere('customer.mobile', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_invoice.invoice', 'LIKE', "%{$term}%");
+            })
+            ->select([
+                'hms_invoice.id',
+                'hms_invoice.invoice',
+                'hms_invoice.uid',
+                'customer.name as patient_name',
+                'customer.customer_id as patient_id',
+                'customer.mobile',
+                'hms_invoice.total',
+                'hms_invoice.process',
+                'hms_invoice.created_at',
+            ])
+            ->orderByRaw("
+                CASE
+                    WHEN hms_invoice.invoice = ? THEN 1
+                    WHEN hms_invoice.invoice LIKE ? THEN 2
+                    WHEN customer.customer_id LIKE ? THEN 3
+                    WHEN customer.mobile LIKE ? THEN 4
+                    ELSE 5
+                END ASC, hms_invoice.created_at DESC
+            ", [$term, "%{$term}%", "%{$term}%", "%{$term}%"])
+            ->limit(20)
+            ->get();
+
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        $response->setContent(json_encode([
+            'message' => 'success',
+            'status' => Response::HTTP_OK,
+            'data' => $entities,
+        ]));
+        $response->setStatusCode(Response::HTTP_OK);
+        return $response;
+    }
+
+    /**
+     * Get invoice particulars for mapping.
+     */
+    public function invoiceParticulars($invoiceId)
+    {
+        $particulars = InvoiceParticularModel::where('hms_invoice_id', $invoiceId)
+            ->select([
+                'id',
+                'hms_invoice_id',
+                'particular_id',
+                'name',
+                'price',
+                'quantity',
+                'mode',
+                'status',
+                'process',
+            ])
+            ->orderBy('id', 'ASC')
+            ->get();
+
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
+        $response->setContent(json_encode([
+            'message' => 'success',
+            'status' => Response::HTTP_OK,
+            'data' => $particulars,
         ]));
         $response->setStatusCode(Response::HTTP_OK);
         return $response;
