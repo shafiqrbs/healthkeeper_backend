@@ -11,7 +11,7 @@ class HoribaImportCbcRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'device_id' => 'required|integer|exists:horiba_devices,id',
+            'device_id' => 'required|integer',
             'records' => 'required|array|min:1|max:100',
             'records.*.lis_record_id' => 'required|integer',
             'records.*.sample_id' => 'required|string|max:50',
@@ -63,7 +63,6 @@ class HoribaImportCbcRequest extends FormRequest
     {
         return [
             'device_id.required' => 'Device ID is required.',
-            'device_id.exists' => 'Device not found.',
             'records.required' => 'At least one record is required.',
             'records.max' => 'Maximum 100 records per request.',
         ];
