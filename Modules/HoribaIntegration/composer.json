@@ -1,0 +1,31 @@
+{
+    "name": "nwidart/horibaintegration",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\HoribaIntegration\\": "",
+            "Modules\\HoribaIntegration\\App\\": "app/",
+            "Modules\\HoribaIntegration\\Database\\Factories\\": "database/factories/",
+            "Modules\\HoribaIntegration\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\HoribaIntegration\\Tests\\": "tests/"
+        }
+    }
+}

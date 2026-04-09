@@ -1,0 +1,11 @@
+{
+    "name": "HoribaIntegration",
+    "alias": "horiba-integration",
+    "description": "Horiba lab machine integration (MICROS 60, Pentra 400)",
+    "keywords": ["horiba", "machine", "cbc", "integration"],
+    "priority": 0,
+    "providers": [
+        "Modules\\HoribaIntegration\\App\\Providers\\HoribaIntegrationServiceProvider"
+    ],
+    "files": []
+}
