@@ -136,6 +136,7 @@ class PatientArchiveModel extends Model
                 'hms_invoice.uid',
                 'prescription.id as prescription_id',
                 'hms_invoice.invoice as invoice',
+                'hms_invoice.invoice_mode as invoice_mode',
                 'customer.customer_id as patient_id',
                 'doctor.name as doctor_name',
                 'customer.name',
