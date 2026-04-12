@@ -792,6 +792,7 @@ class ReportModel extends Model
             $sub_total = ($total - $refund_total);
             $investigationMerged[] = [
                 'name' => $mode_id,
+                'particular_mode' => $mode->particular_mode,
                 'total' => $total,
                 'refund' => $refund_total, // default 0 if not refunded
                 'sub_total' => $sub_total, // default 0 if not refunded
@@ -1599,10 +1600,12 @@ class ReportModel extends Model
             ->leftjoin('hms_invoice_transaction as hms_invoice_transaction','hms_invoice_transaction.id','=','hms_invoice_particular.invoice_transaction_id')
             ->leftjoin('hms_invoice as hms_invoice','hms_invoice.id','=','hms_invoice_particular.hms_invoice_id')
             ->leftjoin('hms_particular as hms_particular','hms_particular.id','=','hms_invoice_particular.particular_id')
+            ->leftjoin('hms_particular_mode as particular_mode','particular_mode.id','=','hms_particular.financial_service_id')
             ->select([
                 DB::raw('COUNT(hms_invoice_particular.id) as total_count'),
                 DB::raw('SUM(hms_invoice_particular.sub_total) as total'),
                 'hms_particular.display_name as name',
+                'particular_mode.name as particular_mode',
             ])->groupBy('particular_id');
         if(isset($request['invoice_mode']) && !empty($request['invoice_mode'])){
             $entities = $entities->where('hms_invoice_particular.report_mode',$request['invoice_mode']);

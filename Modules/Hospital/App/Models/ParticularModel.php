@@ -113,6 +113,7 @@ class ParticularModel extends Model
              $term = trim($request['term']);
             $entity = $entity->where(function ($q) use ($term) {
                 $q->where('hms_particular.name', 'LIKE', "%{$term}%")
+                    ->orWhere('hms_particular.display_name', 'LIKE', "%{$term}%")
                     ->orWhere('hms_particular.slug', 'LIKE', "%{$term}%")
                     ->orWhere('hms_particular_type.slug', 'LIKE', "%{$term}%")
                     ->orWhere('hms_particular_type.name', 'LIKE', "%{$term}%");
@@ -164,6 +165,7 @@ class ParticularModel extends Model
             $q->where('hms_particular.created_by_id', $domain['user_id'])
                 ->orWhereNull('hms_particular.created_by_id');
         });
+        $entity->groupBy('hms_particular.name');
         $data = $entity->get();
         return $data;
     }
@@ -184,6 +186,7 @@ class ParticularModel extends Model
                 'hms_particular.slug',
                 'hms_particular.content',
             ])
+            ->groupBy('hms_particular.name')
             ->orderBy('hms_particular.ordering','ASC')
             ->get();
     }

@@ -71,34 +71,19 @@ class BillingModel extends Model
         $perPage = isset($request['offset']) && $request['offset']!=''? (int)($request['offset']):50;
         $skip = isset($page) && $page!=''? (int)$page * $perPage:0;
         $total = 0;
-        $entities=[];
         $entities = InvoiceModel::where([['hms_invoice.config_id', $domain['hms_config']]])
-            ->leftjoin('hms_prescription as prescription', 'prescription.hms_invoice_id', '=', 'hms_invoice.id')
-            ->leftjoin('users as doctor', 'doctor.id', '=', 'prescription.created_by_id')
-            ->leftjoin('hms_particular as vr', 'vr.id', '=', 'hms_invoice.room_id')
-            ->leftjoin('users as createdBy', 'createdBy.id', '=', 'hms_invoice.created_by_id')
             ->join('cor_customers as customer', 'customer.id', '=', 'hms_invoice.customer_id')
             ->join('hms_particular_mode as patient_mode', 'patient_mode.id', '=', 'hms_invoice.patient_mode_id')
             ->select([
                 'hms_invoice.id',
                 'hms_invoice.uid',
-                'hms_invoice.barcode',
-                'prescription.created_by_id as prescription_created_by_id',
                 'hms_invoice.invoice as invoice',
                 'customer.customer_id as patient_id',
-                'doctor.name as doctor_name',
                 'customer.name',
                 'customer.mobile',
-                'patient_mode.name as patient_mode_name',
-                'patient_mode.slug as patient_mode_slug',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.updated_at, "%Y-%m-%d") as created_at'),
-                DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%Y-%m-%d") as admission_date'),
                 'hms_invoice.process as process',
-                'vr.display_name as display_name',
-                'createdBy.name as created_by',
-                'hms_invoice.sub_total as total',
-                'hms_invoice.amount as amount',
             ]);
 
         if (isset($request['term']) && !empty($request['term'])) {
