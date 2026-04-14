@@ -32,5 +32,10 @@ class InvoicePathologicalReportModel extends Model
         });
     }
 
+    public function investigationReportFormat()
+    {
+        return $this->belongsTo(InvestigationReportFormatModel::class, 'investigation_report_format_id','id');
+    }
+
 
 }

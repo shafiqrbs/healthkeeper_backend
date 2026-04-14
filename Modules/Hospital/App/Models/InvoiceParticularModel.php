@@ -56,6 +56,11 @@ class InvoiceParticularModel extends Model
         return $this->hasOne(ParticularModel::class, 'id', 'particular_id');
     }
 
+    public function invoice()
+    {
+        return $this->belongsTo(InvoiceModel::class, 'hms_invoice_id','id');
+    }
+
     public function custom_report()
     {
         return $this->hasOne(InvoiceParticularTestReportModel::class, 'invoice_particular_id');

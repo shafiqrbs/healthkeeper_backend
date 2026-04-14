@@ -44,6 +44,13 @@ class InvoiceParticular
     private $uniqueId;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $horibaResultId;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Modules\Inventory\App\Entities\Category")
      * @ORM\JoinColumn(onDelete="SET NULL")
      **/

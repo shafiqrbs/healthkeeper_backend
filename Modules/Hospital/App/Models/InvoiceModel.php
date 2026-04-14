@@ -1011,6 +1011,21 @@ class InvoiceModel extends Model
         ];
     }
 
-
+    public static function getHoribaData($id)
+    {
+        return self::whereRaw(
+            "REGEXP_REPLACE(hms_invoice.invoice, '[^0-9]', '') = ?",
+            [$id]
+        )
+            ->join('cor_customers', 'cor_customers.id', '=', 'hms_invoice.customer_id')
+            ->select([
+                'hms_invoice.id as invoice_id',
+                'cor_customers.name as name',
+                'cor_customers.customer_id as patient_id',
+                'cor_customers.gender as gender',
+                'cor_customers.age as age',
+            ])
+            ->first();
+    }
 
 }

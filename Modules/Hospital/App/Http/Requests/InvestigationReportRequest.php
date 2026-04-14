@@ -34,6 +34,8 @@ class InvestigationReportRequest extends FormRequest
                     'sample_value' => 'string|nullable',
                     'unit' => 'string|nullable',
                     'parent_id' => 'integer|nullable',
+                    'sorting' => 'integer|nullable',
+                    'slug' => 'string|nullable',
                 ];
             }
             case 'PUT':

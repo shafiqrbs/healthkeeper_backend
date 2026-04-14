@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\App\Models\CustomerModel;
+use Modules\HoribaIntegration\App\Models\HoribaResultModel;
 use Modules\Hospital\App\Http\Requests\ParticularInlineRequest;
 use function Doctrine\Common\Collections\orderBy;
 
@@ -364,29 +365,50 @@ class LabInvestigationModel extends Model
              );
          }else{
              $investigation = $entity->particular_id;
-             $reportElements = InvestigationReportFormatModel::where('particular_id',$investigation)->get();
-             foreach ($reportElements as $row):
-                 $exist = InvoicePathologicalReportModel::where([
-                     ['invoice_particular_id', $entity->id],
-                     ['particular_id', $investigation],
-                     ['investigation_report_format_id', $row->id],
-                 ])->first();
-                 if(empty($exist) and !empty($row->name)){
-                     $input =[
-                         'invoice_particular_id' => $entity->id,
-                         'particular_id' => $investigation,
-                         'investigation_report_parent_id' => $row->parent_id,
-                         'investigation_report_format_id' => $row->id,
-                         'name' => $row->name,
-                         'reference_value' => $row->reference_value,
-                         'unit' => $row->unit,
-                         'result' => $row->sample_value,
-                         'sample_value' => $row->sample_value
-                     ];
-                     InvoicePathologicalReportModel::create($input);
-                 }
-             endforeach;
+             $reportElements = InvestigationReportFormatModel::where('particular_id', $investigation)
+                 ->orderByRaw('ISNULL(sorting), sorting ASC')
+                 ->get();
+                 foreach ($reportElements as $row):
+                     $exist = InvoicePathologicalReportModel::where([
+                         ['invoice_particular_id', $entity->id],
+                         ['particular_id', $investigation],
+                         ['investigation_report_format_id', $row->id],
+                     ])->first();
+                     if(empty($exist) and !empty($row->name)){
+
+                         $input =[
+                             'invoice_particular_id' => $entity->id,
+                             'particular_id' => $investigation,
+                             'investigation_report_parent_id' => $row->parent_id,
+                             'investigation_report_format_id' => $row->id,
+                             'name' => $row->name,
+                             'reference_value' => $row->reference_value,
+                             'unit' => $row->unit,
+                             'result' => $row->sample_value,
+                             'sample_value' => $row->sample_value
+                         ];
+                         InvoicePathologicalReportModel::create($input);
+                     }
+                 endforeach;
                  self::updateParents($entity->id);
+
+             if (empty($entity->horiba_result_id) and  $entity->particular->slug == 'cbc-esr') {
+
+                 $invoice = preg_replace('/\D/', '', $entity->invoice->invoice);
+                 //$info = InvoiceModel::getHoribaData($invoice);
+                 $horiba = HoribaResultModel::where('sample_id', $invoice)->first();
+                 $records = $entity->reports;
+                 foreach ($records as $row) {
+                     $slug = $row->investigationReportFormat->slug ?? null;
+                     if ($horiba && $slug && isset($horiba->{$slug})) {
+                         $row->result = $horiba->{$slug};
+                         $row->save(); // or collect & bulk later
+                     }
+                 }
+                 $entity->update(['horiba_result_id' => $horiba->id]);
+             }
+
+
          }
 
     }

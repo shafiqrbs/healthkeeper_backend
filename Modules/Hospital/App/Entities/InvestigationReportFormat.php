@@ -64,6 +64,13 @@ class InvestigationReportFormat
     /**
      * @var string
      *
+     * @ORM\Column(name="slug", type="string", length=50, nullable=true)
+     */
+    private $slug;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="parent_name", type="string", length=200, nullable=true)
      */
     private $parentName;

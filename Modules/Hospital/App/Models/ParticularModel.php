@@ -42,7 +42,8 @@ class ParticularModel extends Model
 
     public function investigationReportFormat()
     {
-        return $this->hasMany(InvestigationReportFormatModel::class, 'particular_id', 'id');
+        return $this->hasMany(InvestigationReportFormatModel::class, 'particular_id', 'id')
+            ->orderBy('sorting', 'asc'); // 👈 change field name as needed
     }
 
     public function treatmentMedicineFormat()
