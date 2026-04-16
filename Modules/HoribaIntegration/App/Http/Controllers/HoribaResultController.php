@@ -66,7 +66,19 @@ class HoribaResultController extends Controller
 
                 $record['device_id'] = $deviceId;
                 $record['raw_json'] = json_encode($record);
-                HoribaResultModel::create($record);
+                $created = HoribaResultModel::create($record);
+
+                try {
+                    $patient = InvoiceModel::getHoribaData($created->sample_id);
+                    if ($patient) {
+                        $created->update(array_filter($patient, static function ($v) {
+                            return $v !== null && $v !== '';
+                        }));
+                    }
+                } catch (\Throwable $e) {
+                    // patient lookup is best-effort; insert must not be impacted
+                }
+
                 $storedCount++;
             }
 

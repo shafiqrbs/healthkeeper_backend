@@ -155,6 +155,49 @@ class InvoiceModel extends Model
         }
     }
 
+    public static function getHoribaData($sampleId)
+    {
+        $sampleId = preg_replace('/\D/', '', (string) $sampleId);
+        if ($sampleId === '') {
+            return null;
+        }
+
+        $row = self::join('cor_customers as customer', 'customer.id', '=', 'hms_invoice.customer_id')
+            ->whereRaw("CAST(REGEXP_REPLACE(hms_invoice.invoice, '[^0-9]', '') AS UNSIGNED) = ?", [(int) $sampleId])
+            ->orderBy('hms_invoice.id', 'DESC')
+            ->select([
+                'customer.customer_id as patient_id',
+                'customer.name as patient_name',
+                'customer.gender as patient_gender',
+                'customer.age as age',
+                'customer.age_type as age_type',
+            ])
+            ->first();
+
+        if (!$row) {
+            return null;
+        }
+
+        $ageYears = null;
+        $ageMonths = null;
+        $ageType = strtolower((string) $row->age_type);
+        if ($row->age !== null) {
+            if ($ageType === 'month' || $ageType === 'months') {
+                $ageMonths = (int) $row->age;
+            } else {
+                $ageYears = (int) $row->age;
+            }
+        }
+
+        return [
+            'patient_id' => $row->patient_id,
+            'patient_name' => $row->patient_name,
+            'patient_gender' => $row->patient_gender,
+            'patient_age_years' => $ageYears,
+            'patient_age_months' => $ageMonths,
+        ];
+    }
+
     public static function getCustomerSearch($domain,$request)
     {
 
@@ -1010,22 +1053,4 @@ class InvoiceModel extends Model
             'items' => $report
         ];
     }
-
-    public static function getHoribaData($id)
-    {
-        return self::whereRaw(
-            "REGEXP_REPLACE(hms_invoice.invoice, '[^0-9]', '') = ?",
-            [$id]
-        )
-            ->join('cor_customers', 'cor_customers.id', '=', 'hms_invoice.customer_id')
-            ->select([
-                'hms_invoice.id as invoice_id',
-                'cor_customers.name as name',
-                'cor_customers.customer_id as patient_id',
-                'cor_customers.gender as gender',
-                'cor_customers.age as age',
-            ])
-            ->first();
-    }
-
 }
