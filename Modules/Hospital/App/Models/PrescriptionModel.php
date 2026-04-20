@@ -396,5 +396,17 @@ class PrescriptionModel extends Model
         return $entities;
     }
 
+    public static function getDiseaseProfile($domain)
+    {
+        $entities = self::where('hms_prescription.prescribe_doctor_id', $domain['user_id'])
+            ->select([
+                'hms_prescription.disease_profile',
+            ])
+            ->groupBy('hms_prescription.disease_profile')
+            ->orderBY('hms_prescription.disease_profile','ASC')
+            ->get();
+        return $entities;
+    }
+
 
 }

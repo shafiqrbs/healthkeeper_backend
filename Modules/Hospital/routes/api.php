@@ -47,6 +47,7 @@ Route::prefix('/hospital/select')->middleware([HeaderAuthenticationMiddleware::c
     Route::get('/bymeal', [HospitalController::class,'mealDropdown'])->name('meal_dropdown');
     Route::get('/investigation', [HospitalController::class,'investigationDropdown'])->name('investigation_dropdown');
     Route::get('/dosage', [HospitalController::class,'dosageDropdown'])->name('dosage_dropdown');
+    Route::get('/disease-profile', [HospitalController::class,'diseaseProfile'])->name('disease_profile');
     Route::get('/particular-content', [HospitalController::class,'particularContentDropdown'])->name('particular_content_dropdown');
     Route::get('/module', [HospitalController::class,'particularModuleDropdown'])->name('particular_module_dropdown');
     Route::get('/modules', [HospitalController::class,'particularModuleChildDropdown'])->name('particular_module_dropdown');

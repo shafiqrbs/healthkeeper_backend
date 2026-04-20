@@ -31,6 +31,7 @@ use Modules\Hospital\App\Models\ParticularModeModel;
 use Modules\Hospital\App\Models\ParticularModuleModel;
 use Modules\Hospital\App\Models\ParticularTypeMasterModel;
 use Modules\Hospital\App\Models\ParticularTypeModel;
+use Modules\Hospital\App\Models\PrescriptionModel;
 use Modules\Hospital\App\Models\ProductModel;
 use Modules\Hospital\App\Models\ShareHealthModel;
 use Modules\Inventory\App\Models\ProductBrandModel;
@@ -911,6 +912,16 @@ class HospitalController extends Controller
     public function dosageDropdown()
     {
         $dropdown = MedicineModel::getDosageDropdown($this->domain);
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($dropdown);
+    }
+
+    /**
+     * dropdown the specified resource from storage.
+     */
+    public function diseaseProfile()
+    {
+        $dropdown = PrescriptionModel::getDiseaseProfile($this->domain);
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($dropdown);
     }
