@@ -105,14 +105,14 @@ class AdmissionPatient
     /**
      * @var string
      *
-     * @ORM\Column( type="string",nullable = true, length=50)
+     * @ORM\Column( type="text",nullable = true)
      */
     private $diseasesProfile;
 
      /**
      * @var string
      *
-     * @ORM\Column( type="string",nullable = true, length=50)
+     * @ORM\Column( type="text",nullable = true)
      */
     private $clinicalFindings;
 
