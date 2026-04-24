@@ -74,11 +74,25 @@ class Prescription
     private $followUpId;
 
      /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true)
+     */
+    private $referredHospital;
+
+     /**
      * @var text
      *
      * @ORM\Column( type="text",nullable = true)
      */
-    private $diseaseProfile;
+    private $diseasesProfile;
+
+     /**
+     * @var text
+     *
+     * @ORM\Column( type="text",nullable = true)
+     */
+    private $reason;
 
     /**
      * @var string

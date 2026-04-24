@@ -50,6 +50,34 @@ class AdmissionPatientModel extends Model
         );
     }
 
+    public static function getDiseaseProfile($domain)
+    {
+        $entities = self::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereNotNull('hms_admission_patient_details.diseases_profile')
+            ->join('hms_invoice','hms_invoice.id','=','hms_admission_patient_details.hms_invoice_id')
+            ->select([
+                'hms_admission_patient_details.diseases_profile',
+            ])
+            ->groupBy('hms_admission_patient_details.diseases_profile')
+            ->orderBY('hms_admission_patient_details.diseases_profile','ASC')
+            ->get();
+        return $entities;
+    }
+
+    public static function getReferredHospital($domain)
+    {
+        $entities = self::where('hms_invoice.config_id', $domain['hms_config'])
+            ->whereNotNull('hms_admission_patient_details.referred_hospital')
+            ->join('hms_invoice','hms_invoice.id','=','hms_admission_patient_details.hms_invoice_id')
+            ->select([
+                'hms_admission_patient_details.referred_hospital as name',
+            ])
+            ->groupBy('hms_admission_patient_details.referred_hospital')
+            ->orderBY('hms_admission_patient_details.referred_hospital','ASC')
+            ->get();
+        return $entities;
+    }
+
 
 
 

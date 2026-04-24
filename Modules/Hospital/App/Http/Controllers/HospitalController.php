@@ -20,6 +20,7 @@ use Modules\Core\App\Models\UserProfileModel;
 use Modules\Core\App\Models\UserWarehouseModel;
 use Modules\Core\App\Models\WarehouseModel;
 use Modules\Domain\App\Models\DomainModel;
+use Modules\Hospital\App\Models\AdmissionPatientModel;
 use Modules\Hospital\App\Models\CategoryModel;
 use Modules\Hospital\App\Models\HospitalConfigModel;
 use Modules\Hospital\App\Models\InvoiceModel;
@@ -921,7 +922,17 @@ class HospitalController extends Controller
      */
     public function diseaseProfile()
     {
-        $dropdown = PrescriptionModel::getDiseaseProfile($this->domain);
+        $dropdown = AdmissionPatientModel::getDiseaseProfile($this->domain);
+        $service = new JsonRequestResponse();
+        return $service->returnJosnResponse($dropdown);
+    }
+
+     /**
+     * dropdown the specified resource from storage.
+     */
+    public function referredHospital()
+    {
+        $dropdown = AdmissionPatientModel::getReferredHospital($this->domain);
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($dropdown);
     }

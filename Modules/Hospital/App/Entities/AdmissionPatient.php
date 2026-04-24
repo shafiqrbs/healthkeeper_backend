@@ -59,6 +59,13 @@ class AdmissionPatient
     /**
      * @var string
      *
+     * @ORM\Column( type="string",nullable = true)
+     */
+    private $diseases;
+
+    /**
+     * @var string
+     *
      * @ORM\Column( type="text",nullable = true)
      */
     private $comment;
@@ -101,6 +108,15 @@ class AdmissionPatient
      * @ORM\Column( type="string",nullable = true, length=50)
      */
     private $diseasesProfile;
+
+     /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true, length=50)
+     */
+    private $clinicalFindings;
+
+
 
 
     /**

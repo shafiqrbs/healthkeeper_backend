@@ -204,12 +204,19 @@ class IpdPrescriptionController extends Controller
         $data['json_content'] = json_encode($data);
         $data['prescribe_doctor_id'] = $domain['user_id'];
         $data['follow_up_id'] = (isset($data['follow_up_date']) and $data['follow_up_date']) ? $data['follow_up_date'] :'';
-        $data['disease_profile'] = (isset($data['disease_details']) and $data['disease_details']) ? $data['disease_details'] :'';
+        $data['diseases_profile'] = (isset($data['diseases_profile']) and $data['diseases_profile']) ? $data['diseases_profile'] :'';
+        $data['reason'] = (isset($data['reason']) and $data['reason']) ? $data['reason'] :'';
+        $data['referred_hospital'] = (isset($data['referred_hospital']) and $data['referred_hospital']) ? $data['referred_hospital'] :'';
+        $data['clinical_findings'] = (isset($data['clinical_findings']) and $data['clinical_findings']) ? $data['clinical_findings'] :'';
+        $data['about_death'] = (isset($data['about_death']) and $data['about_death']) ? $data['about_death'] :'';
+        $data['cause_death'] = (isset($data['cause_death']) and $data['cause_death']) ? $data['cause_death'] :'';
+    //    $data['death_date_time'] = (isset($data['death_date_time']) and $data['death_date_time']) ? $data['death_date_time'] :'';
         $data['process'] = 'done';
         $entity->update($data);
-        $weight = $data['weight'] ?? null;
+        $entity->invoice->admission_patient->update($data);
         $entity->invoice->invoice_mode;
         if($entity->invoice->invoice_mode == "ipd"){
+            $weight = $data['weight'] ?? null;
             $entity->invoice->update(['is_prescription' => 1,'weight' => $weight]);
         }
         HospitalSalesModel::insertMedicineIssue($domain,$entity->id);

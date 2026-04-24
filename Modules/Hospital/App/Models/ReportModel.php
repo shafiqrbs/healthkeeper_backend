@@ -1175,11 +1175,16 @@ class ReportModel extends Model
                 'customer.mobile',
                 'customer.age',
                 'hms_invoice.release_mode',
-                'hms_prescription.disease_profile',
+                'hms_admission_patient_details.reason',
+                'hms_admission_patient_details.diseases_profile',
                 'hms_admission_patient_details.cause_death',
-                'hms_admission_patient_details.about_death',
+                'hms_admission_patient_details.reason',
+                'hms_admission_patient_details.referred_hospital',
+                'hms_admission_patient_details.clinical_findings',
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
-                DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d %b %Y, %h:%i %p") as created_at'), 'hms_invoice.process as process',
+                DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d %b %Y, %h:%i %p") as created_at'),
+                'hms_invoice.process as process',
+                DB::raw('DATE_FORMAT(hms_invoice.release_date, "%d-%M-%Y") as release_date'),
             ]);
 
         if (isset($request['start_date']) && !empty($request['start_date'])){

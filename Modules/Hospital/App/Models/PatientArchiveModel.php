@@ -145,6 +145,7 @@ class PatientArchiveModel extends Model
                 DB::raw("CONCAT(UCASE(LEFT(customer.gender, 1)), LCASE(SUBSTRING(customer.gender, 2))) as gender"),
                 DB::raw('DATE_FORMAT(hms_invoice.created_at, "%d %b %Y, %h:%i %p") as created_at'),
                 DB::raw('DATE_FORMAT(hms_invoice.admission_date, "%d-%M-%Y") as admission_date'),
+                DB::raw('DATE_FORMAT(hms_invoice.release_date, "%d-%M-%Y") as release_date'),
                 'hms_invoice.process as process',
                 'hms_invoice.release_mode as release_mode',
                 'vr.name as visiting_room',
