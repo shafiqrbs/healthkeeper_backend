@@ -415,7 +415,7 @@ class IpdController extends Controller
             'admission_id' => null,
         ]);
         $entity->update([
-            'process' => 'cancel',
+            'process' => 'canceled',
             'deleted_by_id' => $user,
         ]);
         $service = new JsonRequestResponse();
@@ -437,7 +437,10 @@ class IpdController extends Controller
             'is_booked' => 0,
             'admission_id' => null,
         ]);
-        InvoiceModel::find($id)->delete();
+        $entity->update([
+            'process' => 'canceled',
+            'deleted_by_id' => $user,
+        ]);
         $entity = ['message'=>'delete'];
         $service = new JsonRequestResponse();
         return $service->returnJosnResponse($entity);
