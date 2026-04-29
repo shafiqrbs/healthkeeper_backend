@@ -79,12 +79,49 @@ class AdmissionPatient
     private $reason;
 
 
-      /**
+    /**
      * @var string
      *
      * @ORM\Column( type="string",nullable = true)
      */
     private $referredHospital;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true)
+     */
+     private $caseNo;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true)
+     */
+    private $thana;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true)
+     */
+    private $assign_police_officer;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column( type="string",nullable = true)
+     */
+    private $police_officer_mobile;
+
+
+    /**
+     * @var \DateTime
+     * @ORM\Column(name="gd_date", type="datetime")
+     */
+    private $gdDate;
 
 
     /**
