@@ -119,10 +119,15 @@ class AdmissionPatient
 
     /**
      * @var \DateTime
-     * @ORM\Column(name="gd_date", type="datetime")
+     * @ORM\Column(name="gd_date", type="datetime", nullable = true)
      */
     private $gdDate;
 
+    /**
+     * @var \DateTime
+     * @ORM\Column(name="absconded_date", type="datetime", nullable = true)
+     */
+    private $abscondedDate;
 
     /**
      * @var string

@@ -520,11 +520,15 @@ class ParticularModel extends Model
 
         $config =  $domain['hms_config'];
         $page =  isset($request['page']) && $request['page'] > 0?($request['page'] - 1 ) : 0;
-        $perPage = 300;
+        $perPage = 150;
         $skip = isset($page) && $page!=''? (int)$page*$perPage:0;
 
         $entity = self::where('hms_particular.config_id',$config)->where('hms_particular.is_booked',0)
             ->where('hms_particular.status',1)
+            ->where(function ($q) {
+                $q->whereNull('hms_particular.admission_id')
+                    ->orWhere('hms_particular.admission_id', 0);
+            })
             ->whereIn('hms_particular_master_type.slug',['cabin','bed'])
             ->leftJoin('hms_particular_details','hms_particular_details.particular_id','=','hms_particular.id')
             ->join('hms_particular_type','hms_particular_type.id','=','hms_particular.particular_type_id')

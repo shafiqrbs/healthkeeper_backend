@@ -665,6 +665,9 @@ class InvoiceModel extends Model
                 'admission_patient.about_death as about_death',
                 'admission_patient.death_date_time as death_date_time',
                 'admission_patient.dead_date_time as dead_date_time',
+                'admission_patient.absconded_date as absconded_date',
+                'admission_patient.case_no as case_no',
+                'admission_patient.thana as thana',
                 'admission_patient.reason as reason',
                 'admission_patient.referred_hospital as referred_hospital',
             ])

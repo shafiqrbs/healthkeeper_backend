@@ -120,8 +120,18 @@ class IpdController extends Controller
                 ['particular_module_id', 3],
             ])->id;
             $input['patient_mode_id'] = $patient_mode_id;
-            $entity = IpdModel::create($input);
-            IpdModel::insertHmsInvoice($domain,$parentInvoice,$entity,$input);
+            $roomRent = ParticularModel::where('id', $input['room_id'])
+                ->whereNull('admission_id')
+                ->where('is_booked', 0)
+                ->first();
+            if (!empty($roomRent)) {
+                $entity = IpdModel::create($input);
+                $roomRent->update([
+                    'is_booked' => true,
+                    'admission_id' => $entity->id
+                ]);
+                IpdModel::insertHmsInvoice($domain, $parentInvoice, $entity, $input);
+            }
             DB::commit();
             $invoice = InvoiceModel::getShow($entity->id);
             $service = new JsonRequestResponse();
@@ -137,7 +147,7 @@ class IpdController extends Controller
             $response = new Response();
             $response->headers->set('Content-Type', 'application/json');
             $response->setContent(json_encode([
-                'message' => 'An error occurred while saving the domain and related data.',
+                'message' => 'Room is already booked or not available',
                 'error' => $e->getMessage(),
                 'status' => Response::HTTP_INTERNAL_SERVER_ERROR,
             ]));
@@ -470,27 +480,63 @@ class IpdController extends Controller
      /**
      * Show the form for editing the specified resource.
      */
-    public function patientAbsconded($id)
+    public function patientAbsconded($id,Request $request)
     {
+        $user = $this->domain['user_id'];
+        $data = $request->all();
         $date = new \DateTime();
         $entity = InvoiceModel::findByIdOrUid($id);
-       // InvoiceParticularModel::getPatientSingleCountBedRoom($entity);
-        if ($entity->room) {
-            $entity->room->update([
-                'is_booked'   => false,
-                'admission_id'=> null,
-            ]);
-        }
+        ParticularModel::where([
+            'is_booked' => 1,
+            'admission_id' => $entity->id
+        ])->update([
+            'is_booked' => 0,
+            'admission_id' => null,
+        ]);
         $entity->update([
-            'process' => 'discharged',
+            'process' => 'absconded',
             'release_mode' => 'absconded',
             'release_date' => $date,
             'consume_day' => $entity->admission_day,
             'remaining_day' => $entity->admission_day,
-            'payment_day' => $entity->admission_day]);
+            'payment_day' => $entity->admission_day,
+            'absconded_created_by_id' => $user,
+        ]);
+
+        $data['case_no'] = (isset($data['case_no']) and $data['case_no']) ? $data['case_no'] :'';
+        $data['thana'] = (isset($data['thana']) and $data['thana']) ? $data['thana'] :'';
+        $data['reason'] = (isset($data['reason']) and $data['reason']) ? $data['reason'] :'';
+        $data['absconded_date'] = (isset($data['absconded_date']) && $data['absconded_date'] && $data['absconded_date'] !== 'invalid') ? new \DateTime($data['absconded_date']) : new \DateTime();
+        $entity->admission_patient()->updateOrCreate(
+            ['hms_invoice_id' => $entity->id], // شرط (unique key)
+            $data // values to update or insert
+        );
         $service = new JsonRequestResponse();
         $status = ['status'=>'success'];
         $data = $service->returnJosnResponse($status);
+        return $data;
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function processApproveAbsconded($id)
+    {
+        $user = $this->domain['user_id'];
+        $entity = InvoiceModel::findByIdOrUid($id);
+        ParticularModel::where([
+            'is_booked' => 1,
+            'admission_id' => $entity->id
+        ])->update([
+            'is_booked' => 0,
+            'admission_id' => null,
+        ]);
+        $entity->update([
+            'process' => 'discharged',
+            'absconded_approved_by_id' => $user,
+        ]);
+        $service = new JsonRequestResponse();
+        $data = $service->returnJosnResponse();
         return $data;
     }
 

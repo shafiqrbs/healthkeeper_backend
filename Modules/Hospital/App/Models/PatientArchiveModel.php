@@ -167,7 +167,7 @@ class PatientArchiveModel extends Model
             });
         }
 
-        $entities = $entities->whereIn('hms_invoice.process',['discharged','closed','done','paid','re-admission']);
+        $entities = $entities->whereIn('hms_invoice.process',['discharged','closed','done','paid','re-admission','absconded']);
 
         if (isset($request['patient_mode']) && !empty($request['patient_mode']) && $request['patient_mode'] !== 'all' ){
             if (is_array($request['patient_mode'])) {

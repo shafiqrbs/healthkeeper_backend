@@ -452,6 +452,9 @@ class IpdModel extends Model
             } elseif ($request['process'] == 'discharged' && $request['release_mode'] == 'DORB') {
                 $entities = $entities->where('hms_invoice.process', 'discharged');
                 $entities = $entities->where('hms_invoice.release_mode', 'DORB');
+            } elseif ($request['process'] == 'discharged' && $request['release_mode'] == 'absconded') {
+                $entities = $entities->where('hms_invoice.process', 'discharged');
+                $entities = $entities->where('hms_invoice.release_mode', 'absconded');
             } else {
                 $entities = $entities->where('hms_invoice.process', $request['process']);
             }
@@ -724,7 +727,6 @@ class IpdModel extends Model
         $amount = InvoiceParticularModel::where('hms_invoice_id', $entity->id)->sum('sub_total');
         $invoiceTransaction->update(['hms_invoice_id' => $entity->id ,'is_master' => true ,'sub_total' => $amount , 'total' => $amount]);
         $entity->update(['sub_total' => $amount , 'total' => $amount, 'admission_date' => $date]);
-        $roomRent->update(['is_booked' => true,'admission_id' => $entity->id]);
         return $amount;
 
     }

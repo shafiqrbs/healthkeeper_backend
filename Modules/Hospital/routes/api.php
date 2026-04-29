@@ -203,7 +203,8 @@ Route::prefix('/hospital')->middleware([HeaderAuthenticationMiddleware::class,'a
     Route::patch('/ipd/change/{id}', [IpdController::class, 'admissionChange'])->name('admissionChange');
     Route::get('/ipd/internal-transfer/{id}', [IpdController::class, 'internalTransfer'])->name('internalTransfer');
     Route::get('/ipd/free-discharge/{id}', [IpdController::class, 'freeDischarge'])->name('freeDischarge');
-    Route::get('/ipd/patient-absconded/{id}', [IpdController::class, 'patientAbsconded'])->name('patientAbsconded');
+    Route::patch('/ipd/patient-absconded/{id}', [IpdController::class, 'patientAbsconded'])->name('patientAbsconded');
+    Route::get('/ipd/absconded-confirm/{id}', [IpdController::class, 'processApproveAbsconded'])->name('patientAbsconded');
     Route::get('/ipd/discharge-process/{id}', [IpdController::class, 'processDischarge'])->name('processDischarge');
     Route::get('/ipd/room-cancel/{id}', [IpdController::class, 'processCancel'])->name('processCancel');
     Route::get('/ipd/patient-reset/{id}', [IpdController::class, 'patientReset'])->name('patientReset');
