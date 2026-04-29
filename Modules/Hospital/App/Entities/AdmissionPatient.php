@@ -117,8 +117,6 @@ class AdmissionPatient
     private $clinicalFindings;
 
 
-
-
     /**
      * @var string
      *

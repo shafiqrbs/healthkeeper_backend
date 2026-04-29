@@ -210,10 +210,12 @@ class IpdPrescriptionController extends Controller
         $data['clinical_findings'] = (isset($data['clinical_findings']) and $data['clinical_findings']) ? $data['clinical_findings'] :'';
         $data['about_death'] = (isset($data['about_death']) and $data['about_death']) ? $data['about_death'] :'';
         $data['cause_death'] = (isset($data['cause_death']) and $data['cause_death']) ? $data['cause_death'] :'';
-    //    $data['death_date_time'] = (isset($data['death_date_time']) and $data['death_date_time']) ? $data['death_date_time'] :'';
         $data['process'] = 'done';
         $entity->update($data);
-        $entity->invoice->admission_patient->update($data);
+        $entity->invoice->admission_patient()->updateOrCreate(
+            ['hms_invoice_id' => $entity->invoice->id], // شرط (unique key)
+            $data // values to update or insert
+        );
         $entity->invoice->invoice_mode;
         if($entity->invoice->invoice_mode == "ipd"){
             $weight = $data['weight'] ?? null;
