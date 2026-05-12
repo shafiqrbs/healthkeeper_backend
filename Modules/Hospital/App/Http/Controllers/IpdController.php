@@ -354,12 +354,14 @@ class IpdController extends Controller
             'is_booked' => 0,
             'admission_id' => null,
         ]);
-        $entity->update([
-            'release_mode' => 'discharge',
-            'process' => 'discharged',
-            'release_date' => $date,
-            'is_prescription' => 1,
-        ]);
+        if(empty($entity->release_mode)){
+            $entity->update([
+                'release_mode' => 'discharge',
+                'process' => 'discharged',
+                'release_date' => $date,
+                'is_prescription' => 1,
+            ]);
+        }
         $service = new JsonRequestResponse();
         $data = $service->returnJosnResponse();
         return $data;

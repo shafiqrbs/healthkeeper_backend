@@ -596,6 +596,10 @@ class InvoiceModel extends Model
             ->leftjoin('hms_invoice as invoice_parent','invoice_parent.id','=','hms_invoice.parent_id')
             ->leftjoin('hms_particular_mode as parent_patient_mode','parent_patient_mode.id','=','invoice_parent.patient_mode_id')
             ->leftjoin('cor_locations','cor_locations.id','=','cor_customers.upazilla_id')
+            ->leftjoin('users as absconded_approved','absconded_approved.id','=','hms_invoice.absconded_approved_by_id')
+            ->leftjoin('users as absconded_created','absconded_created.id','=','hms_invoice.absconded_created_by_id')
+            ->leftjoin('users as dorb_approved','dorb_approved.id','=','hms_invoice.dorb_approved_by_id')
+            ->leftjoin('users as dorb_created','dorb_created.id','=','hms_invoice.dorb_created_by_id')
             ->select([
                 'hms_invoice.*',
                 'parent_patient_mode.name as parent_patient_mode_name',
@@ -670,6 +674,11 @@ class InvoiceModel extends Model
                 'admission_patient.thana as thana',
                 'admission_patient.reason as reason',
                 'admission_patient.referred_hospital as referred_hospital',
+                'absconded_approved.name as absconded_approved_name',
+                'absconded_created.name as absconded_created_name',
+                'dorb_approved.name as dorb_approved_name',
+                'dorb_created.name as dorb_created_name'
+
             ])
             ->with(['invoice_particular' => function ($query) {
                 $query->select([
