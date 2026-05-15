@@ -512,15 +512,35 @@ class ParticularModel extends Model
 
         $data = array('count'=>$total,'entities' => $entities);
         return $data;
+    }
 
-
+    public static function updateMissingBedCabin($domain)
+    {
+        $entities = InvoiceModel::where('hms_invoice.config_id', $domain['hms_config'])
+            ->where('hms_invoice.invoice_mode', 'ipd')
+            ->leftJoin('hms_particular as room', 'room.id', '=', 'hms_invoice.room_id')
+            ->whereIn('hms_invoice.process', ['admitted', 'paid', 'refund'])
+            ->whereNull('room.admission_id')
+            ->whereNotNull('hms_invoice.room_id')
+            ->select([
+                'hms_invoice.id as invoice_id',
+                'hms_invoice.room_id as room_id'
+            ])
+            ->get();
+        foreach ($entities as $entity) {
+            self::where('id', $entity->room_id)
+                ->update([
+                    'is_booked'   => 1,
+                    'admission_id'=> $entity->invoice_id
+                ]);
+        }
     }
 
     public static function getRoomCabin($request,$domain){
 
         $config =  $domain['hms_config'];
         $page =  isset($request['page']) && $request['page'] > 0?($request['page'] - 1 ) : 0;
-        $perPage = 150;
+        $perPage = 160;
         $skip = isset($page) && $page!=''? (int)$page*$perPage:0;
 
         $entity = self::where('hms_particular.config_id',$config)->where('hms_particular.is_booked',0)

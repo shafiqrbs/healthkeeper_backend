@@ -88,6 +88,7 @@ class InvoiceParticularModel extends Model
         if (!in_array($entity->process, ['admitted','paid','refund'], true)) {
             return false;
         }
+
         $admissionDate = new \DateTime($entity->admission_date);
         $currentDate   = new \DateTime('now');
         $dayCount = (int) $admissionDate

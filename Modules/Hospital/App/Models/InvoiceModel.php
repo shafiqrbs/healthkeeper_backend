@@ -405,7 +405,6 @@ class InvoiceModel extends Model
         $total  = $entities->count();
         $entities = $entities->skip($skip)->take($perPage);
 
-
         if ($sortBy == "visiting_room"){
             $entities = $entities->orderBy("vr.name",$orderBy);
         }elseif ($sortBy == "gender"){
@@ -670,8 +669,8 @@ class InvoiceModel extends Model
                 'admission_patient.death_date_time as death_date_time',
                 'admission_patient.dead_date_time as dead_date_time',
                 'admission_patient.absconded_date as absconded_date',
-                'admission_patient.case_no as case_no',
-                'admission_patient.thana as thana',
+                'admission_patient.case_no as absconded_case_no',
+                'admission_patient.thana as absconded_thana',
                 'admission_patient.reason as reason',
                 'admission_patient.referred_hospital as referred_hospital',
                 'absconded_approved.name as absconded_approved_name',

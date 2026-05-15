@@ -107,6 +107,7 @@ class HospitalController extends Controller
     {
         $domain = $this->domain;
         InvoiceParticularModel::getPatientCountBedRoom($domain);
+        ParticularModel::updateMissingBedCabin($domain);
         $data = ParticularModel::getAllRoomCabin($request, $domain);
         $response = new Response();
         $response->headers->set('Content-Type', 'application/json');

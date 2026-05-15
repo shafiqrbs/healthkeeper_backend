@@ -84,6 +84,7 @@ class IpdController extends Controller
      */
     public function ipdConfirm(Request $request){
         $domain = $this->domain;
+        ParticularModel::updateMissingBedCabin($domain);
         $data = IpdModel::getIpdConfirmRecords($request,$domain);
         $response = new Response();
         $response->headers->set('Content-Type','application/json');
