@@ -124,15 +124,19 @@ class IpdController extends Controller
             $roomRent = ParticularModel::where('id', $input['room_id'])
                 ->whereNull('admission_id')
                 ->where('is_booked', 0)
+                ->lockForUpdate()
                 ->first();
-            if (!empty($roomRent)) {
-                $entity = IpdModel::create($input);
-                $roomRent->update([
-                    'is_booked' => true,
-                    'admission_id' => $entity->id
-                ]);
-                IpdModel::insertHmsInvoice($domain, $parentInvoice, $entity, $input);
+
+            if (!$roomRent) {
+                throw new \Exception("Room already booked or not available");
             }
+
+            $entity = IpdModel::create($input);
+            $roomRent->update([
+                'is_booked' => 1,
+                'admission_id' => $entity->id
+            ]);
+            IpdModel::insertHmsInvoice($domain, $parentInvoice, $entity, $input);
             DB::commit();
             $invoice = InvoiceModel::getShow($entity->id);
             $service = new JsonRequestResponse();
